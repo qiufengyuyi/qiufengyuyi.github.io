@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="tensorflow,java,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="这次写一个比较短的工程部署总结，说是tensorflow线上部署，并没有使用目前推荐的tensorflow serving。一则是该功能只是整个项目中的一个很小的功能点，如果单独为该功能部署tensorflow serving，成本和时间上会比较超标；二则由于公司内部网络环境限制，无法完整顺利获取tensorflow serving需要的依赖包（在没有网络环境下去装tensorflow servi">
+<meta name="keywords" content="tensorflow,java">
+<meta property="og:type" content="article">
+<meta property="og:title" content="tensorflow模型线上部署">
+<meta property="og:url" content="http://yoursite.com/2019/03/24/tensorflow模型线上部署/index.html">
+<meta property="og:site_name" content="qiufengyuyi&#39;s blog">
+<meta property="og:description" content="这次写一个比较短的工程部署总结，说是tensorflow线上部署，并没有使用目前推荐的tensorflow serving。一则是该功能只是整个项目中的一个很小的功能点，如果单独为该功能部署tensorflow serving，成本和时间上会比较超标；二则由于公司内部网络环境限制，无法完整顺利获取tensorflow serving需要的依赖包（在没有网络环境下去装tensorflow servi">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-03-24T12:06:47.525Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="tensorflow模型线上部署">
+<meta name="twitter:description" content="这次写一个比较短的工程部署总结，说是tensorflow线上部署，并没有使用目前推荐的tensorflow serving。一则是该功能只是整个项目中的一个很小的功能点，如果单独为该功能部署tensorflow serving，成本和时间上会比较超标；二则由于公司内部网络环境限制，无法完整顺利获取tensorflow serving需要的依赖包（在没有网络环境下去装tensorflow servi">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/03/24/tensorflow模型线上部署/">
+
+
+
+
+
+  <title>tensorflow模型线上部署 | qiufengyuyi's blog</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">qiufengyuyi's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-essayread">
+          <a href="/论文总结" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>
+            
+            论文总结
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-learning">
+          <a href="/学习笔记" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>
+            
+            学习笔记
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-engineering">
+          <a href="/工程经验" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>
+            
+            工程经验
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/03/24/tensorflow模型线上部署/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="qiufengyuyi">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="qiufengyuyi's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">tensorflow模型线上部署</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-03-24T20:01:40+08:00">
+                2019-03-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/工程经验/" itemprop="url" rel="index">
+                    <span itemprop="name">工程经验</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>这次写一个比较短的工程部署总结，说是tensorflow线上部署，并没有使用目前推荐的tensorflow serving。一则是该功能只是整个项目中的一个很小的功能点，如果单独为该功能部署tensorflow serving，成本和时间上会比较超标；二则由于公司内部网络环境限制，无法完整顺利获取tensorflow serving需要的依赖包（在没有网络环境下去装tensorflow serving环境的同学都懂的）；三则，项目并没有对模型在线学习的需求，只需要模型离线训练后，部署到线上即可。基于上述三点条件，选择了使用tensorflow python开发并训练模型，最后将模型进行序列化。然后在java端（项目主开发语言）调用模型进行在线预测。</p>
+<h2 id="前置条件"><a href="#前置条件" class="headerlink" title="前置条件"></a><strong>前置条件</strong></h2><p>tensorflow 1.3</p>
+<p>所需的tensorflow java jar包：libtensorflow-1.4.1.jar</p>
+<p>所需的tensorflow jni 库文件：libtensorflow_jni.so  libtensorflow_framework.so</p>
+<h2 id="模型序列化"><a href="#模型序列化" class="headerlink" title="模型序列化"></a><strong>模型序列化</strong></h2><p>一开始，由于未考虑模型如何移植到java平台的原因，模型训练和保存的时候，还是按照传统的方式，即通过tf.train.Saver()方法得到saver对象，然后调用saver.save方法保存模型，得到模型的checkpoint,meta,data,index四个文件。</p>
+<p>上述文件中保存了模型的中间参数，模型当前训练的状态等信息，在某种意义上是动态的，只能通过tensorflow本身的python接口来调用该保存好的模型，并不能跨平台直接使用。其实模型的本质还是一堆权重数据和具体的权重计算流程，因此需要某种机制能固定住模型的权重数据和计算流程，即freeze模型。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">saver_predict = tf.train.import_meta_graph(model_config.ckpt_path + model_name)</span><br><span class="line"><span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">  <span class="keyword">if</span> os.path.exists(model_config.ckpt_path):</span><br><span class="line">             print(<span class="string">"Restoring Variables from Checkpoint"</span>)</span><br><span class="line">             saver_predict.restore(sess, tf.train.latest_checkpoint(model_config.ckpt_path))</span><br><span class="line">  <span class="keyword">else</span>:</span><br><span class="line">             print(<span class="string">"Can't find the checkpoint.going to stop"</span>)</span><br><span class="line">             exit()</span><br><span class="line">  output_node_names = [n.name <span class="keyword">for</span> n <span class="keyword">in</span> tf.get_default_graph().as_graph_def().node]</span><br><span class="line">  frozen_graph_def = tf.graph_util.convert_variables_to_constants(sess, sess.graph_def, output_node_names)</span><br><span class="line">  tf.train.write_graph(frozen_graph_def, model_config.ckpt_path, target_model_path, as_text=<span class="literal">False</span>)</span><br></pre></td></tr></table></figure>
+<p>上述代码的作用是对使用import_meta_graph读取训练好的模型,然后获取当前计算图中的所有节点，并将这些节点中的所有权重参数转化为常量，最后将这些常量保存到一个pb文件中，pb文件即protobuf，是 Google 推出的一种二进制数据交换格式。能够用于跨平台间的数据交换。上述代码实际使用时，会有问题，在java侧使用java的api调用模型时，会出现如下错误：</p>
+<blockquote>
+<p>Invalid argument: Input 0 of node XXXXXXXXXXX/BatchNorm/cond/AssignMovingAvg_1/Switch was passed float from XXXXXXXXXXX/BatchNorm/moving_variance:0 incompatible with expected float_ref.</p>
+</blockquote>
+<p>经过一番google，找到了这个github的issue，貌似并没有得到很好的解决，推测问题原因是在freeze模型的权重参数时，对一些tensor的data type处理有问题。问题链接如下，有兴趣的同学可以看看，我最后换了另外一种方式来做。</p>
+<p>[]: <a href="https://github.com/davidsandberg/facenet/issues/161" target="_blank" rel="noopener">https://github.com/davidsandberg/facenet/issues/161</a></p>
+<p>最终，我使用的是另外一种方法，即在模型训练完时，直接对模型的权重参数序列化，保存为pb文件。代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 将模型序列化保存`</span></span><br><span class="line">builder = tf.saved_model.builder.SavedModelBuilder(model_config.pb_path.format(epoch))</span><br><span class="line">builder.add_meta_graph_and_variables(sess, [<span class="string">"XXX"</span>])</span><br><span class="line">builder.save()</span><br></pre></td></tr></table></figure>
+<p>调用SavedModelBuilder得到builder对象，然后将session中的所有图结构和权重参数存入到builder中，最后保存为pb文件。</p>
+<h2 id="Java调用模型在线预测"><a href="#Java调用模型在线预测" class="headerlink" title="Java调用模型在线预测"></a><strong>Java调用模型在线预测</strong></h2><p>这里主要使用的是tensorflow的Java版本api，说是Java版本，其实功能很局限，并没有模型训练方面的功能，所幸它有读取模型和数据，然后在线预测的功能，因此可以适用于当前场景。在部署时，有几点需要注意一下：</p>
+<p>1.最基础的事情，当然是记得将tensorflow jar包加入到build-path中。</p>
+<p>2.在linux上进行部署时，需要将两个so文件部署到项目工程的java build path中，因为我们的工程中的path包含/usr/lib/，因此可以将两个so文件放到这个路径下。两个so文件主要是用于tensorflow 上层的api与底层操作系统native library进行通信的接口。</p>
+<p>下面主要介绍一下如何使用java来调用模型预测。</p>
+<p>首先列出用到 两个主要的操作对象：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SavedModelBundle tensorflowModelBundle</span><br><span class="line">Session tensorflowSession</span><br></pre></td></tr></table></figure>
+<p>SavedModelBundle为java侧与pb文件接口的对象，能够读取pb文件。而Session对应的是tensorflow中的会话对象，java中，tensorflow的预测操作也是需要在一个会话中进行的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tensorflowModelBundle = SavedModelBundle.load(tensorflowModelPath, <span class="string">"XXXX"</span>);</span><br><span class="line">tensorflowSession = tensorflowModelBundle.session();</span><br></pre></td></tr></table></figure>
+<p>然后就是构造输入模型的数据了。同python中的情况类似，java侧的模型接收的数据类型必须为tensor类型，因此需要将数据转化为tensor。因此要用到Tensor对象的create方法来生成Tensor，假设当前我们处理好后的数值型输入数据为一个二维数组testvec：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Tensor input = Tensor.create(testvec);</span><br></pre></td></tr></table></figure>
+<p>当然如果有其他输入的话，也要都转化为Tensor，简单说就是原来模型中feed_dict中的所有输入都要转化为Tensor对象。</p>
+<p>然后就是调用session，输入需要的数据，然后调用具体的计算节点输出结果：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Tensor output = tensorflowSession.runner().feed(<span class="string">"input"</span>,input).feed(XX,XX).fetch(<span class="string">"computation node_name"</span>).run().get(<span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<p>这行代码有几个注意点：</p>
+<p>1、feed方法返回的仍然是Runner对象，这个机制使得我们可以链式调用feed方法，将所有需要喂入模型的数据装载。</p>
+<p>2、Runner对象的fetch方法是定位到具体的计算图中的计算节点（tensor），这个与python中调用模型预测的方法类似，需要在构造计算图的时候，对模型输出样本预测概率（或者logits）的tensor指定名称。</p>
+<p>3、最后的get()方法则是获取返回的结果，这里我输入了参数0，是因为run()方法默认返回的是一个List<tensor>，因为有可能有的需求会调用多个计算节点，因此会返回多个tensor，但是此时我只需要得到一个tensor结果，因此获取List中的第一个元素。</tensor></p>
+<p>上述方法返回的是一个Tensor对象，为了输出结果，需要将它转化为原始的二维数据格式：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">float</span>[][] resultValues = (<span class="keyword">float</span>[][]) out.copyTo(<span class="keyword">new</span> <span class="keyword">float</span>[<span class="number">1</span>][<span class="number">1</span>]);</span><br></pre></td></tr></table></figure>
+<p>调用Tensor的copyTo方法，能够将Tensor转化为指定数据格式的数组。之所以是二维数组，是因为我们的输入数据是二维数组，虽然一次一般是预测一个样本，但为了开发的普适性，统一处理为二维数组，数组存储的就是该样本的预测概率。</p>
+<p>最后有一点需要注意一下，在使用完模型后，需要将所有创建的Tensor关闭，销毁资源，当然这个是开发的一个好习惯，能够避免资源的泄露和低效利用。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">out.close();</span><br><span class="line">input.close();</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    
+    
+    
+
+	<div>
+      
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/2019/03/24/tensorflow模型线上部署/">tensorflow模型线上部署</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 qiufengyuyi 的个人博客">qiufengyuyi</a></p>
+  <p><span>发布时间:</span>2019年03月24日 - 20:03</p>
+  <p><span>最后更新:</span>2019年03月24日 - 20:03</p>
+  <p><span>原始链接:</span><a href="/2019/03/24/tensorflow模型线上部署/" title="tensorflow模型线上部署">http://yoursite.com/2019/03/24/tensorflow模型线上部署/</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://yoursite.com/2019/03/24/tensorflow模型线上部署/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+      
+	</div>
+	
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/tensorflow/" rel="tag"># tensorflow</a>
+          
+            <a href="/tags/java/" rel="tag"># java</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/03/24/论文笔记系列（一）SGM-for-multi-label-classification/" rel="next" title="论文笔记系列（一）SGM for multi-label classification">
+                <i class="fa fa-chevron-left"></i> 论文笔记系列（一）SGM for multi-label classification
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">qiufengyuyi</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.zhihu.com/people/qiu-zhen-yu-87" target="_blank" title="知乎">
+                      
+                        <i class="fa fa-fw fa-globe"></i>知乎</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前置条件"><span class="nav-number">1.</span> <span class="nav-text">前置条件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#模型序列化"><span class="nav-number">2.</span> <span class="nav-text">模型序列化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Java调用模型在线预测"><span class="nav-number">3.</span> <span class="nav-text">Java调用模型在线预测</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qiufengyuyi</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+
+  
+
+  
+
+</body>
+</html>
