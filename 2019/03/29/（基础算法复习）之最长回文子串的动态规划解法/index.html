@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+
+    
+
+    
+    <title>（基础算法复习）之最长回文子串的动态规划解法 | qiufengyuyi&#39;s blog</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <meta name="keywords" content="dynamic programming">
+    
+    <meta name="description" content="再开一个新坑，以后会不定期总结一下对于一些基本算法题的解法思路和实现。作为一个AI领域的从业者，不仅对于AI本身的技术要有掌握，对于计算机科学中的基本算法思想也要扎实的基础，这样才能做一个合格的算法工程，本人在这方面的能力还不够成熟，因此开这个坑，希望通过这种方式，真正去理解算法的本质。  本文要总结的题目是找最长回文子串，对应leetcode中的题目如下：  Longest Palindromi">
+<meta name="keywords" content="dynamic programming">
+<meta property="og:type" content="article">
+<meta property="og:title" content="（基础算法复习）之最长回文子串的动态规划解法">
+<meta property="og:url" content="http://yoursite.com/2019/03/29/（基础算法复习）之最长回文子串的动态规划解法/index.html">
+<meta property="og:site_name" content="qiufengyuyi&#39;s blog">
+<meta property="og:description" content="再开一个新坑，以后会不定期总结一下对于一些基本算法题的解法思路和实现。作为一个AI领域的从业者，不仅对于AI本身的技术要有掌握，对于计算机科学中的基本算法思想也要扎实的基础，这样才能做一个合格的算法工程，本人在这方面的能力还不够成熟，因此开这个坑，希望通过这种方式，真正去理解算法的本质。  本文要总结的题目是找最长回文子串，对应leetcode中的题目如下：  Longest Palindromi">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/03/29/（基础算法复习）之最长回文子串的动态规划解法/v2-342fadadb4284caae54ed646877ae7c9_b.png">
+<meta property="og:updated_time" content="2019-03-29T12:24:15.744Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="（基础算法复习）之最长回文子串的动态规划解法">
+<meta name="twitter:description" content="再开一个新坑，以后会不定期总结一下对于一些基本算法题的解法思路和实现。作为一个AI领域的从业者，不仅对于AI本身的技术要有掌握，对于计算机科学中的基本算法思想也要扎实的基础，这样才能做一个合格的算法工程，本人在这方面的能力还不够成熟，因此开这个坑，希望通过这种方式，真正去理解算法的本质。  本文要总结的题目是找最长回文子串，对应leetcode中的题目如下：  Longest Palindromi">
+<meta name="twitter:image" content="http://yoursite.com/2019/03/29/（基础算法复习）之最长回文子串的动态规划解法/v2-342fadadb4284caae54ed646877ae7c9_b.png">
+    
+
+    
+
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/titillium-web/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="wrap">
+        <header id="header">
+    <div id="header-outer" class="outer">
+        <div class="container">
+            <div class="container-inner">
+                <div id="header-title">
+                    <h1 class="logo-wrap">
+                        <a href="/" class="logo"></a>
+                    </h1>
+                    
+                        <h2 class="subtitle-wrap">
+                            <p class="subtitle">backlog of a man&#39;s road to AI learning</p>
+                        </h2>
+                    
+                </div>
+                <div id="header-inner" class="nav-container">
+                    <a id="main-nav-toggle" class="nav-icon fa fa-bars"></a>
+                    <div class="nav-container-inner">
+                        <ul id="main-nav">
+                            
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/">主页</a>
+                                </li>
+                            
+                                        <ul class="main-nav-list"><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/基础算法/">基础算法</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/学习笔记/">学习笔记</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/工程经验/">工程经验</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/比赛总结/">比赛总结</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/论文总结/">论文总结</a></li></ul>
+                                    
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/about/index.html">关于</a>
+                                </li>
+                            
+                        </ul>
+                        <nav id="sub-nav">
+                            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+        <div class="container">
+            <div class="main-body container-inner">
+                <div class="main-body-inner">
+                    <section id="main">
+                        <div class="main-body-header">
+    <h1 class="header">
+    
+    <a class="page-title-link" href="/categories/基础算法/">基础算法</a>
+    </h1>
+</div>
+
+                        <div class="main-body-content">
+                            <article id="post-（基础算法复习）之最长回文子串的动态规划解法" class="article article-single article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+        （基础算法复习）之最长回文子串的动态规划解法
+        </h1>
+    
+
+            </header>
+        
+        
+            <div class="article-meta">
+                
+    <div class="article-date">
+        <a href="/2019/03/29/（基础算法复习）之最长回文子串的动态规划解法/" class="article-date">
+            <time datetime="2019-03-29T12:06:48.000Z" itemprop="datePublished">2019-03-29</time>
+        </a>
+    </div>
+
+		
+
+                
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/dynamic-programming/">dynamic programming</a>
+    </div>
+
+            </div>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+            <p>再开一个新坑，以后会不定期总结一下对于一些基本算法题的解法思路和实现。作为一个AI领域的从业者，不仅对于AI本身的技术要有掌握，对于计算机科学中的基本算法思想也要扎实的基础，这样才能做一个合格的算法工程，本人在这方面的能力还不够成熟，因此开这个坑，希望通过这种方式，真正去理解算法的本质。</p>
+<hr>
+<p>本文要总结的题目是找最长回文子串，对应leetcode中的题目如下：</p>
+<blockquote>
+<p>Longest Palindromic Substring </p>
+<p>Given a string <strong>s</strong>, find the longest palindromic substring in <strong>s</strong>. You may assume that the maximum length of <strong>s</strong> is 1000. </p>
+<p><strong>Example 1:</strong> <strong>Input:</strong> “babad” <strong>Output:</strong> “bab” <strong>Note:</strong> “aba” is also a valid answer.  </p>
+<p><strong>Example 2:</strong> <strong>Input:</strong> “cbbd” <strong>Output:</strong> “bb”</p>
+</blockquote>
+<p>本文主要集中在如何一步一步使用动态规划的方法来解决这个问题并进行优化的过程，有其他更好的解决该问题的方法不在本文中讨论。</p>
+<h2 id="最简单思想"><a href="#最简单思想" class="headerlink" title="最简单思想"></a>最简单思想</h2><p>首先，这个题目最简单的思想就是暴力遍历所有可能结果，假设当前字符串序列为 $s_1…s_n$ 具体做法是遍历所有可能长度的子串，判断其是不是回文子串，然后记录其长度，最后返回那个长度最长的子串即可。</p>
+<h2 id="暴力搜索的问题"><a href="#暴力搜索的问题" class="headerlink" title="暴力搜索的问题"></a>暴力搜索的问题</h2><p>暴力搜索的时间效率肯定是最低的，那么低在哪里呢？我们以$s_1…s_n$为例，列举暴力搜索的前几个步骤，很明显就能看出来问题：</p>
+<ol>
+<li>子串长度为1时，遍历所有单个字符 $s_1,s_2,…,s_n $，此时所有单个字符都是回文。</li>
+<li>子串长度为2时，遍历所有二元字符子$s_1s_2,s_2s_3,s_3s_4,…,s_{n-1}s_n $，然后判断每个元素是否为回文，判断依据是 $s_i?=s_{i+1}$ </li>
+<li>子串长度为3时，遍历所有三元字符串 $s_1s_2s_3,s_2s_3s_4,…,s_{i-1}s_is_{i+1},s_{n-2}s_{n-1}s_n$ ，这里判断每个元素是否为回文。</li>
+<li>子串长度为4时，遍历所有四元字符串 $s_1s_2s_3s_4,s_2s_3s_4s_5,…,s_{i-2}s_{i-1}s_is_{i+1},s_{n-3}s_{n-2}s_{n-1}s_n $，然后判断每个元素是否为回文。</li>
+<li>重复上述步骤，直到遍历到 $s_1…s_n​$ 这个长度为n的字符串为止。</li>
+</ol>
+<p>进一步分析，其实步骤3时，其实会用到1的结果，因为每个元素中间项 $s_i $通过1已经知道是回文了，那么只要判断 $s_{i-1}==s_{i+1}$ 是否成立就行了。然而步骤3是重复处理了。</p>
+<p>同样的，步骤4同样用到了步骤2的结果，对于 $s_{i-2}s_{i-1}s_is_{i+1}$ ，如果知道 $s_{i-1}s_i $是回文，那么只要分析 $s_{i-2}?=s_{i+1} $就可以了。因此步骤4也重复处理。 </p>
+<h2 id="引入动态规划"><a href="#引入动态规划" class="headerlink" title="引入动态规划"></a>引入动态规划</h2><p>通过上面的分析可以知道，暴力搜索时，并不是每一个元素都需要去专门遍历并判断是否为回文，有些元素可以通过历史的结果来帮助判断一个元素是否为回文。同时我们也可以总结一些规律：</p>
+<p>假设 $s_i,…,s_j $是我们要求解的最长的回文子串(其中j&gt;=i)，那么它必然符合两个条件：</p>
+<p>a. $s_i==s_j $</p>
+<p>b. $s_{i+1},…,s_{j-1} （j&gt;=i+2）$必然也是一个回文子串，否则上述假设不成立。</p>
+<p>基于上述规律，我们可以将这个问题进行拆分，分成最基本的优化目标问题单元：即只要到一个回文子串，然后以该子串为中心，左右两边的字符若相等，则找到一个更长的新的回文子串。即从一元字符开始，以该字符为中心向两边扩展的方式，逐渐找到更长的回文子串，有点像穿衣服一样，一层一层往上套。这个就是动态规划的思想，当然我只是用口语化的方式描述了一下，理论化的动态规划肯定更加严谨公式化，但是我就不在这里讨论了，有兴趣的可以自行查阅。</p>
+<p>那么如何实现上述的思想呢？前面说了，我要知道$s_i,…,s_j$是否为回文，那么主要是需要知道$s_{i+1},…,s_{j-1}$是否为回文。这里可以将其视作一个填表问题。我们设计一个bool型的n*n的二维矩阵A，如果$s_i,…,s_j$是一个回文串，那么 $A_{ij} $位置就填上true，否则为false。填表的顺序则是从长度为1的字符串开始，逐级向长度更长的字符串填，间而言之就是一种周期性的斜向上方向，具体如图：</p>
+<p><img src="/2019/03/29/（基础算法复习）之最长回文子串的动态规划解法/v2-342fadadb4284caae54ed646877ae7c9_b.png" alt="img"></p>
+<p>其实上图也说明了一个事情，就是我们并不需要把所有表格都填上，而是只需要填满上三角的表格就能得到最终结果。因此，在代码实现的时候，我们可以初始化一个上三角形状的二维数组，这样可以节省一半的空间。（代码实现的时候，我还是初始化了整矩阵，为了与后续优化区分）。</p>
+<p>我们要做的，就是当遇到回文串时，不仅在上述表格相应位置填上值，而且需要记录当前子串的起始位置和长度，用于后续的返回结果。</p>
+<h2 id="代码实现1"><a href="#代码实现1" class="headerlink" title="代码实现1"></a>代码实现1</h2><p>下面给出我写的初步动态规划解法，只列出关键逻辑，完整代码后续会放到github上，到时会贴出来。代码不是很优美，求大佬轻喷。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int s_size = s.size();</span><br><span class="line">vector&lt;vector&lt;bool&gt; &gt; result(s_size, vector&lt;bool&gt; (s_size,false));</span><br></pre></td></tr></table></figure>
+<p>初始化一个n*n的bool型矩阵，n为字符串长度。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;s_size;i++)</span><br><span class="line">&#123;</span><br><span class="line">    result[i][i] = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">if</span>(i &lt; s_size<span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (s[i]==s[i+<span class="number">1</span>])</span><br><span class="line">        &#123;</span><br><span class="line">            result[i][i+<span class="number">1</span>] = <span class="literal">true</span>;</span><br><span class="line">            cur_max = <span class="number">2</span>;</span><br><span class="line">            start = i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里是先填充对角线，以及 $(i,i+1)$ 上斜线的位置，对角线对应一元字符，这个很好理解，都是回文，而上斜线的位置也很好处理，只要判断$s_i?=s_{i+1} $就可以了。同时要记录当前最长回文的起始位置start以及长度cur_max。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> distance = <span class="number">2</span>;distance &lt; s_size;distance++)</span><br><span class="line"> &#123;</span><br><span class="line">     <span class="comment">// cout&lt;&lt;distance;</span></span><br><span class="line">     <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>;i+distance&lt;s_size;i++)</span><br><span class="line">     &#123;</span><br><span class="line">         result[i][i+distance] = (result[i+<span class="number">1</span>][i+distance<span class="number">-1</span>]&amp;&amp;(s[i]==s[i+distance]));</span><br><span class="line">         <span class="keyword">if</span>(result[i][i+distance])</span><br><span class="line">         &#123;</span><br><span class="line">             <span class="keyword">if</span>(distance+<span class="number">1</span>&gt;cur_max)</span><br><span class="line">             &#123;</span><br><span class="line">                 cur_max = distance+<span class="number">1</span>;</span><br><span class="line">                 start = i;</span><br><span class="line">                 end = i+distance;</span><br><span class="line">             &#125;</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>这里最外层的循环表示字符串的长度遍历，里层遍历则是对字符串起始位置的遍历。循环内部的逻辑在上面章节已经介绍过，即根据$s_{i+1},…,s_{j-1}$是否为回文以及$s_i?=s_j$来判断$s_i,…,s_j$是否为回文。同时记录回文子串的起始位置和长度。</p>
+<h2 id="进一步优化"><a href="#进一步优化" class="headerlink" title="进一步优化"></a>进一步优化</h2><p>上述代码在leetcode运行后的时间和空间成本如下：</p>
+<p><img src="/2019/03/29/（基础算法复习）之最长回文子串的动态规划解法/v2-8f53b8614332c24b327f3b08ece2e32d_b.png" alt="img"></p>
+<p>可以看到无论是时间成本还是空间成本都是很高的，优化的空间很大呀！</p>
+<p>回头看我们的上述解法过程，我们将一个矩阵中一个斜线上的所有位置填表称为一个epoch操作。每轮epoch其实都隐含得使用了前一个epoch的信息，更加具体的说是前一个epoch的某一个位置上的值。我们是否需要一整个二维矩阵表格来填某个epoch的信息呢？答案是不需要！具体原因看下图图示：</p>
+<p><img src="/2019/03/29/（基础算法复习）之最长回文子串的动态规划解法/v2-38ba00427d4a9b6068916fa3e2321601_b.png" alt="img"></p>
+<p>具体来说，每次填表格，其实只需要其右下角的表格的值就可以了，而初始的对角线和上斜线位置的判断也是很简单就能实现也不用记录，因此实际上我们不用一个二维矩阵，只需要几个临时变量记录右下角的表格值就可以了。</p>
+<p>另外，我们需要变更填表的顺序，之前我们的顺序都是每个epoch斜上方向45度填。这里我们改换成如下的填表顺序：</p>
+<p><img src="/2019/03/29/（基础算法复习）之最长回文子串的动态规划解法/v2-22e6016ac3bee71a48a7e679eccbc48d_b.png" alt="img"></p>
+<p>其中箭头上标的数字代表循环的epoch轮数。即每次我向左斜向上方填表，填到边界时，跳到下一轮的其实位置，接着填。</p>
+<h2 id="优化代码实现"><a href="#优化代码实现" class="headerlink" title="优化代码实现"></a>优化代码实现</h2><p>代码的话其实注意几个点就行，一个是每一轮遍历的顺序是往左斜向上的，另一个就是每一轮要记录当前轮起始的位置，因为下一轮的起始位置是与前一轮的起始位置和当前轮数相关的，如图：</p>
+<p><img src="/2019/03/29/（基础算法复习）之最长回文子串的动态规划解法/v2-4a9ef658de392a9ad21f1bfcede75153_b.png" alt="img"></p>
+<p>主要代码逻辑如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">bool pre_flag = false;</span><br><span class="line">int epoch_start_i = 0;</span><br><span class="line">int epoch_start_j = 0;</span><br></pre></td></tr></table></figure>
+<p>这里直接初始化一个临时变量存放右下角的值，然后初始化两个位置变量来存每一个epoch的起始位置。</p>
+<p>对于对角线和上斜线的处理就不贴出来了，这里贴一下其他位置的填法：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//根据右下角的表格填当前表格</span></span><br><span class="line">pre_flag = (pre_flag &amp;&amp; s[i]==s[j]);</span><br><span class="line"><span class="comment">//如果是回文，且长度最长，则记录起始位置</span></span><br><span class="line"><span class="keyword">if</span>(pre_flag &amp;&amp; j-i+<span class="number">1</span>&gt;cur_max)</span><br><span class="line">&#123;</span><br><span class="line">    cur_max = j-i+<span class="number">1</span>;</span><br><span class="line">    start = i;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//到边界位置，需要换到下一轮的起始位置</span></span><br><span class="line"><span class="keyword">if</span>(i<span class="number">-1</span>&lt;<span class="number">0</span> || j+<span class="number">1</span> &gt;=s_size)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//本轮起始位置为对角线上</span></span><br><span class="line">    <span class="keyword">if</span> (epoch_start_i == epoch_start_j)</span><br><span class="line">    &#123;</span><br><span class="line">        i =epoch_start_i;</span><br><span class="line">        j = epoch_start_j+<span class="number">1</span>;</span><br><span class="line">    &#125;<span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">//本轮起始位置在上斜线上</span></span><br><span class="line">        i =epoch_start_i+<span class="number">1</span>;</span><br><span class="line">        j = epoch_start_j;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">continue</span>;</span><br><span class="line">    </span><br><span class="line">&#125;<span class="keyword">else</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//向左斜上方向处理</span></span><br><span class="line">    i--;</span><br><span class="line">    j++;</span><br><span class="line">    <span class="keyword">continue</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后，上述代码在leetcode上运行的花费如下：</p>
+<p><img src="/2019/03/29/（基础算法复习）之最长回文子串的动态规划解法/v2-a0187bf622bad64b13f617aa542979e7_b.png" alt="img"></p>
+<p>可以看到，无论是时间复杂度，还是空间复杂度，都有了很大的优化。</p>
+
+        </div>
+        <footer class="article-footer">
+            
+
+
+
+    <a data-url="http://yoursite.com/2019/03/29/（基础算法复习）之最长回文子串的动态规划解法/" data-id="cjtu2qg8a000pjwutxpbwuq5p" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+        </footer>
+    </div>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "author": {
+            "@type": "Person",
+            "name": "qiufengyuyi"
+        },
+        "headline": "（基础算法复习）之最长回文子串的动态规划解法",
+        "image": "http://yoursite.com/2019/03/29/（基础算法复习）之最长回文子串的动态规划解法/v2-342fadadb4284caae54ed646877ae7c9_b.png",
+        "keywords": "dynamic programming",
+        "genre": "基础算法",
+        "datePublished": "2019-03-29",
+        "dateCreated": "2019-03-29",
+        "dateModified": "2019-03-29",
+        "url": "http://yoursite.com/2019/03/29/（基础算法复习）之最长回文子串的动态规划解法/",
+        "description": "再开一个新坑，以后会不定期总结一下对于一些基本算法题的解法思路和实现。作为一个AI领域的从业者，不仅对于AI本身的技术要有掌握，对于计算机科学中的基本算法思想也要扎实的基础，这样才能做一个合格的算法工程，本人在这方面的能力还不够成熟，因此开这个坑，希望通过这种方式，真正去理解算法的本质。
+
+本文要总结的题目是找最长回文子串，对应leetcode中的题目如下：
+
+Longest Palindromi"
+        "wordCount": 701
+    }
+</script>
+
+</article>
+
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
+
+
+                        </div>
+                    </section>
+                    <aside id="sidebar">
+    <a class="sidebar-toggle" title="Expand Sidebar"><i class="toggle icon"></i></a>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2019/03/29/达观文本分类大赛17名思路总结/" id="article-nav-newer" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">下一篇</strong>
+        <p class="article-nav-title">
+        
+            达观文本分类大赛17名思路总结
+        
+        </p>
+        <i class="icon fa fa-chevron-right" id="icon-chevron-right"></i>
+    </a>
+    
+    
+        <a href="/2019/03/24/tensorflow模型线上部署/" id="article-nav-older" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">上一篇</strong>
+        <p class="article-nav-title">tensorflow模型线上部署</p>
+        <i class="icon fa fa-chevron-left" id="icon-chevron-left"></i>
+        </a>
+    
+</nav>
+
+    
+    <div class="widgets-container">
+        
+            
+                
+
+            
+                
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/比赛总结/">比赛总结</a></p>
+                            <p class="item-title"><a href="/2019/03/29/达观文本分类大赛17名思路总结/" class="title">达观文本分类大赛17名思路总结</a></p>
+                            <p class="item-date"><time datetime="2019-03-29T12:27:27.000Z" itemprop="datePublished">2019-03-29</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/基础算法/">基础算法</a></p>
+                            <p class="item-title"><a href="/2019/03/29/（基础算法复习）之最长回文子串的动态规划解法/" class="title">（基础算法复习）之最长回文子串的动态规划解法</a></p>
+                            <p class="item-date"><time datetime="2019-03-29T12:06:48.000Z" itemprop="datePublished">2019-03-29</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/工程经验/">工程经验</a></p>
+                            <p class="item-title"><a href="/2019/03/24/tensorflow模型线上部署/" class="title">tensorflow模型线上部署</a></p>
+                            <p class="item-date"><time datetime="2019-03-24T12:01:40.000Z" itemprop="datePublished">2019-03-24</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/论文总结/">论文总结</a></p>
+                            <p class="item-title"><a href="/2019/03/24/论文笔记系列（一）SGM-for-multi-label-classification/" class="title">论文笔记系列（一）SGM for multi-label classification</a></p>
+                            <p class="item-date"><time datetime="2019-03-24T11:22:50.000Z" itemprop="datePublished">2019-03-24</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/03/23/RNN循环神经网络—梯度爆炸和消失的简单解析/" class="title">RNN循环神经网络—梯度爆炸和消失的简单解析</a></p>
+                            <p class="item-date"><time datetime="2019-03-23T14:45:54.000Z" itemprop="datePublished">2019-03-23</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">5</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-float">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/RNN/" style="font-size: 20px;">RNN</a> <a href="/tags/attention/" style="font-size: 10px;">attention</a> <a href="/tags/dynamic-programming/" style="font-size: 10px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/seq2seq/" style="font-size: 10px;">seq2seq</a> <a href="/tags/tensorflow/" style="font-size: 10px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.zhihu.com/people/qiu-zhen-yu-87">zhihu</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+            
+        
+    </div>
+</aside>
+
+                </div>
+            </div>
+        </div>
+        <footer id="footer">
+    <div class="container">
+        <div class="container-inner">
+            <a id="back-to-top" href="javascript:;"><i class="icon fa fa-angle-up"></i></a>
+            <div class="credit">
+                <h1 class="logo-wrap">
+                    <a href="/" class="logo"></a>
+                </h1>
+                <p>&copy; 2019 qiufengyuyi</p>
+                <p>Powered by <a href="//hexo.io/" target="_blank">Hexo</a>. Theme by <a href="//github.com/ppoffice" target="_blank">PPOffice</a></p>
+            </div>
+            <div class="footer-plugins">
+              
+    
+
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+        
+    
+    <script>
+    var disqus_shortname = 'hexo-theme-hueman';
+    
+    
+    var disqus_url = 'http://yoursite.com/2019/03/29/（基础算法复习）之最长回文子串的动态规划解法/';
+    
+    (function() {
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>
