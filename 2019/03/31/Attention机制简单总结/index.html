@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+
+    
+
+    
+    <title>Attention机制简单总结 | qiufengyuyi&#39;s blog</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <meta name="keywords" content="attention,seq2seq">
+    
+    <meta name="description" content="本来是想接CMU的NLP公开课的坑的，但是发现讲attention这块内容的公开课程质量着实不高，教授说话声音模糊。（说实话这门公开课的质量都不太好，对萌新不太友好，不过它比斯坦福的cs224n内容多一点，建议学完cs224n再来看这门课会好一点。）再加上最近做一个headline generation的比赛，要用到的attention的地方很多，因此把之前比赛中以及课程中的attention知识">
+<meta name="keywords" content="attention,seq2seq">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Attention机制简单总结">
+<meta property="og:url" content="http://yoursite.com/2019/03/31/Attention机制简单总结/index.html">
+<meta property="og:site_name" content="qiufengyuyi&#39;s blog">
+<meta property="og:description" content="本来是想接CMU的NLP公开课的坑的，但是发现讲attention这块内容的公开课程质量着实不高，教授说话声音模糊。（说实话这门公开课的质量都不太好，对萌新不太友好，不过它比斯坦福的cs224n内容多一点，建议学完cs224n再来看这门课会好一点。）再加上最近做一个headline generation的比赛，要用到的attention的地方很多，因此把之前比赛中以及课程中的attention知识">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/03/31/Attention机制简单总结/v2-b386e5a381ddd4197f9258bf4ac58eb4_b.jpg">
+<meta property="og:updated_time" content="2019-03-31T13:12:01.314Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Attention机制简单总结">
+<meta name="twitter:description" content="本来是想接CMU的NLP公开课的坑的，但是发现讲attention这块内容的公开课程质量着实不高，教授说话声音模糊。（说实话这门公开课的质量都不太好，对萌新不太友好，不过它比斯坦福的cs224n内容多一点，建议学完cs224n再来看这门课会好一点。）再加上最近做一个headline generation的比赛，要用到的attention的地方很多，因此把之前比赛中以及课程中的attention知识">
+<meta name="twitter:image" content="http://yoursite.com/2019/03/31/Attention机制简单总结/v2-b386e5a381ddd4197f9258bf4ac58eb4_b.jpg">
+    
+
+    
+
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/titillium-web/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="wrap">
+        <header id="header">
+    <div id="header-outer" class="outer">
+        <div class="container">
+            <div class="container-inner">
+                <div id="header-title">
+                    <h1 class="logo-wrap">
+                        <a href="/" class="logo"></a>
+                    </h1>
+                    
+                        <h2 class="subtitle-wrap">
+                            <p class="subtitle">backlog of a man&#39;s road to AI learning</p>
+                        </h2>
+                    
+                </div>
+                <div id="header-inner" class="nav-container">
+                    <a id="main-nav-toggle" class="nav-icon fa fa-bars"></a>
+                    <div class="nav-container-inner">
+                        <ul id="main-nav">
+                            
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/">主页</a>
+                                </li>
+                            
+                                        <ul class="main-nav-list"><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/基础算法/">基础算法</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/学习笔记/">学习笔记</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/工程经验/">工程经验</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/比赛总结/">比赛总结</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/论文总结/">论文总结</a></li></ul>
+                                    
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/about/index.html">关于</a>
+                                </li>
+                            
+                        </ul>
+                        <nav id="sub-nav">
+                            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+        <div class="container">
+            <div class="main-body container-inner">
+                <div class="main-body-inner">
+                    <section id="main">
+                        <div class="main-body-header">
+    <h1 class="header">
+    
+    <a class="page-title-link" href="/categories/学习笔记/">学习笔记</a>
+    </h1>
+</div>
+
+                        <div class="main-body-content">
+                            <article id="post-Attention机制简单总结" class="article article-single article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+        Attention机制简单总结
+        </h1>
+    
+
+            </header>
+        
+        
+            <div class="article-meta">
+                
+    <div class="article-date">
+        <a href="/2019/03/31/Attention机制简单总结/" class="article-date">
+            <time datetime="2019-03-31T12:57:43.000Z" itemprop="datePublished">2019-03-31</time>
+        </a>
+    </div>
+
+		
+
+                
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/attention/">attention</a>, <a class="tag-link" href="/tags/seq2seq/">seq2seq</a>
+    </div>
+
+            </div>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+            <p>本来是想接CMU的NLP公开课的坑的，但是发现讲attention这块内容的公开课程质量着实不高，教授说话声音模糊。（说实话这门公开课的质量都不太好，对萌新不太友好，不过它比斯坦福的cs224n内容多一点，建议学完cs224n再来看这门课会好一点。）再加上最近做一个headline generation的比赛，要用到的attention的地方很多，因此把之前比赛中以及课程中的attention知识简单总结一下，会参考到著名的论文：<strong>Attention is all you need</strong>。感兴趣的可以去读这篇论文，真的是一篇有划时代意义的论文。</p>
+<blockquote>
+<p>备注：由于attention自被广泛运用以来，涌现出了很多attention的变体，各种奇技淫巧层出不穷，本文篇幅有限，只会讲几个最基本的attention方法。</p>
+</blockquote>
+<h2 id="What-is-attention？"><a href="#What-is-attention？" class="headerlink" title="What is attention？"></a>What is attention？</h2><p>先简单描述一下attention机制是什么。相信做NLP的同学对这个机制不会很陌生，它在<strong>Attention is all you need</strong>可以说是大放异彩，在machine translation任务中，帮助深度模型在性能上有了很大的提升，输出了当时最好的state-of-art model。当然该模型除了attention机制外，还用了很多有用的trick，以帮助提升模型性能。但是不能否认的时，这个模型的核心就是attention。</p>
+<p>attention机制：又称为注意力机制，顾名思义，是<strong>一种能让模型对重要信息重点关注并充分学习吸收的技术</strong>，它不算是一个完整的模型，应当是一种技术，能够作用于任何序列模型中。</p>
+<h2 id="Why-attention？"><a href="#Why-attention？" class="headerlink" title="Why attention？"></a>Why attention？</h2><p>照例讲一下为什么要引入attention机制。在之前总结过的seq2seq模型以及之前做NLP的比赛中，对于一段文本序列，我们通常要使用某种机制对该序列进行编码，通过降维等方式将其encode成一个固定长度的向量，用于输入到后面的全连接层。</p>
+<p><img src="/2019/03/31/Attention机制简单总结/v2-b386e5a381ddd4197f9258bf4ac58eb4_b.jpg" alt="img"></p>
+<p>一般我们会使用CNN或者RNN（包括GRU或者LSTM）等模型来对序列数据进行编码，然后采用各种pooling或者对RNN直接取最后一个t时刻的hidden state作为句子的向量输出。这里会有一个问题：</p>
+<p>常规的编码方法，无法体现对一个句子序列中不同语素的关注程度，在自然语言中，一个句子中的不同部分是有不同含义和重要性的，比如上面的例子中：I hate this movie.如果做情感分析，明显对hate这个词语应当关注更多。当然是用CNN和RNN能够编码这种信息。但是如果序列长度很长的情况下，这种方法会有一定的瓶颈。拿CNN举例，具体如下图：图来自<a href="https://cloud.tencent.com/developer/article/1153079" target="_blank" rel="noopener">“变形金刚”为何强大：从模型到代码全面解析Google Tensor2Tensor系统</a></p>
+<p><img src="/2019/03/31/Attention机制简单总结/v2-1266c34a81a7d58b1dd9848a2bc2f59b_b.jpg" alt="img"></p>
+<p>CNN的核心就是卷积核能够变相学习n-gram的信息，如果是用hierarchical的卷积核，那么越上层的卷积核越能编码原始距离较远的词组的信息。但是这种编码能力也是有上限的，对于较长的文本，模型效果不会再提升太多。RNN也是同理。</p>
+<blockquote>
+<p>基于参加达观文本分类的经历，对于这种长文本处理，使用RNN+attention的效果比使用单纯的RNN+pooling的效果要好不少。</p>
+</blockquote>
+<h2 id="How-to-use-attention"><a href="#How-to-use-attention" class="headerlink" title="How to use attention?"></a>How to use attention?</h2><p>首先讲一下attention最基本最抽象的流程。<strong>以seq2seq模型为例</strong>。</p>
+<p>基本流程：对于一个句子序列S，其由单词序列[w1,w2,w3,…,wn]构成。</p>
+<p>1、应用某种方法S的每个单词 $w_i $编码为一个单独向量 $v_i$ 。</p>
+<p>2、解码时，使用学习到的注意力权重 $a_i $对1中得到的所有单词向量做加权线性组合$\sum_{i}^{}{a_iv_i}$.</p>
+<p>3、在decoder进行下一个词的预测时，使用2中得到的线性组合。</p>
+<p>具体构成如下：</p>
+<p>我们的最终目标是要能够帮助decoder在生成词语时，有一个不同词语的权重的参考。在训练时，对于decoder我们是有训练目标的，此时将decoder中的信息定义为一个<strong>Query。</strong>而encoder中包含了所有可能出现的词语，我们将其作为一个<strong>字典</strong>，该字典的<strong>key</strong>为所有encoder的序列信息。n个单词相当于当前字典中有n条记录，而字典的<strong>value</strong>通常也是所有encoder的序列信息。</p>
+<p>上面对应于第一步，然后是第二部计算注意力权重，由于我们要让模型自己去学习该对哪些语素重点关注，因此要用我们的学习目标Query来参与这个过程，因此对于Query的每个向量，通过一个函数 $a_i = F(Q_i,K) $，计算预测i时刻词时，需要学习的注意力权重，由于包含n个单词，因此， $a_i$ 应当是一个n维的向量，为了后续计算方便，需要将该向量进行softmax归一化，让向量的每一维元素都是一个概率值。</p>
+<p><img src="/2019/03/31/Attention机制简单总结/v2-1925f956aa0e461a11caaa786edac1cc_b.jpg" alt="img"></p>
+<p>最后对Value vectors进行加权线性组合，得到带权重参考的“字典”输出：</p>
+<p><img src="/2019/03/31/Attention机制简单总结/v2-3dd7f0eb80fc1e616ca951709e9fe308_b.jpg" alt="img"></p>
+<p><strong>权重计算函数</strong></p>
+<p>眼尖的同学肯定发现这个attention机制比较核心的地方就是如何对Query和key计算注意力权重。下面简单总结几个常用的方法：</p>
+<p>1、多层感知机方法</p>
+<script type="math/tex; mode=display">
+a(q,k) = w_2^Ttanh(W_1[q;k])</script><p>主要是先将query和key进行拼接，然后接一个激活函数为tanh的全连接层，然后再与一个网络定义的权重矩阵做乘积。</p>
+<p>这种方法据说对于大规模的数据特别有效。</p>
+<p>2、Bilinear方法</p>
+<script type="math/tex; mode=display">
+a(q,k)=q^TWk</script><p>通过一个权重矩阵直接建立q和k的关系映射，比较直接，且计算速度较快。</p>
+<p>3、Dot Product</p>
+<script type="math/tex; mode=display">
+a(q,k)=q^Tk</script><p>这个方法更直接，连权重矩阵都省了，直接建立q和k的关系映射，优点是计算速度更快了，且不需要参数，降低了模型的复杂度。但是需要q和k的维度要相同。</p>
+<p>4、scaled-dot Product</p>
+<p>上面的点积方法有一个问题，就是随着向量维度的增加，最后得到的权重也会增加，为了提升计算效率，防止数据上溢，对其进行scaling。</p>
+<script type="math/tex; mode=display">
+a(q,k)=\frac{q^Tk}{\sqrt{|k|}}</script><p>我个人通常会使用2和3，4。因为硬件机器性能的限制，1的方法计算比较复杂，训练成本比较高。</p>
+<h2 id="self-attention"><a href="#self-attention" class="headerlink" title="self-attention"></a>self-attention</h2><p>关于attention有很多应用，在非seq2seq任务中，比如文本分类，或者其他分类问题，会通过self attention来使用attention。这个方法思想很简单，而且计算成本相对来说不高，强烈推荐。具体来说就是：</p>
+<p>Query和Key，value都是相同的，即输入的句子序列信息（可以是词向量lookup后的序列信息，也可以先用cnn或者rnn进行一次序列编码后得到的处理过的序列信息。）后面的步骤与上述的都是一样的：</p>
+<p>1、首先建立句子序列中的每个词 $q_i $与句子其他词k的注意力权重 $a_i$ </p>
+<p>2、然后将注意力权重向量进行softmax归一化，并与句子序列的所有时刻的信息（词向量或者rnn hidden state）进行线性加权。</p>
+<p><img src="/2019/03/31/Attention机制简单总结/v2-f6d107285367fb0f0ff8a0ae8511ad06_b.jpg" alt="img"></p>
+<p>这种方法中，句子中的每个词都能与句子中任意距离的其他词建立一个敏感的关系，可以说在一定程度上提升了之前所说的CNN和RNN对于长距离语义依赖建模能力的上限。下图同样来自：<a href="https://cloud.tencent.com/developer/article/1153079" target="_blank" rel="noopener">“变形金刚”为何强大：从模型到代码全面解析Google Tensor2Tensor系统</a></p>
+<p><img src="/2019/03/31/Attention机制简单总结/v2-381ef4f20cb1315ac21ad4e62adbc97e_b.jpg" alt="img"></p>
+<h2 id="Multi-head-attention"><a href="#Multi-head-attention" class="headerlink" title="Multi-head attention"></a>Multi-head attention</h2><p>下面介绍另一种很有效的attention使用方法，叫multi-head attention。这个是在Attention is all you need这篇论文中被使用。图例如下：</p>
+<p><img src="/2019/03/31/Attention机制简单总结/v2-8649583e36f905d1397958dd75ef19b7_b.png" alt="img"></p>
+<p>公式化表示如下：</p>
+<script type="math/tex; mode=display">
+multihead(Q,K,V)=concat(head_1,head_2,...,head_h)W^o\\ head_i=attention(QW^Q,KW^K,VW^V)</script><p>解释一下，与原来的self-attention的核心原理其实是差不多的，但是由于self attention只从一个角度去学习关注点，可能会有点偏颇。所以，设计h种不同的 $(W_i^Q,W_i^K,W_i^V) $权重矩阵对，然后做基本的attention操作前，将query，key和value分别用上述权重对做线性变换，然后再计算得到h个不同角度的attention权重 $head_i$ ，将这些 $head_i$ <strong>按列拼接</strong>后，再与一个新的权重矩阵 $W^o$ 做线性变换，得到最终的attention输出。</p>
+<p><strong>这里要重点说一个问题，就是关于multihead的每个权重矩阵的维度。做self attention时，若使用Bilineard方式，也有一个权重矩阵W，这个权重矩阵维度一般是与Q、K、V的维度是一样的（通常做法，也有不一样的，但是维度不会低）。但是做multihead时，如果对每个权重矩阵的维度还是设为原始维度，那么计算的成本将会蹭蹭得往上涨。如果硬件性能不太行，极有可能会报OOM问题。（不要问我怎么知道的，惨痛的经历。。。）所以通常的做法是：设三种权重矩阵</strong> $(W_i^Q,W_i^K,W_i^V)$<strong>的维度分别为</strong> $(d^q,d^k,d^v)$ <strong>,原始维度为d,那么</strong> </p>
+<script type="math/tex; mode=display">
+d^q=d^k=d^v=d/h</script><h2 id="only-attention-without-RNN"><a href="#only-attention-without-RNN" class="headerlink" title="only attention without RNN?"></a>only attention without RNN?</h2><p>看到有些文章或者博客对attention is all you need中的transformer模型的解读，可能不太完整，似乎只要用attention，就能秒杀其他任何模型。有些同学可能觉得以前的RNN，CNN都不需要了。其实个人感觉，将RNN与attention结合是能拿到好的结果的。为什么transformer没有使用RNN也能对序列数据有很好的建模效果？因为它用了很多其他的trick，首先就是使用了positional embedding，即将词语在句子中的位置关系也做了embedding，它的目的就是通过与原始词向量和attention结合，构建词序上的关系信息，这样就省去了rnn的网络结构，使得训练成本大大降低。但是它的embedding的初始化是一种带正弦函数和余弦函数的数学先验很强的一个方法，可能对其他任务不是太适用，且调这个参数也是比较难的。因此对于个人学习或者研究来说，可以尝试，但是使用RNN还是一个比较稳定的方法，虽然它的训练还是很比较慢的。。。</p>
+<h2 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h2><p>本文只是简单讲了几个最基础的attention方法，还有很多有效复杂的方法未涉及，比如global attention，local attention，hard attention等等，还有之前做文本分类时了解过的HAN（hierarchical attention network，是先对一个句子里面的词做attention，然后对文章中的句子做attention，相当于做了一个二层结果的层次attention）有兴趣的同学可以直接看论文了解。</p>
+<p>引用：</p>
+<p>cmu nlp公开课</p>
+<p><a href="https://cloud.tencent.com/developer/article/1153079" target="_blank" rel="noopener">“变形金刚”为何强大：从模型到代码全面解析Google Tensor2Tensor系统</a></p>
+
+        </div>
+        <footer class="article-footer">
+            
+
+
+
+    <a data-url="http://yoursite.com/2019/03/31/Attention机制简单总结/" data-id="cjtwy2ybs00007wut8wo13j8j" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+        </footer>
+    </div>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "author": {
+            "@type": "Person",
+            "name": "qiufengyuyi"
+        },
+        "headline": "Attention机制简单总结",
+        "image": "http://yoursite.com/2019/03/31/Attention机制简单总结/v2-b386e5a381ddd4197f9258bf4ac58eb4_b.jpg",
+        "keywords": "attention seq2seq",
+        "genre": "学习笔记",
+        "datePublished": "2019-03-31",
+        "dateCreated": "2019-03-31",
+        "dateModified": "2019-03-31",
+        "url": "http://yoursite.com/2019/03/31/Attention机制简单总结/",
+        "description": "本来是想接CMU的NLP公开课的坑的，但是发现讲attention这块内容的公开课程质量着实不高，教授说话声音模糊。（说实话这门公开课的质量都不太好，对萌新不太友好，不过它比斯坦福的cs224n内容多一点，建议学完cs224n再来看这门课会好一点。）再加上最近做一个headline generation的比赛，要用到的attention的地方很多，因此把之前比赛中以及课程中的attention知识"
+        "wordCount": 157
+    }
+</script>
+
+</article>
+
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
+
+
+                        </div>
+                    </section>
+                    <aside id="sidebar">
+    <a class="sidebar-toggle" title="Expand Sidebar"><i class="toggle icon"></i></a>
+    
+        
+<nav id="article-nav">
+    
+    
+        <a href="/2019/03/31/seq2seq之tensorflow源码解析/" id="article-nav-older" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">上一篇</strong>
+        <p class="article-nav-title">seq2seq之tensorflow源码解析</p>
+        <i class="icon fa fa-chevron-left" id="icon-chevron-left"></i>
+        </a>
+    
+</nav>
+
+    
+    <div class="widgets-container">
+        
+            
+                
+
+            
+                
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/03/31/Attention机制简单总结/" class="title">Attention机制简单总结</a></p>
+                            <p class="item-date"><time datetime="2019-03-31T12:57:43.000Z" itemprop="datePublished">2019-03-31</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/工程经验/">工程经验</a></p>
+                            <p class="item-title"><a href="/2019/03/31/seq2seq之tensorflow源码解析/" class="title">seq2seq之tensorflow源码解析</a></p>
+                            <p class="item-date"><time datetime="2019-03-31T08:23:31.000Z" itemprop="datePublished">2019-03-31</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/比赛总结/">比赛总结</a></p>
+                            <p class="item-title"><a href="/2019/03/29/达观文本分类大赛17名思路总结/" class="title">达观文本分类大赛17名思路总结</a></p>
+                            <p class="item-date"><time datetime="2019-03-29T12:27:27.000Z" itemprop="datePublished">2019-03-29</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/基础算法/">基础算法</a></p>
+                            <p class="item-title"><a href="/2019/03/29/（基础算法复习）之最长回文子串的动态规划解法/" class="title">（基础算法复习）之最长回文子串的动态规划解法</a></p>
+                            <p class="item-date"><time datetime="2019-03-29T12:06:48.000Z" itemprop="datePublished">2019-03-29</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/工程经验/">工程经验</a></p>
+                            <p class="item-title"><a href="/2019/03/24/tensorflow模型线上部署/" class="title">tensorflow模型线上部署</a></p>
+                            <p class="item-date"><time datetime="2019-03-24T12:01:40.000Z" itemprop="datePublished">2019-03-24</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-float">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/RNN/" style="font-size: 15px;">RNN</a> <a href="/tags/attention/" style="font-size: 15px;">attention</a> <a href="/tags/dynamic-programming/" style="font-size: 10px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/seq2seq/" style="font-size: 20px;">seq2seq</a> <a href="/tags/tensorflow/" style="font-size: 15px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.zhihu.com/people/qiu-zhen-yu-87">zhihu</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://github.com/qiufengyuyi">github</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+            
+        
+    </div>
+</aside>
+
+                </div>
+            </div>
+        </div>
+        <footer id="footer">
+    <div class="container">
+        <div class="container-inner">
+            <a id="back-to-top" href="javascript:;"><i class="icon fa fa-angle-up"></i></a>
+            <div class="credit">
+                <h1 class="logo-wrap">
+                    <a href="/" class="logo"></a>
+                </h1>
+                <p>&copy; 2019 qiufengyuyi</p>
+                <p>Powered by <a href="//hexo.io/" target="_blank">Hexo</a>. Theme by <a href="//github.com/ppoffice" target="_blank">PPOffice</a></p>
+            </div>
+            <div class="footer-plugins">
+              
+    
+
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+        
+    
+    <script>
+    var disqus_shortname = 'hexo-theme-hueman';
+    
+    
+    var disqus_url = 'http://yoursite.com/2019/03/31/Attention机制简单总结/';
+    
+    (function() {
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>

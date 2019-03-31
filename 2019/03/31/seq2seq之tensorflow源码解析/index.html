@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+
+    
+
+    
+    <title>seq2seq之tensorflow源码解析 | qiufengyuyi&#39;s blog</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <meta name="keywords" content="seq2seq,tensorflow">
+    
+    <meta name="description" content="很直接的说，这篇文章就是对tensorflow的seq2seq大礼包的源码做了一定程度的解析。个人一直觉得作为一个算法工程师，要经常学习好的开源框架里面的工程代码，这样不仅能够在实现自定义模型时好下手，也能提升自己的工程能力。本文用到的tensorflow框架版本为1.4。目前比较新的版本中的相关代码主体改动有一些，不是很大，所以可以适配着看。 之前的文章中，我已经对seq2seq+attenti">
+<meta name="keywords" content="seq2seq,tensorflow">
+<meta property="og:type" content="article">
+<meta property="og:title" content="seq2seq之tensorflow源码解析">
+<meta property="og:url" content="http://yoursite.com/2019/03/31/seq2seq之tensorflow源码解析/index.html">
+<meta property="og:site_name" content="qiufengyuyi&#39;s blog">
+<meta property="og:description" content="很直接的说，这篇文章就是对tensorflow的seq2seq大礼包的源码做了一定程度的解析。个人一直觉得作为一个算法工程师，要经常学习好的开源框架里面的工程代码，这样不仅能够在实现自定义模型时好下手，也能提升自己的工程能力。本文用到的tensorflow框架版本为1.4。目前比较新的版本中的相关代码主体改动有一些，不是很大，所以可以适配着看。 之前的文章中，我已经对seq2seq+attenti">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/03/31/seq2seq之tensorflow源码解析/v2-df2564dc1c687edbaa6d830869af9f40_b.png">
+<meta property="og:updated_time" content="2019-03-31T08:53:37.611Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="seq2seq之tensorflow源码解析">
+<meta name="twitter:description" content="很直接的说，这篇文章就是对tensorflow的seq2seq大礼包的源码做了一定程度的解析。个人一直觉得作为一个算法工程师，要经常学习好的开源框架里面的工程代码，这样不仅能够在实现自定义模型时好下手，也能提升自己的工程能力。本文用到的tensorflow框架版本为1.4。目前比较新的版本中的相关代码主体改动有一些，不是很大，所以可以适配着看。 之前的文章中，我已经对seq2seq+attenti">
+<meta name="twitter:image" content="http://yoursite.com/2019/03/31/seq2seq之tensorflow源码解析/v2-df2564dc1c687edbaa6d830869af9f40_b.png">
+    
+
+    
+
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/titillium-web/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="wrap">
+        <header id="header">
+    <div id="header-outer" class="outer">
+        <div class="container">
+            <div class="container-inner">
+                <div id="header-title">
+                    <h1 class="logo-wrap">
+                        <a href="/" class="logo"></a>
+                    </h1>
+                    
+                        <h2 class="subtitle-wrap">
+                            <p class="subtitle">backlog of a man&#39;s road to AI learning</p>
+                        </h2>
+                    
+                </div>
+                <div id="header-inner" class="nav-container">
+                    <a id="main-nav-toggle" class="nav-icon fa fa-bars"></a>
+                    <div class="nav-container-inner">
+                        <ul id="main-nav">
+                            
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/">主页</a>
+                                </li>
+                            
+                                        <ul class="main-nav-list"><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/基础算法/">基础算法</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/学习笔记/">学习笔记</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/工程经验/">工程经验</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/比赛总结/">比赛总结</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/论文总结/">论文总结</a></li></ul>
+                                    
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/about/index.html">关于</a>
+                                </li>
+                            
+                        </ul>
+                        <nav id="sub-nav">
+                            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+        <div class="container">
+            <div class="main-body container-inner">
+                <div class="main-body-inner">
+                    <section id="main">
+                        <div class="main-body-header">
+    <h1 class="header">
+    
+    <a class="page-title-link" href="/categories/工程经验/">工程经验</a>
+    </h1>
+</div>
+
+                        <div class="main-body-content">
+                            <article id="post-seq2seq之tensorflow源码解析" class="article article-single article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+        seq2seq之tensorflow源码解析
+        </h1>
+    
+
+            </header>
+        
+        
+            <div class="article-meta">
+                
+    <div class="article-date">
+        <a href="/2019/03/31/seq2seq之tensorflow源码解析/" class="article-date">
+            <time datetime="2019-03-31T08:23:31.000Z" itemprop="datePublished">2019-03-31</time>
+        </a>
+    </div>
+
+		
+
+                
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/seq2seq/">seq2seq</a>, <a class="tag-link" href="/tags/tensorflow/">tensorflow</a>
+    </div>
+
+            </div>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+            <p>很直接的说，这篇文章就是对tensorflow的seq2seq大礼包的源码做了一定程度的解析。个人一直觉得作为一个算法工程师，要经常学习好的开源框架里面的工程代码，这样不仅能够在实现自定义模型时好下手，也能提升自己的工程能力。本文用到的tensorflow框架版本为1.4。目前比较新的版本中的相关代码主体改动有一些，不是很大，所以可以适配着看。</p>
+<p>之前的文章中，我已经对seq2seq+attention模型有过讲解，当时以为自己弄懂了。但是最近通过一些比赛，实际去实现这个模型的时候，才发觉自己并没有真正吃透这个模型，因此下面重新对这个带attention机制的seq2seq模型进行回顾，然后再从tensorflow的seq2seq大礼包源码入手，讲解其中的步骤。为了更好描述，这里以最近参加的标题生成的比赛作为例子。（成绩不太好，就不写总结了）</p>
+<p>假设当前的输入数据，已经对out-of-vocab词用<unk>代替，且对decoder的输入数据增加了<start>标记，对输出数据末尾增加了<end>标记，最后已经padding成等长数据。模型的主要结构为encoder-decoder。规定输入和输出共享一个词典和embedding层。</end></start></unk></p>
+<h2 id="Encoder"><a href="#Encoder" class="headerlink" title="Encoder"></a>Encoder</h2><p>首先是encoder。主要作用是读取并学习document text中的信息。常使用RNN或者带门机制的RNN（GRU或者LSTM）。一般会先对输入进行embedding_lookup，获取对应的embedding_input后，将其输入到RNN的中进行编码。一般的encoder会直接输出最后 $t_n $时刻的状态 $h_{t_n} $，作为decoder的初始 $t_0​$ 状态。这里有个改进点，可以提升整个模型的性能：</p>
+<p>之所以可以将encoder的$h_{t_n}$作为decoder的初始状态，在于经过RNN的学习与传递后，最后一个时刻的状态h已经整合了当前网络对输入文本的分析和总结，因此直接将其作为decoder的初始状态，相对于随机初始化操作，可以加快网络的训练速度，提升模型的性能。那么，我们可以通过其他方式，更好得获得encoder的学习成果，比如将所有t时刻的状态 $h_{t_i} $进行一个average pooling,max pooling，甚至进行一次self attention，最后得到一个综合的输出，作为decoder的初始状态，这样应该能比baseline方法更好。在实践过程中，也确实是这样，其中average pooling的效果最好，而self attention之所以效果较差的原因可能是模型中后面decoder的时候也使用了attention机制，因此这里使用self attention机制对模型效果提升没有很大的效果，相反，还会导致过拟合。且average pooling的效率最高，因此最后我选用了这种方式，来输出decoder的初始状态。</p>
+<p>当前encoder模块有两个比较重要的输出会被后续的decoder使用：</p>
+<p>1、RNN中的每个时刻的状态$h_{t_i}​$</p>
+<p>2、RNN中的每个时刻的输出 $o_{t_i} ​$</p>
+<p>其中，状态$h_{t_i}​$会作为decoder的初始状态被使用到，而输出 o$_{t_i}​$则会在attention机制计算时使用到。这就是该模型的核心之处。下面用图表示，会比较清楚。</p>
+<h2 id="Decoder"><a href="#Decoder" class="headerlink" title="Decoder"></a>Decoder</h2><p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-df2564dc1c687edbaa6d830869af9f40_b.png" alt="img"></p>
+<p>decoder的主体也是使用的RNN，原始输入经过embedding_lookup(<strong>和encoder共享的</strong>)后，输出到RNN中，每个t时刻的状态为 $s_t$ ,其中 $s_0$ 的初始化已经在前面讲过，用encoder的相关信息来初始化。然后就是模型的attention机制的计算和使用。</p>
+<p>这里以Bahdanau Attention计算方式为例。这个attention具体的内容就不讲了，有关attention的内容之前文章有描述，这里直接放上公式：</p>
+<script type="math/tex; mode=display">
+e^t_{i}=v^Ttanh(W_oo_i+W_ss_t+b_{attn})\\ a^t = softmax(e^t)</script><p>其中， $v,W_o,W_s,b_{attn} ​$均为网络权重参数。 $o_i​$ 为参与attention计算的memory，即encoder的output，而 $s_t​$ 为decoder在decoder t时刻的状态。</p>
+<blockquote>
+<p>这里注意，我使用的是Global attention，相对的还有Local attention，由于Local attention计算方面还要考虑上下文windows，为了便于讲解，使用了简单的Global attention机制，且效果也挺好的。</p>
+</blockquote>
+<p>这个公式表明，我每次要计算输出当前时刻的decoder output logits时，需要将当前时刻的decoder 状态整合encoder的output，一起输入到attention公式中计算，最后得到alignment，这个alignment只与当前时刻t的计算有关，一般是不用保存的。当然后续应用coverage机制的时候，需要将这个alignment的历史信息都先保存下来。</p>
+<p>得到alignment后，接下来就是应用 $a^t$ 到encoder的output中，进行加权求和，得到最终的attention context。这个是融合了encoder，decoder输入信息的attention学习成果。</p>
+<script type="math/tex; mode=display">
+o^*_t = \sum_ia^t_io_i</script><p>这个学习成果需要和decoder的中间状态$s_t​$整合在一起（一般使用concat，也有其他整合方法），然后输入到全连接层中，并最终输出logits，或者输出一个softmax概率，即词库中每个词在当前位置的概率分布。最后计算当前时刻的 $loss_t ​$。</p>
+<p>当然，所有时刻的 $loss_t$ 计算完后，需要将loss加起来，并做sequence_mask，将pad位置的loss过滤掉，然后求平均。</p>
+<h2 id="Tensorflow-seq2seq"><a href="#Tensorflow-seq2seq" class="headerlink" title="Tensorflow seq2seq"></a>Tensorflow seq2seq</h2><p>上述过程，看着挺简单的，但是实现起来，其实还是挺麻烦的，因此tensorflow提供了一个方便的大礼包，包含了seq2seq的各个阶段的计算接口，只要按照规则正确调用，就能搭建出模型。但是这个大礼包，虽然很方便，但是要进行进一步的自定义修改，还是挺难的，需要对里面的代码进行长时间的阅读和理解，且tensorflow的文档可以说是比较少了，所以这里把我这段时间阅读代码的总结写下来，方便大家参考。</p>
+<p>大礼包的主要核心部分在decoder侧，encoder侧，还是使用我们熟悉的RNN的接口，一开始我使用的是CudnnGRU，但是由于其不支持dynamic_rnn，无法对pad位置的信息特殊处理，因此实际使用效果虽然速度快，但是效果却没有原始的gru接口好，因此最后还是用了tf.contrib.rnn.GRUCell（貌似tf.contrib这个包会在后续的版本中逐渐舍弃，所以建议还是用另一个接口）。最后说明一下encoder的输出为两部分：</p>
+<p>1、encoder_output,shape=[batch_size,time_steps,rnn_dims]，为rnn的输出</p>
+<p>2、encoder_state,shape=[batch_size,dims]，如果为双向rnn，需要将两个方向的state先拼接，然后再对所有时刻的state沿time_steps做average pooling。最后可能还需要对encoder_state做一层全连接层，使得它与decoder的RNN的dimension一致。</p>
+<p><strong>decoder的编写流程</strong></p>
+<p>下面我先按照正常的流程使用大礼包编写decoder的流程。然后按照代码的执行顺序描述代码的运行机制。inference阶段我使用beamSearch来举例。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">attention_mechanism = tf.contrib.seq2seq.BahdanauAttention(</span><br><span class="line">                    decoder_dim, encoder_output, memory_sequence_length=sum_len, normalize=True)</span><br><span class="line">decoder_cell = tf.contrib.seq2seq.AttentionWrapper(decoder_cell, attention_mechanism,</span><br><span class="line">                                                                   attention_layer_size=atten_size)</span><br><span class="line">initial_state = decoder_cell.zero_state(dtype=tf.float32, batch_size=batch_size)</span><br><span class="line">initial_state = initial_state.clone(cell_state=encoder_state)</span><br><span class="line">#train</span><br><span class="line">helper = tf.contrib.seq2seq.TrainingHelper(decoder_inputs_embedding,title_len, time_major=False)</span><br><span class="line">decoder = tf.contrib.seq2seq.BasicDecoder(decoder_cell, helper, initial_state,output_layer=projection_layer)</span><br><span class="line">outputs, self.train_dec_last_state, _ = tf.contrib.seq2seq.dynamic_decode(decoder, output_time_major=False)</span><br><span class="line">#logits</span><br><span class="line">decoder_output = outputs.rnn_output</span><br></pre></td></tr></table></figure>
+<p>上述是训练过程，下面我们自底向上的顺序来说明这个源码。</p>
+<p><strong>源码执行流程</strong></p>
+<p><strong>由于下面内容比较繁琐，因此先po出流程图，不喜欢看文字的同志可以看这幅图了解一下大概调用流程。该图只是一个整体的流程，很多细节在后面文字描述。</strong></p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-2d5ba4b38c1753bba5491b62ee666c16_b.png" alt="img"></p>
+<p>tensorflow seq2seq大礼包模块简易流程</p>
+<p>1、调用栈的最底层就是我们的<strong>tf.contrib.seq2seq.BahdanauAttention</strong>，它提供了具体的attention计算方法，源码位于<strong>tf.contrib.seq2seq.AttentionWrapper</strong>中。</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-6b9778fa507c2a11be5e7c95eb11d094_b.png" alt="img"></p>
+<p>可以看到它继承了一个基类，这个基类的主要作用是在_<em>init</em>_方法中对memory做了全连接层的计算（如果定义了dense layer的话），得到attention计算中的key和value。而子类则定义了query_layer和memory_layer,以及最后归一化的方法（一般是softmax）</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-7af47dd0b1f65b3936ff663c9d0ef345_b.png" alt="img"></p>
+<p>接下来就是该类的核心方法：</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-824b9c6bb9f379e42842659e117bb585_b.png" alt="img"></p>
+<p>可以看到该方法是一个<strong>call</strong>()方法，熟悉python的同志肯定知道，一个类实现了这个方法，可以让类变得可以向函数方法一样被直接调用。其中，主要核心就是调用了_bahdanau_score方法来进行attention计算。这个方法具体就不贴出来了，就是按照论文中的计算方法。</p>
+<blockquote>
+<p><strong>备注：这里有一个_probability_fn方法，需要输入历史的alignment，这个就是之前说的，有一些attention方法需要使用历史的alignment数据，因此所有attention方法都默认会调用这个_probability_fn方法，只不过在BahdanauAttention中它是不对历史的alignment做任何操作，直接对score做softmax。</strong></p>
+</blockquote>
+<p>2、往上面一层就是<strong>AttentionWrapper</strong>，这个类负责调用整个Attention机制的流程。首先看一下它的类定义：</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-66fd4c9b20b5495a920be1e09f76be61_b.png" alt="img"></p>
+<p>可以看出来，它继承了RNNCell，说明这也是一个具有RNN特性的实现类，且在RNNCell上，封装了Attention的特性。<strong>另外，继承了RNNCell的所有子类，需要实现call()方法，使得在构建网络计算图（build())时，能够调用相关逻辑</strong>。</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-00b3467820a30816f9fc2fd3cc2146ea_b.png" alt="img"></p>
+<p>分析它的<strong>init</strong>方法，可以看到它接收decoder中的RNNCell，之前定义的Attention机制，另外关注一下<strong><em>alignment_history</em></strong>，这个属性就是能控制是否保存历史alignment信息的开关。Attention_layer_size属性则定义了Attention操作后是否需要连接一个全连接层到指定的dimension。</p>
+<p>该类有两个重要的方法，zero_state和call。前者用于初始状态s的封装和生成，后者主要是用于attention计算的主流程。</p>
+<p>下面看一下zero_state方法， 其实该方法最重要的就是返回一个封装过的可用于Attention计算的AttentionState。</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-76c66c8e01806f4c5560d83afcd3e2dc_b.png" alt="img"></p>
+<p>下面看一下这个封装类的结构：</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-8426e2f1a6820937d225c4eb560aa910_b.png" alt="img"></p>
+<p>可以看到，其实该类就是一个namedtuple的数据结构封装。</p>
+<ul>
+<li>cell_state存储的是AttentionWrapper包裹的RnnCell在t-1时刻的状态</li>
+<li>attention存储的是t-1时刻输出的context</li>
+<li>time存储的当前时刻t</li>
+<li>alignments存储的是t-1时刻输出的alignment</li>
+<li>alignment_history存储的是所有时刻的历史alignment信息</li>
+</ul>
+<p>AttentionWrapperState中还有一个clone方法，在我们的模型图中也有调用的地方：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">initial_state = initial_state.clone(cell_state=encoder_state)</span><br></pre></td></tr></table></figure>
+<p>其实就是对我们初始化的AttentionWrapperState对象，将cell_state的属性值对替换为从encoder输出的state（经过average pooling）。</p>
+<p>下面是AttentionWrapper类的核心方法：call，该方法定义了attention操作的主流程。</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-dafae74dd04d9e698624f4eca38b9dd7_b.png" alt="img"></p>
+<p>该方法的参数为inputs：即decoder中的当前时刻t的输入，而state则是封装过的AttentionWrapperState。下面对关键代码进行注释：</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-e031ef5a8afc387b7022c9b297ceb5ec_b.png" alt="img"></p>
+<p>上述代码的主要操作是将当前时刻input和前一时刻的context拼接后，输入到decoder中的RNN层中做处理。最后输出output，以及下一个时刻的中间状态。</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-b1d89418ca1718a657b36305e9aa7d2d_b.png" alt="img"></p>
+<p>主要核心是方法_compute_attention方法，该方法是attention计算的入口。</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-445944495c7798ed7eda8996d9d6544e_b.png" alt="img"></p>
+<p>得到attention的context和alignment信息后，就是返回需要的信息，其中比较重要的是返回的当前时刻的中间状态为AttentionWrapperState，这个中间状态会被下一时刻t+1的计算使用。</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-a24e0de4b2035b7100c908c1cdf8ee51_b.png" alt="img"></p>
+<p>需要注意的是最后返回的时候，有一个flag，_output_attention,这个是控制当前是否返回attention的信息还是rnn的output信息，对于BahdanauAttention style来说，是返回cell_output.</p>
+<p>3、再往上一层，找到<strong>tf.contrib.seq2seq.BasicDecoder</strong>，这个类主要作用是将上述的所有操作流程按照decoder的序列长度依次按顺序执行。</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-3a7594c2d220fa113e62df205d09709c_b.png" alt="img"></p>
+<p>看到它继承了Decoder这个类。它的核心方法为step方法，下面就basicDecoder的step方法具体描述：</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-efd510f4f04cbd526acd974477bbf5c8_b.png" alt="img"></p>
+<p>它的参数为time：当前时刻，inputs:decoder的输入，state：前一时刻传递而来的状态。下面是具体的代码流程：</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-3d28bafd3d9523b6d8665fd45f9286f6_b.png" alt="img"></p>
+<p>首先这里的_cell，是我们之前定义的AttentioWrapper，因为它是继承了RnnCell，因此具有RnnCell的特性。这里相当于是调用做了前两个大模块的操作。返回了当前时刻的output,state.</p>
+<p>那么在训练阶段，模型是如何推动上面的计算步骤一步一步到最后的呢？下面要用到另一个有用的大礼包的类：<strong>tf.contrib.seq2seq.TrainingHelper</strong></p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-422401e54edb835ea07d6c4dc88d8a66_b.png" alt="img"></p>
+<p>上图中的helper就是要用的帮助训练的类（顾名思义）。这里调用了两个方法，第一个是sample，即根据当前时刻的output，获取当前时刻词分布中概率最大的那个词id。</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-24d4058399f6b3c68665c0fd9de2aaba_b.png" alt="img"></p>
+<p>第二个是next_inputs方法，主要是根据当前处理的时刻t，读取下一个时刻的输入，用于下一时刻的计算，并返回序列处理结束标志。</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-70ae8c50441a104220db97a583d7ae99_b.png" alt="img"></p>
+<p>step的最后一个步骤就是返回处理的结果，这里它又封装了一个特殊的数据类型：BasicDecoderOutput</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-8167f3050d5a6b9e9f46bf24cf584f9e_b.png" alt="img"></p>
+<p>BasicDecoderOutput定义如下：</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-a68251a3bb09a781174299437136d91e_b.png" alt="img"></p>
+<p>其实根AttentioWrapperState相似，也是一个封装了的namedtuple，主要存储的是rnn_output,以及最后得到的词的id。这样封装的好处是，rnn_output可以用于计算loss时直接使用，而sample_id则是在inference阶段可以用来输出结果。</p>
+<p>4、最高一层是大礼包中最重要的一个部分，上述basicDecoder的step方法，如果没有任何上层接口驱动，也是无法完成。因此<strong>tf.contrib.seq2seq.dynamic_decode</strong>就是用于完成这项工作的。</p>
+<p>与其他接口不同，这个是一个可直接调用的方法，其方法定义如下：</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-98ddfad43011e8a8f9c83a48c770e91c_b.png" alt="img"></p>
+<p>其中decoder就是之前定义的basicDecoder.<em>impute_finished</em> 属性表示模型在梯度传递的时候会忽略最后标记为finished的位置。这个一般设为True，能够保证梯度正确传递。而maximum_iterations为我们自定义的decoding最大长度，可以比设置的title_len大或者小，主要看调参。swap_memory表示在执行while循环是否启用GPU-CPU内存交换。</p>
+<p>下面只列出该放里面的核心步骤：</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-f23be413b5f0592f4c552133c83db423_b.png" alt="img"></p>
+<p>首先这是tensorflow中的循环操作。它的循环条件condition为：</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-ae740b2726497eef8191bc44b2aa131c_b.png" alt="img"></p>
+<p>他会接受basicDecoder返回的finished标志，并判断当前是否已经处理结束。</p>
+<p>然后是循环的body部分，也只放上核心部分：</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-835b18b48edcbc7c8c91b26f00dc4ba1_b.png" alt="img"></p>
+<p>即调用basicDecoder的step方法来执行decoding，这样就与之前讲的联系上了。</p>
+<h2 id="Inference阶段"><a href="#Inference阶段" class="headerlink" title="Inference阶段"></a>Inference阶段</h2><p>其实train阶段和inference的不同点很简单，在于inference阶段没有decoder的input，因此每个时刻的state计算都需要输入前一个时刻的计算结果。这里以BeamSearch举例。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">tiled_encoder_output = tf.contrib.seq2seq.tile_batch(self.encoder_output,multiplier=self.cfg.beam_width))</span><br><span class="line">tiled_encoder_final_state = tf.contrib.seq2seq.tile_batch(encoder_state,multiplier=self.cfg.beam_width)</span><br><span class="line">tiled_seq_len = tf.contrib.seq2seq.tile_batch(self.sum_len, multiplier=self.beam_width)</span><br><span class="line">attention_mechanism = tf.contrib.seq2seq.BahdanauAttention(</span><br><span class="line">                    self.cfg.lstm_units, tiled_encoder_output, memory_sequence_length=tiled_seq_len, normalize=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">decoder_cell = tf.contrib.seq2seq.AttentionWrapper(decoder_cell, attention_mechanism,</span><br><span class="line">                                                                   attention_layer_size=self.cfg.lstm_units * <span class="number">2</span>)</span><br><span class="line">initial_state = decoder_cell.zero_state(dtype=tf.float32, batch_size=self.batch_size * self.cfg.beam_width)</span><br><span class="line">initial_state = initial_state.clone(cell_state=tiled_encoder_final_state)</span><br><span class="line">decoder = tf.contrib.seq2seq.BeamSearchDecoder(</span><br><span class="line">                    cell=decoder_cell,</span><br><span class="line">                    embedding=self.embedding_init,</span><br><span class="line">                    start_tokens=tf.fill([self.batch_size], tf.constant(<span class="number">2</span>)),</span><br><span class="line">                    end_token=tf.constant(<span class="number">3</span>),</span><br><span class="line">                    initial_state=initial_state,</span><br><span class="line">                    beam_width=self.beam_width,</span><br><span class="line">                    output_layer=self.projection_layer</span><br><span class="line">                )</span><br><span class="line">outputs,_,_ = outputs, _, _ = tf.contrib.seq2seq.dynamic_decode(</span><br><span class="line">                    decoder, output_time_major=false, maximum_iterations=self.decoder_max_iter, scope=decoder_scope)</span><br><span class="line">self.prediction = outputs.predicted_ids</span><br></pre></td></tr></table></figure>
+<p>整个inference流程与train类似，唯一不同的地方在于beamSearch算法本身，需要将所有的输入和中间状态复制beam_size份，用于beam的搜索。而主要的区分点在于使用的decoder不同，这里我就着重讲一下<strong>tf.contrib.seq2seq.BeamSearchDecoder。</strong></p>
+<p>主要还是贴出其step方法中的核心过程：</p>
+<blockquote>
+<p><strong>beamSearch的方法中，会存在很多merge_beam,split_beam等改变tensor的shape操作，方便一些操作的计算，这里就不仔细讲了，只要记住merge一般和split应是成对出现</strong>。</p>
+</blockquote>
+<p>首先当然是调用AttentionWrapper，来计算输出当前时刻的cell_output,以及下一个时刻的state。</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-bc9012b81d4e1c6746855e9747a9f200_b.png" alt="img"></p>
+<p>然后就是另一个核心方法调用_beam_search_step：</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-e6b49330f2ee11e528ada3080a8a0825_b.png" alt="img"></p>
+<p>这个方法主要是执行Beam搜索的流程，核心的模块流程如下：</p>
+<p>先计算当前时刻为止的所有候选序列计算概率值之和。</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-e5ec51b870fe9486bd9e509f03a4094d_b.png" alt="img"></p>
+<p>然后计算每个beam的分数：</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-65be925886119b756c78db6e666fb823_b.png" alt="img"></p>
+<p>然后是根据指定的beam_size,使用top_k运算，得到最合适的beam_size候选。</p>
+<p><img src="/2019/03/31/seq2seq之tensorflow源码解析/v2-384fcbe3320ef40f4872ab1c2d1f0930_b.png" alt="img"></p>
+<p>最后就是返回一些封装的结果，就不具体列出了。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>其实还有很多源码并没放到上面分析，鉴于篇幅问题，写的太多，可能看得也越困难。总体来说，通过这次的比赛实践，还是对seq2seq模型有一定的深入理解，无论是理论上还是工程实现上，tensorflow的大礼包的实现确实挺漂亮，一环扣一环，希望能吃透它的工程思维，融入到自己的实践中。</p>
+
+        </div>
+        <footer class="article-footer">
+            
+
+
+
+    <a data-url="http://yoursite.com/2019/03/31/seq2seq之tensorflow源码解析/" data-id="cjtwy2yh6000x7wutd0old8g1" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+        </footer>
+    </div>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "author": {
+            "@type": "Person",
+            "name": "qiufengyuyi"
+        },
+        "headline": "seq2seq之tensorflow源码解析",
+        "image": "http://yoursite.com/2019/03/31/seq2seq之tensorflow源码解析/v2-df2564dc1c687edbaa6d830869af9f40_b.png",
+        "keywords": "seq2seq tensorflow",
+        "genre": "工程经验",
+        "datePublished": "2019-03-31",
+        "dateCreated": "2019-03-31",
+        "dateModified": "2019-03-31",
+        "url": "http://yoursite.com/2019/03/31/seq2seq之tensorflow源码解析/",
+        "description": "很直接的说，这篇文章就是对tensorflow的seq2seq大礼包的源码做了一定程度的解析。个人一直觉得作为一个算法工程师，要经常学习好的开源框架里面的工程代码，这样不仅能够在实现自定义模型时好下手，也能提升自己的工程能力。本文用到的tensorflow框架版本为1.4。目前比较新的版本中的相关代码主体改动有一些，不是很大，所以可以适配着看。
+之前的文章中，我已经对seq2seq+attenti"
+        "wordCount": 649
+    }
+</script>
+
+</article>
+
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
+
+
+                        </div>
+                    </section>
+                    <aside id="sidebar">
+    <a class="sidebar-toggle" title="Expand Sidebar"><i class="toggle icon"></i></a>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2019/03/31/Attention机制简单总结/" id="article-nav-newer" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">下一篇</strong>
+        <p class="article-nav-title">
+        
+            Attention机制简单总结
+        
+        </p>
+        <i class="icon fa fa-chevron-right" id="icon-chevron-right"></i>
+    </a>
+    
+    
+        <a href="/2019/03/29/达观文本分类大赛17名思路总结/" id="article-nav-older" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">上一篇</strong>
+        <p class="article-nav-title">达观文本分类大赛17名思路总结</p>
+        <i class="icon fa fa-chevron-left" id="icon-chevron-left"></i>
+        </a>
+    
+</nav>
+
+    
+    <div class="widgets-container">
+        
+            
+                
+
+            
+                
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/03/31/Attention机制简单总结/" class="title">Attention机制简单总结</a></p>
+                            <p class="item-date"><time datetime="2019-03-31T12:57:43.000Z" itemprop="datePublished">2019-03-31</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/工程经验/">工程经验</a></p>
+                            <p class="item-title"><a href="/2019/03/31/seq2seq之tensorflow源码解析/" class="title">seq2seq之tensorflow源码解析</a></p>
+                            <p class="item-date"><time datetime="2019-03-31T08:23:31.000Z" itemprop="datePublished">2019-03-31</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/比赛总结/">比赛总结</a></p>
+                            <p class="item-title"><a href="/2019/03/29/达观文本分类大赛17名思路总结/" class="title">达观文本分类大赛17名思路总结</a></p>
+                            <p class="item-date"><time datetime="2019-03-29T12:27:27.000Z" itemprop="datePublished">2019-03-29</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/基础算法/">基础算法</a></p>
+                            <p class="item-title"><a href="/2019/03/29/（基础算法复习）之最长回文子串的动态规划解法/" class="title">（基础算法复习）之最长回文子串的动态规划解法</a></p>
+                            <p class="item-date"><time datetime="2019-03-29T12:06:48.000Z" itemprop="datePublished">2019-03-29</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/工程经验/">工程经验</a></p>
+                            <p class="item-title"><a href="/2019/03/24/tensorflow模型线上部署/" class="title">tensorflow模型线上部署</a></p>
+                            <p class="item-date"><time datetime="2019-03-24T12:01:40.000Z" itemprop="datePublished">2019-03-24</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-float">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/RNN/" style="font-size: 15px;">RNN</a> <a href="/tags/attention/" style="font-size: 15px;">attention</a> <a href="/tags/dynamic-programming/" style="font-size: 10px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/seq2seq/" style="font-size: 20px;">seq2seq</a> <a href="/tags/tensorflow/" style="font-size: 15px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.zhihu.com/people/qiu-zhen-yu-87">zhihu</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://github.com/qiufengyuyi">github</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+            
+        
+    </div>
+</aside>
+
+                </div>
+            </div>
+        </div>
+        <footer id="footer">
+    <div class="container">
+        <div class="container-inner">
+            <a id="back-to-top" href="javascript:;"><i class="icon fa fa-angle-up"></i></a>
+            <div class="credit">
+                <h1 class="logo-wrap">
+                    <a href="/" class="logo"></a>
+                </h1>
+                <p>&copy; 2019 qiufengyuyi</p>
+                <p>Powered by <a href="//hexo.io/" target="_blank">Hexo</a>. Theme by <a href="//github.com/ppoffice" target="_blank">PPOffice</a></p>
+            </div>
+            <div class="footer-plugins">
+              
+    
+
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+        
+    
+    <script>
+    var disqus_shortname = 'hexo-theme-hueman';
+    
+    
+    var disqus_url = 'http://yoursite.com/2019/03/31/seq2seq之tensorflow源码解析/';
+    
+    (function() {
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>
