@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+
+    
+
+    
+    <title>拍拍贷文本相似度计算大赛总结 | qiufengyuyi&#39;s blog</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <meta name="keywords" content="RNN,attention,paraphrase identification">
+    
+    <meta name="description" content="18年6月下旬到7月上旬期间搞了个拍拍贷的NLP比赛，做的是文本相似度计算，本来是准备做蚂蚁金服的文本相似度比赛，不过它需要的开发环境比较麻烦，后来看拍拍贷的这个比赛只需要上传结果，而且词向量都帮你训练好了，于是就参加了拍拍贷的。最终成绩勉强进复赛，比不上排在前面的大佬。说是总结，其实没有什么很好的经验，毕竟名次很低，不过一来通过这次比赛，我熟悉了pytorch这个框架，趟了一些坑，二来也是对这个">
+<meta name="keywords" content="RNN,attention,paraphrase identification">
+<meta property="og:type" content="article">
+<meta property="og:title" content="拍拍贷文本相似度计算大赛总结">
+<meta property="og:url" content="http://yoursite.com/2019/04/01/拍拍贷文本相似度计算大赛总结/index.html">
+<meta property="og:site_name" content="qiufengyuyi&#39;s blog">
+<meta property="og:description" content="18年6月下旬到7月上旬期间搞了个拍拍贷的NLP比赛，做的是文本相似度计算，本来是准备做蚂蚁金服的文本相似度比赛，不过它需要的开发环境比较麻烦，后来看拍拍贷的这个比赛只需要上传结果，而且词向量都帮你训练好了，于是就参加了拍拍贷的。最终成绩勉强进复赛，比不上排在前面的大佬。说是总结，其实没有什么很好的经验，毕竟名次很低，不过一来通过这次比赛，我熟悉了pytorch这个框架，趟了一些坑，二来也是对这个">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/04/01/拍拍贷文本相似度计算大赛总结/v2-a473f84bfea188c2cd014feb10ca1e3c_b.jpg">
+<meta property="og:updated_time" content="2019-04-01T12:39:38.053Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="拍拍贷文本相似度计算大赛总结">
+<meta name="twitter:description" content="18年6月下旬到7月上旬期间搞了个拍拍贷的NLP比赛，做的是文本相似度计算，本来是准备做蚂蚁金服的文本相似度比赛，不过它需要的开发环境比较麻烦，后来看拍拍贷的这个比赛只需要上传结果，而且词向量都帮你训练好了，于是就参加了拍拍贷的。最终成绩勉强进复赛，比不上排在前面的大佬。说是总结，其实没有什么很好的经验，毕竟名次很低，不过一来通过这次比赛，我熟悉了pytorch这个框架，趟了一些坑，二来也是对这个">
+<meta name="twitter:image" content="http://yoursite.com/2019/04/01/拍拍贷文本相似度计算大赛总结/v2-a473f84bfea188c2cd014feb10ca1e3c_b.jpg">
+    
+
+    
+
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/titillium-web/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="wrap">
+        <header id="header">
+    <div id="header-outer" class="outer">
+        <div class="container">
+            <div class="container-inner">
+                <div id="header-title">
+                    <h1 class="logo-wrap">
+                        <a href="/" class="logo"></a>
+                    </h1>
+                    
+                        <h2 class="subtitle-wrap">
+                            <p class="subtitle">backlog of a man&#39;s road to AI learning</p>
+                        </h2>
+                    
+                </div>
+                <div id="header-inner" class="nav-container">
+                    <a id="main-nav-toggle" class="nav-icon fa fa-bars"></a>
+                    <div class="nav-container-inner">
+                        <ul id="main-nav">
+                            
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/">主页</a>
+                                </li>
+                            
+                                        <ul class="main-nav-list"><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/基础算法/">基础算法</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/学习笔记/">学习笔记</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/工程经验/">工程经验</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/比赛总结/">比赛总结</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/论文总结/">论文总结</a></li></ul>
+                                    
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/about/index.html">关于</a>
+                                </li>
+                            
+                        </ul>
+                        <nav id="sub-nav">
+                            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+        <div class="container">
+            <div class="main-body container-inner">
+                <div class="main-body-inner">
+                    <section id="main">
+                        <div class="main-body-header">
+    <h1 class="header">
+    
+    <a class="page-title-link" href="/categories/比赛总结/">比赛总结</a>
+    </h1>
+</div>
+
+                        <div class="main-body-content">
+                            <article id="post-拍拍贷文本相似度计算大赛总结" class="article article-single article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+        拍拍贷文本相似度计算大赛总结
+        </h1>
+    
+
+            </header>
+        
+        
+            <div class="article-meta">
+                
+    <div class="article-date">
+        <a href="/2019/04/01/拍拍贷文本相似度计算大赛总结/" class="article-date">
+            <time datetime="2019-04-01T12:32:40.000Z" itemprop="datePublished">2019-04-01</time>
+        </a>
+    </div>
+
+		
+
+                
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/RNN/">RNN</a>, <a class="tag-link" href="/tags/attention/">attention</a>, <a class="tag-link" href="/tags/paraphrase-identification/">paraphrase identification</a>
+    </div>
+
+            </div>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+            <p>18年6月下旬到7月上旬期间搞了个拍拍贷的NLP比赛，做的是文本相似度计算，本来是准备做蚂蚁金服的文本相似度比赛，不过它需要的开发环境比较麻烦，后来看拍拍贷的这个比赛只需要上传结果，而且词向量都帮你训练好了，于是就参加了拍拍贷的。最终成绩勉强进复赛，比不上排在前面的大佬。说是总结，其实没有什么很好的经验，毕竟名次很低，不过一来通过这次比赛，我熟悉了pytorch这个框架，趟了一些坑，二来也是对这个NLP任务有了一定的经验，所以在这边记录一下，如果对其他人有帮助，那就最好，如果我的总结有不对的地方，还请指正。</p>
+<h2 id="任务描述"><a href="#任务描述" class="headerlink" title="任务描述"></a>任务描述</h2><p>首先，本次NLP任务个人感觉应该是偏<strong>paragraph idenfication</strong>的，即两个文本表示虽然表示形式不同，但是表达内容是相同的。其实文本相似度计算是一个很大的分支，除了刚刚提到的之外，还有<strong>文本蕴含（Textual Entailment）</strong>，即AB两种表达，通过A表达能否推断出B表达的真实性，举个例子就是：A：支付宝不能在超市付款，B：支付宝不能线下付款。这个B真实的例子，也有B是不真实或者B不确定是不是真实的情况。另外还有一种为<strong>relatedness</strong>，这个感觉与paragraph idenfication类似，但是更加广义，通常它是对两个文本评相似度的程度，并不是非黑即白。</p>
+<p>关于文本相似度的相关知识我推荐一个文章，是我很佩服的一个大佬<a href="https://www.zhihu.com/people/tsxiyao" target="_blank" rel="noopener">夕小瑶Elsa</a>，感觉很有实际的借鉴意义：<a href="https://zhuanlan.zhihu.com/p/38009381" target="_blank" rel="noopener">如何匹配两段文本的语义？</a></p>
+<h2 id="Traditional-model"><a href="#Traditional-model" class="headerlink" title="Traditional model"></a>Traditional model</h2><p>这次比赛参加晚了，所以传统特征+xgboost虽然搞了几天，但是没有仔细搞，而且这个比赛的数据是脱敏的，所以一些文本预处理、语法、句法相关处理就没办法做了，所以主要是借鉴了以前参加quora的大神的一些特征提取方法和思路。大致分为以下几点：</p>
+<p>1、从n-gram角度计算两个句子之间的各种相似度计算，包括jaccard，SimHash+海明距离等等，其中n-gram对词和字两个方向都进行计算，我取了1-4个gram。jaccard相似度计算很简单，公式如下：</p>
+<p><img src="/2019/04/01/拍拍贷文本相似度计算大赛总结/v2-a473f84bfea188c2cd014feb10ca1e3c_b.jpg" alt="img"></p>
+<p>其实就是计算两个句子之间的重复程度，A,B是两个集合，在这个任务中，可以将AB看做是两个用n-gram组成的词、词组集合。实际使用的时候，还会增加J分别被A和B长度归一化后的重复比率作为新特征。</p>
+<p>而SimHash是一种将一段文本hash成固定长度，然后用于计算文本间相似度的方法，其原理简单说就是对文本中的每个特征，也就是词或者ngram词组，用传统hash方法分别生成一个唯一的签名如固定8位长度的二进制码10010000，其中1表示该特征的权重在该位上为正，0则为负，权重一般是某个词的次数，也可以是tfidf值，比如10010000对应词a权重为w，对应的表示为w-w-ww-w-w-w-w,然后将所有特征的权重按照签名后的表示按位相加，最后得到一个和向量x，该向量维数与hash的签名二进制码长度一致，假设某一维上的数值大于0，则置为1，否则置为0，最后得到的向量表示可以代表一段文本。如图：</p>
+<p><img src="/2019/04/01/拍拍贷文本相似度计算大赛总结/v2-d57c75a553fc5a895981fe49a772c58f_b.jpg" alt="img"></p>
+<p>其实很好理解，就是对一篇文档中的每个基本元素用一个唯一的随机hash字串表示，然后将这些字串通过字串的权重进行加权求和，就得到一段文本的表示。</p>
+<p>之后使用海明距离计算，即两个码字的对应比特取值不同的比特数。这个是很简单的距离计算了。</p>
+<p>2、一些NLP方面的传统特征，如wmd，欧式距离、余弦相似度、最长字串匹配、曼哈顿距离、皮尔逊相关系数，还有各种统计学上的相关性计算。这里其实重点在于如果将一个句子向量化。我用了三种方法：直接将句子的所有词向量做平均，得到句子的向量表示；通过计算每个词的tfidf值，然后将词向量做加权平均，权重为词对应的tfidf值；训练doc2vec,得到句子的向量表示。不过由于是脱敏数据，doc2vec是需要段落信息的，所以这个任务下训练doc2vec可能效果不明显。</p>
+<p>3、fuzzywuzzy特征，这是一个开源的工具包，里面定义了对文本进行模糊匹配的一些api。</p>
+<p>4、图特征，这类特征我研究时间最少，但是个人感觉应该是很重要的，因为句子的相似度计算，可以看成是两个句子作为图的节点，在领域上的接近程度。我主要是使用了pagerank算法，构建了句子的有向图，每个句子都有一个权重，表示这个句子的重要性程度，一般重要性程度越高，表示有越多的节点和它是相似的。最后将节点权重作为一个句子的一个特征。另外一个我没有做的就是，句子相似度的传递性，感觉这也是可以通过图来分析，即AB相似，BC相似，是否可以推出AC相似。而AB不相似，BC相似，是否可以推出AC不相似，等等。</p>
+<p>5词共现矩阵。之前讲词向量和glove时，介绍过词共现矩阵也可以用于NLP任务。因此这边就使用了，主要是通过两个角度，一个是原始的词共现矩阵，每个句子都可以用词共现矩阵中的向量来表示；另外，由于原始词共现矩阵是一个稀疏矩阵，所以一般都会对该矩阵做SVD降维，然后再处理。</p>
+<p>6、这个是我来不及做的，就是通过topic model，对文本建立主题模型或者隐语义分析。这个后续我会专门开辟一个坑来讲LDA。因为LDA个人感觉在传统方法中还是很好的，但是它的原理有点复杂，牵扯到各种统计分布、采样方法、EM等知识，所以对于不擅长统计概率学的我来说还是有点挑战性的。</p>
+<p>综上，最后通过一些特征筛选方法，如皮尔逊相关系数、以及ensemble方法中的特征重要性计算，最后筛选出50多个特征，用xgboost训练，大概能得到0.25左右的分数。</p>
+<blockquote>
+<p>这里吐槽一下，这次比赛基本没有用cv或者stacking，因为电脑硬件实在跟不上。跑一次简单的留一法，都要1-2个小时，唉，没有服务器搞比赛真是伤不起。</p>
+</blockquote>
+<h2 id="Deep-model"><a href="#Deep-model" class="headerlink" title="Deep model"></a>Deep model</h2><p>接下来就是时间花费最多的deep model。这次做比赛，我有一个目的就是借此机会学习pytorch这个框架。因为相对于tensorflow，感觉它更加方便，最重要的就是可以直接debug！！！而且python-style的风格实在是用的很爽。安利一波。不过，用的时候也有各种坑，好在它的社区好不错，上面回答问题的同学都很nice。</p>
+<p>这次我主要是参考了<strong>COLING 2018的 Best Reproduction Paper，《</strong>Neural Network Models for Paraphrase Identification, Semantic Textual Similarity, Natural Language Inference, and Question Answering》，这篇文章可以说是将最近几年的一些state-of-art的model都罗列了出来，并做了实现和分析。因此我实现的模型就在这篇论文里了。</p>
+<p>先简单介绍一下deep model在paraphrase identification中的大致分类。一般有两种实现方式。</p>
+<p>1、<strong>一种是基于sentence encoding方式</strong>，即重点在于使用一些方法将句子进行编码，争取在编码后最大获取句子的各种信息，然后对两个待比较的句子编码做一些距离计算，如欧式距离、余弦相似度、曼哈顿距离，最后接几层全连接层，得到分类的输出，有的模型就是将两个句子编码直接接全连接层。这种方式虽然简单粗暴，但是效果还是不错的，我就是使用了这种方式，最好的有0.21的分数。这种方式的最大弊端在于训练速度实在是太慢了，因为它的参数量太多了，基本上一次训练都要2-3个小时。</p>
+<p>2、<strong>另一种是基于交互的方式</strong>，即会对两个句子做一些词对齐的机制，比如用attention机制或者其他方法，然后将句子之间的交互信息拼接起来。这种方法的优势在于它的参数量实在是不多，对于我这种硬件不行的参赛者可以说是很友好了，基本上训练一次，只需要40-50分钟。效果也不错，大概在0.23左右。我觉得这种方式应该是潜力最大的，但是我后来实在是没时间调参了。希望有大佬能够给出一些参数建议，也让我体验一下单模型0.17+的快感。</p>
+<p><strong>基于交互的model</strong></p>
+<p>基于交互的model，重点在于如何将两个句子进行“交互”。我主要参考了DecAtt模型，即decomposable attention model，论文见：<a href="https://arxiv.org/abs/1606.01933" target="_blank" rel="noopener">https://arxiv.org/abs/1606.01933</a></p>
+<p>它的交互分为三个步骤，如图所示：</p>
+<p><img src="/2019/04/01/拍拍贷文本相似度计算大赛总结/v2-40c784148eccf774a2bdbc928682b728_b.jpg" alt="img"></p>
+<p>attend：主要是对两个句子进行对齐处理。具体做法是先对两个句子分别使用一个全连接层+relu做线性和非线性变换，然后将变换后的两个向量做矩阵乘法（将一个向量转置后乘），得到一个n*m的矩阵（其中n和m分别为两个句子的长度）。这个矩阵就是一个未归一化的attention权重，然后分别对两个句子做权重的加权平均得到两个对齐后的句子表示。假设原句对为<a,b>，得到的对齐表示为<bi,ai></bi,ai></a,b></p>
+<p>compare：将上面得到的两个对齐句子a,b表示分别与bi,ai做比较，具体比较方式为接一个全连接层，最后得到句子的比较表示va,vb</p>
+<p>aggerate:对va和vb分别沿这时间维度求和，然后将两个句子表示做拼接，送到后面的分类层。</p>
+<p>可以看到这个模型使用了attention机制，在参数量很小的情况下，就能获取两个句子之间的交互关系信息。可以说是把attention机制的优势发挥出来了。</p>
+<p><strong>具体实现时，有一个坑要重点说明，</strong>就是pytorch对padding后在句子的处理比较麻烦。即在NLP任务中，不同样本数据文本长度会不一样，而做minibatch训练时，需要一次送入多个样本数据，因此需要将一个batch中的所有文本先对齐到同一长度，因此会先做pad操作，即补0.但是在计算attention时，尤其是做attention加权平均时，补0的那部分信息不能作为平均的分母，即归一化分母应当只算原本句子的那些词。经过多方查阅，我最后实现了以下的方法，来解决这个问题：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">attention_softmax3d</span><span class="params">(self, raw_attentions,lengths)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        :param raw_attentions: shape:batch_size,maxlen1,maxlen2</span></span><br><span class="line"><span class="string">        :param lengths:句子原始长度 len2</span></span><br><span class="line"><span class="string">        :return:</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        <span class="comment"># 待加权句子pad后的长度</span></span><br><span class="line">        max_len = raw_attentions.size(<span class="number">-1</span>)</span><br><span class="line">        <span class="comment"># 创建一个1*maxlen的数列tensor，范围从0到maxlen-1</span></span><br><span class="line">        idxes = torch.arange(<span class="number">0</span>,max_len,out=torch.LongTensor(max_len)).unsqueeze(<span class="number">0</span>).cuda()</span><br><span class="line">        <span class="comment"># 创建mask，batch_size,1,maxlen,其中句子原始长度len以内的地方都置为1，其他位置都置为0</span></span><br><span class="line">        mask = Variable((idxes&lt;lengths.unsqueeze(<span class="number">1</span>)).float()).unsqueeze(<span class="number">1</span>)</span><br><span class="line">        max_logits,_ = raw_attentions.max(dim=<span class="number">2</span>, keepdim=<span class="literal">True</span>)</span><br><span class="line">        <span class="comment"># 算归一化权重时，乘以mask，使得pad为0的位置都不会被计算在内</span></span><br><span class="line">        masked_logits_exp = torch.exp(raw_attentions-max_logits) * mask</span><br><span class="line">        logtis_sum = torch.sum(masked_logits_exp,dim=<span class="number">-1</span>,keepdim=<span class="literal">True</span>)</span><br><span class="line">        <span class="comment"># out = nn.functional.softmax(raw_attentions, dim=1)</span></span><br><span class="line">        out = masked_logits_exp/logtis_sum</span><br><span class="line">        <span class="keyword">return</span> out</span><br></pre></td></tr></table></figure>
+<p><strong>尝试改进点</strong>：主要是对几个全连接层的单元数调参，还有就是在句子input representation层上，在embedding_lookup之后，接一个双向rnn层（BIlstm）。添加rnn层，虽然在一定程度上提高了local分数，但是在线上分数却降低了，推测应该是过拟合了，由于加了lstm之后训练速度明显变慢，时间不够，所以没有继续调下去。</p>
+<p><strong>基于encoding的model</strong></p>
+<p>基于encoding的model，核心在于如何使用一些方法捕捉每个句子的核心信息特征，然后将这些特征加到句子表示中，最后通过一些距离、相似度计算，来得到分类依据。</p>
+<p>一开始，我参考的模型是SSE，即Shortcut-stacked BiLSTM，原始论文：<a href="https://arxiv.org/abs/1708.02312v2" target="_blank" rel="noopener">[1708.02312v2] Shortcut-Stacked Sentence Encoders for Multi-Domain Inference</a></p>
+<p>它的结构如下：</p>
+<p><img src="/2019/04/01/拍拍贷文本相似度计算大赛总结/v2-e6e885760548072c02e4938a71c38a96_b.jpg" alt="img"></p>
+<p>核心主要有三个：</p>
+<p>1、使用了三层BiLstm，使用了残差网络的思想，会将之前原始的句子表示以及前面lstm层的输出做拼接，作为下一层lstm的输入。这样做，能够最大化三层lstm的学习能力，防止网络在层数增加到一定程度时，无法提升性能。</p>
+<p>2、对lstm的最终输出做了over time max pooling，我试了average pooling，效果还是没有max pooling好。</p>
+<p>3、最后得到的两个句子的encoding输出v1,v2，然后计算v1、v2的各种距离相似度，个人感觉|v1-v2|和v1*v2很有用，首先他们对于两个句子的比较与被比较关系是相同的，即AB和BA的结果是一样的，这也符合常理，因为在本任务中，AB相似度本身应该是没有方向性的。后面陆续试了余弦相似度，欧式距离，效果均没有明显提升。</p>
+<p>具体实现情况是，我的电脑根本跑不动三层lstm！！！。一个小时连一个epoch都跑不完。最后无奈只能减小lstm的单元数，原本是[512,1024,2048],最后被我改到[64,128,256]，才勉强可以在我的耐心极限内跑完，当然效果不好，才0.24左右。</p>
+<p>后来我看了Infersent这篇model，感觉一层lstm应该也会有很好的编码效果，所以试了一下，直接把一层的lstm单元数设为2048，最后效果居然达到了0.21。</p>
+<blockquote>
+<p><strong><em>嗯，后来经过分析，发现在机器性能有限的情况下，与其堆叠rnn层数，不如调整rnn单元数和最后全连接层的层数和单元数的比例来得实际。事实上，当lstm的输出维度达到一定的程度时，如果后面的全连接层层数或单元数达不到相应的量级，就无法完全适配前面lstm编码得到的信息。当我的lstm单元数为512时，后面全连接层设为三层，单元数设为3000-4000时，模型效果能达到0.21。当然这是我总结出来的经验，不知道有没有理论依据，如果有大佬了解相关理论，欢迎交流，我对理论知识的探讨是很渴求的，本身对这方面就一直在学习。</em></strong></p>
+</blockquote>
+<p>当然，关于pytorch实现还有一个坑需要说明一下，也是关于句子padding的问题，tensorflow对于rnn的padding处理有专门的api:dynamic_rnn。但是pytorch貌似没有，但是它有专门两个api处理padding的句子：pack_padded_sequence，pad_packed_sequence</p>
+<p>一般rnn处理变长的经过padding的句子序列过程如下：</p>
+<p>1、使用pack_padded_sequence将句子序列变为<em>PackedSequence</em>对象，这个对象封装有方法，能够让rnn对象识别哪些是pad的位置。但是，它需要输入的一个batch中的句子序列是按照长度降序排列的，原因在于它内部的实现机制，具体就不讲了，有兴趣的同学自己可以看看源码，略复杂。因此这一步要先将原始的batch中的句子重排序，有一点一定要记住，就是要保存原始的句子在batch中的id的位置。后续在rnn处理后，需要重置句子的顺序。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sort_lengths</span><span class="params">(data, length_list)</span>:</span></span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string">    将句子按照长度进行降序排序，已满足pack_padded_sequence的需要</span></span><br><span class="line"><span class="string">    :param data: 待排序的句子序列</span></span><br><span class="line"><span class="string">    :param length_list:句子原始长度列表</span></span><br><span class="line"><span class="string">    :return:</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    <span class="comment">#将一个batch中的句子长度列表按照句子长度降序排序</span></span><br><span class="line">    sorted, idx_sort = torch.sort(length_list,dim=<span class="number">0</span>,descending=<span class="literal">True</span>)</span><br><span class="line">    <span class="comment">#保存原始的未经过排序的id列表</span></span><br><span class="line">    _, idx_unsort = torch.sort(idx_sort, dim=<span class="number">0</span>)</span><br><span class="line">    sent_input_list = []</span><br><span class="line">    new_lengths_list = []</span><br><span class="line">    <span class="comment">#根据排序后的id列表，存放一个batch中的句子</span></span><br><span class="line">    <span class="keyword">for</span> i,index <span class="keyword">in</span> enumerate(list(idx_sort)):</span><br><span class="line">        sent_input_list.append(data[:,index,:].unsqueeze(<span class="number">1</span>))</span><br><span class="line">        new_lengths_list.append(length_list[index])</span><br><span class="line"></span><br><span class="line">    sent_inputs = torch.cat(sent_input_list,dim=<span class="number">1</span>)</span><br><span class="line">    <span class="keyword">return</span> sent_inputs,idx_unsort,new_lengths_list</span><br></pre></td></tr></table></figure>
+<p>排完序后，用pack_<em>padded</em>_sequence生成<em>PackedSequence</em>对象</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#排序后的batch句子，原始的batch中句子id列表，排序后的句子长度列表</span></span><br><span class="line">sort_seq,orig_order_idx,sort_lengths_list = sort_lengths(seqs,length_list)</span><br><span class="line"><span class="comment">#将batch的句子pack成专用对象</span></span><br><span class="line">packed_seq = nn.utils.rnn.pack_padded_sequence(sort_seq,sort_lengths_list)</span><br></pre></td></tr></table></figure>
+<p>2、使用RNN单元接受PackedSequence对象，它会像dynamic_rnn一样自动处理pad的位置，不算其梯度。得到output后，由于后续有其他操作，仍然需要将变长的序列对齐，因此调用pad_packed_sequence将句子补齐，这是pack_<em>padded</em>_sequence的反操作。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">output,(h_t,c_t) = lstm_unit(packed_seq,(h_0,c_0))</span><br><span class="line">output,_ = nn.utils.rnn.pad_packed_sequence(output)</span><br></pre></td></tr></table></figure>
+<p>3、但是由于之前对一个batch的句子做了重排序，然而我们的label并没有重排序，如果直接就送入后面的操作，计算loss时，得到的结果肯定是不对的。因此需要将句子按照原来的顺序排列，这时就要用到第一步排序时的副产物：原始句子id list。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#reordering，根据原始的存放顺序，将句子在batch中的顺序归位。</span></span><br><span class="line">reorder_output_list = []</span><br><span class="line">orig_order_idx = list(orig_order_idx)</span><br><span class="line"><span class="keyword">for</span> index <span class="keyword">in</span> orig_order_idx:</span><br><span class="line">    reorder_output_list.append(output[:,index,:].unsqueeze(<span class="number">1</span>))</span><br><span class="line">reorder_output = torch.cat(reorder_output_list,dim=<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+<p>总之，绕了一个圈子，把相当于dynamic_rnn的代码实现了一下。如果有大佬有更好的实现凡是，欢迎给出建议。</p>
+<h2 id="deep-model-传统特征"><a href="#deep-model-传统特征" class="headerlink" title="deep model+传统特征"></a>deep model+传统特征</h2><p>后续我将筛选出的传统特征，加入到了deep model中，效果是有提升的，大概有5%左右的提升。不过由于时间关系，也没有尝试其他融合方式。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>至此，我要总结的也差不多了。这次比赛，重在参与，虽然只是勉强进了复赛，但是还是学到了很多东西，尤其是熟悉了pytorch这个框架。然而也有很多想法没有去实践。</p>
+<p>比如数据增强，这个脱敏数据如何做数据增强？可以通过图的建立，将间接相似的句子对找出来，也可以将间接不相似的句子对找出来，添加到样本中。</p>
+<p>比如deep model，做深做大，或者尝试其他更复杂的模型，因为有大佬单模型能达到0.16左右，这样看来，我跟大佬的差距还真是蛮大的。。。</p>
+<p>再比如stacking，这个是我一直想做的，但是一来是机器硬件跟不上，二来是单人参加比赛，实在是没时间，精力不够，只能在下班时间埋头苦干。下次比赛，争取找点队友，或者找个靠谱的机器。</p>
+<p>最后说一句，希望有大佬能够开源，至少能够讲讲自己的模型思路，让我们这些菜鸟能够多多学习。</p>
+
+        </div>
+        <footer class="article-footer">
+            
+
+
+
+    <a data-url="http://yoursite.com/2019/04/01/拍拍贷文本相似度计算大赛总结/" data-id="cjtycciyt001escut6acigmma" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+        </footer>
+    </div>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "author": {
+            "@type": "Person",
+            "name": "qiufengyuyi"
+        },
+        "headline": "拍拍贷文本相似度计算大赛总结",
+        "image": "http://yoursite.com/2019/04/01/拍拍贷文本相似度计算大赛总结/v2-a473f84bfea188c2cd014feb10ca1e3c_b.jpg",
+        "keywords": "RNN attention paraphrase identification",
+        "genre": "比赛总结",
+        "datePublished": "2019-04-01",
+        "dateCreated": "2019-04-01",
+        "dateModified": "2019-04-01",
+        "url": "http://yoursite.com/2019/04/01/拍拍贷文本相似度计算大赛总结/",
+        "description": "18年6月下旬到7月上旬期间搞了个拍拍贷的NLP比赛，做的是文本相似度计算，本来是准备做蚂蚁金服的文本相似度比赛，不过它需要的开发环境比较麻烦，后来看拍拍贷的这个比赛只需要上传结果，而且词向量都帮你训练好了，于是就参加了拍拍贷的。最终成绩勉强进复赛，比不上排在前面的大佬。说是总结，其实没有什么很好的经验，毕竟名次很低，不过一来通过这次比赛，我熟悉了pytorch这个框架，趟了一些坑，二来也是对这个"
+        "wordCount": 567
+    }
+</script>
+
+</article>
+
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
+
+
+                        </div>
+                    </section>
+                    <aside id="sidebar">
+    <a class="sidebar-toggle" title="Expand Sidebar"><i class="toggle icon"></i></a>
+    
+        
+<nav id="article-nav">
+    
+    
+        <a href="/2019/04/01/关于提升python程序效率的一些思考/" id="article-nav-older" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">上一篇</strong>
+        <p class="article-nav-title">关于提升python程序效率的一些思考</p>
+        <i class="icon fa fa-chevron-left" id="icon-chevron-left"></i>
+        </a>
+    
+</nav>
+
+    
+    <div class="widgets-container">
+        
+            
+                
+
+            
+                
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/比赛总结/">比赛总结</a></p>
+                            <p class="item-title"><a href="/2019/04/01/拍拍贷文本相似度计算大赛总结/" class="title">拍拍贷文本相似度计算大赛总结</a></p>
+                            <p class="item-date"><time datetime="2019-04-01T12:32:40.000Z" itemprop="datePublished">2019-04-01</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/工程经验/">工程经验</a></p>
+                            <p class="item-title"><a href="/2019/04/01/关于提升python程序效率的一些思考/" class="title">关于提升python程序效率的一些思考</a></p>
+                            <p class="item-date"><time datetime="2019-04-01T12:29:30.000Z" itemprop="datePublished">2019-04-01</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/03/31/Attention机制简单总结/" class="title">Attention机制简单总结</a></p>
+                            <p class="item-date"><time datetime="2019-03-31T12:57:43.000Z" itemprop="datePublished">2019-03-31</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/工程经验/">工程经验</a></p>
+                            <p class="item-title"><a href="/2019/03/31/seq2seq之tensorflow源码解析/" class="title">seq2seq之tensorflow源码解析</a></p>
+                            <p class="item-date"><time datetime="2019-03-31T08:23:31.000Z" itemprop="datePublished">2019-03-31</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/比赛总结/">比赛总结</a></p>
+                            <p class="item-title"><a href="/2019/03/29/达观文本分类大赛17名思路总结/" class="title">达观文本分类大赛17名思路总结</a></p>
+                            <p class="item-date"><time datetime="2019-03-29T12:27:27.000Z" itemprop="datePublished">2019-03-29</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-float">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/RNN/" style="font-size: 20px;">RNN</a> <a href="/tags/attention/" style="font-size: 20px;">attention</a> <a href="/tags/dynamic-programming/" style="font-size: 10px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 20px;">seq2seq</a> <a href="/tags/tensorflow/" style="font-size: 15px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.zhihu.com/people/qiu-zhen-yu-87">zhihu</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://github.com/qiufengyuyi">github</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+            
+        
+    </div>
+</aside>
+
+                </div>
+            </div>
+        </div>
+        <footer id="footer">
+    <div class="container">
+        <div class="container-inner">
+            <a id="back-to-top" href="javascript:;"><i class="icon fa fa-angle-up"></i></a>
+            <div class="credit">
+                <h1 class="logo-wrap">
+                    <a href="/" class="logo"></a>
+                </h1>
+                <p>&copy; 2019 qiufengyuyi</p>
+                <p>Powered by <a href="//hexo.io/" target="_blank">Hexo</a>. Theme by <a href="//github.com/ppoffice" target="_blank">PPOffice</a></p>
+            </div>
+            <div class="footer-plugins">
+              
+    
+
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+        
+    
+    <script>
+    var disqus_shortname = 'hexo-theme-hueman';
+    
+    
+    var disqus_url = 'http://yoursite.com/2019/04/01/拍拍贷文本相似度计算大赛总结/';
+    
+    (function() {
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>

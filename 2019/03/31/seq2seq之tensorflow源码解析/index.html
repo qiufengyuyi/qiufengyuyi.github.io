@@ -21,7 +21,7 @@
 <meta property="og:description" content="很直接的说，这篇文章就是对tensorflow的seq2seq大礼包的源码做了一定程度的解析。个人一直觉得作为一个算法工程师，要经常学习好的开源框架里面的工程代码，这样不仅能够在实现自定义模型时好下手，也能提升自己的工程能力。本文用到的tensorflow框架版本为1.4。目前比较新的版本中的相关代码主体改动有一些，不是很大，所以可以适配着看。 之前的文章中，我已经对seq2seq+attenti">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/2019/03/31/seq2seq之tensorflow源码解析/v2-df2564dc1c687edbaa6d830869af9f40_b.png">
-<meta property="og:updated_time" content="2019-03-31T08:53:37.611Z">
+<meta property="og:updated_time" content="2019-03-31T13:15:27.774Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="seq2seq之tensorflow源码解析">
 <meta name="twitter:description" content="很直接的说，这篇文章就是对tensorflow的seq2seq大礼包的源码做了一定程度的解析。个人一直觉得作为一个算法工程师，要经常学习好的开源框架里面的工程代码，这样不仅能够在实现自定义模型时好下手，也能提升自己的工程能力。本文用到的tensorflow框架版本为1.4。目前比较新的版本中的相关代码主体改动有一些，不是很大，所以可以适配着看。 之前的文章中，我已经对seq2seq+attenti">
@@ -179,7 +179,9 @@
 <p>之前的文章中，我已经对seq2seq+attention模型有过讲解，当时以为自己弄懂了。但是最近通过一些比赛，实际去实现这个模型的时候，才发觉自己并没有真正吃透这个模型，因此下面重新对这个带attention机制的seq2seq模型进行回顾，然后再从tensorflow的seq2seq大礼包源码入手，讲解其中的步骤。为了更好描述，这里以最近参加的标题生成的比赛作为例子。（成绩不太好，就不写总结了）</p>
 <p>假设当前的输入数据，已经对out-of-vocab词用<unk>代替，且对decoder的输入数据增加了<start>标记，对输出数据末尾增加了<end>标记，最后已经padding成等长数据。模型的主要结构为encoder-decoder。规定输入和输出共享一个词典和embedding层。</end></start></unk></p>
 <h2 id="Encoder"><a href="#Encoder" class="headerlink" title="Encoder"></a>Encoder</h2><p>首先是encoder。主要作用是读取并学习document text中的信息。常使用RNN或者带门机制的RNN（GRU或者LSTM）。一般会先对输入进行embedding_lookup，获取对应的embedding_input后，将其输入到RNN的中进行编码。一般的encoder会直接输出最后 $t_n $时刻的状态 $h_{t_n} $，作为decoder的初始 $t_0​$ 状态。这里有个改进点，可以提升整个模型的性能：</p>
+<blockquote>
 <p>之所以可以将encoder的$h_{t_n}$作为decoder的初始状态，在于经过RNN的学习与传递后，最后一个时刻的状态h已经整合了当前网络对输入文本的分析和总结，因此直接将其作为decoder的初始状态，相对于随机初始化操作，可以加快网络的训练速度，提升模型的性能。那么，我们可以通过其他方式，更好得获得encoder的学习成果，比如将所有t时刻的状态 $h_{t_i} $进行一个average pooling,max pooling，甚至进行一次self attention，最后得到一个综合的输出，作为decoder的初始状态，这样应该能比baseline方法更好。在实践过程中，也确实是这样，其中average pooling的效果最好，而self attention之所以效果较差的原因可能是模型中后面decoder的时候也使用了attention机制，因此这里使用self attention机制对模型效果提升没有很大的效果，相反，还会导致过拟合。且average pooling的效率最高，因此最后我选用了这种方式，来输出decoder的初始状态。</p>
+</blockquote>
 <p>当前encoder模块有两个比较重要的输出会被后续的decoder使用：</p>
 <p>1、RNN中的每个时刻的状态$h_{t_i}​$</p>
 <p>2、RNN中的每个时刻的输出 $o_{t_i} ​$</p>
@@ -308,7 +310,7 @@ o^*_t = \sum_ia^t_io_i</script><p>这个学习成果需要和decoder的中间状
 
 
 
-    <a data-url="http://yoursite.com/2019/03/31/seq2seq之tensorflow源码解析/" data-id="cjtwy2yh6000x7wutd0old8g1" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://yoursite.com/2019/03/31/seq2seq之tensorflow源码解析/" data-id="cjtycciyf0012scut8o15ufvl" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         $('body').on('click', function() {
@@ -449,6 +451,24 @@ o^*_t = \sum_ia^t_io_i</script><p>这个学习成果需要和decoder的中间状
                     <li>
                         
                         <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/比赛总结/">比赛总结</a></p>
+                            <p class="item-title"><a href="/2019/04/01/拍拍贷文本相似度计算大赛总结/" class="title">拍拍贷文本相似度计算大赛总结</a></p>
+                            <p class="item-date"><time datetime="2019-04-01T12:32:40.000Z" itemprop="datePublished">2019-04-01</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/工程经验/">工程经验</a></p>
+                            <p class="item-title"><a href="/2019/04/01/关于提升python程序效率的一些思考/" class="title">关于提升python程序效率的一些思考</a></p>
+                            <p class="item-date"><time datetime="2019-04-01T12:29:30.000Z" itemprop="datePublished">2019-04-01</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
                             <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
                             <p class="item-title"><a href="/2019/03/31/Attention机制简单总结/" class="title">Attention机制简单总结</a></p>
                             <p class="item-date"><time datetime="2019-03-31T12:57:43.000Z" itemprop="datePublished">2019-03-31</time></p>
@@ -473,24 +493,6 @@ o^*_t = \sum_ia^t_io_i</script><p>这个学习成果需要和decoder的中间状
                         </div>
                     </li>
                 
-                    <li>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"><a class="article-category-link" href="/categories/基础算法/">基础算法</a></p>
-                            <p class="item-title"><a href="/2019/03/29/（基础算法复习）之最长回文子串的动态规划解法/" class="title">（基础算法复习）之最长回文子串的动态规划解法</a></p>
-                            <p class="item-date"><time datetime="2019-03-29T12:06:48.000Z" itemprop="datePublished">2019-03-29</time></p>
-                        </div>
-                    </li>
-                
-                    <li>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"><a class="article-category-link" href="/categories/工程经验/">工程经验</a></p>
-                            <p class="item-title"><a href="/2019/03/24/tensorflow模型线上部署/" class="title">tensorflow模型线上部署</a></p>
-                            <p class="item-date"><time datetime="2019-03-24T12:01:40.000Z" itemprop="datePublished">2019-03-24</time></p>
-                        </div>
-                    </li>
-                
             </ul>
         </div>
     </div>
@@ -500,7 +502,7 @@ o^*_t = \sum_ia^t_io_i</script><p>这个学习成果需要和decoder的中间状
     <div class="widget-wrap widget-list">
         <h3 class="widget-title">分类</h3>
         <div class="widget">
-            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -510,7 +512,7 @@ o^*_t = \sum_ia^t_io_i</script><p>这个学习成果需要和decoder的中间状
     <div class="widget-wrap widget-list">
         <h3 class="widget-title">归档</h3>
         <div class="widget">
-            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
         </div>
     </div>
 
@@ -520,7 +522,7 @@ o^*_t = \sum_ia^t_io_i</script><p>这个学习成果需要和decoder的中间状
     <div class="widget-wrap widget-list">
         <h3 class="widget-title">标签</h3>
         <div class="widget">
-            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li></ul>
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -530,7 +532,7 @@ o^*_t = \sum_ia^t_io_i</script><p>这个学习成果需要和decoder的中间状
     <div class="widget-wrap widget-float">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/RNN/" style="font-size: 15px;">RNN</a> <a href="/tags/attention/" style="font-size: 15px;">attention</a> <a href="/tags/dynamic-programming/" style="font-size: 10px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/seq2seq/" style="font-size: 20px;">seq2seq</a> <a href="/tags/tensorflow/" style="font-size: 15px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a>
+            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/RNN/" style="font-size: 20px;">RNN</a> <a href="/tags/attention/" style="font-size: 20px;">attention</a> <a href="/tags/dynamic-programming/" style="font-size: 10px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 20px;">seq2seq</a> <a href="/tags/tensorflow/" style="font-size: 15px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a>
         </div>
     </div>
 
@@ -630,21 +632,6 @@ o^*_t = \sum_ia^t_io_i</script><p>这个学习成果需要和decoder的中间状
 <!-- Custom Scripts -->
 <script src="/js/main.js"></script>
 
-    </div>
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-            processEscapes: true
-        }
-    });
-    MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax();
-        for (var i = 0; i < all.length; ++i)
-            all[i].SourceElement().parentNode.className += ' has-jax';
-    });
-</script>
-<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+    </div><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 </body>
 </html>
