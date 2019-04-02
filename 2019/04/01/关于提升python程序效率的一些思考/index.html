@@ -20,7 +20,7 @@
 <meta property="og:site_name" content="qiufengyuyi&#39;s blog">
 <meta property="og:description" content="本文难得水一篇，讲一讲最近在工作中遇到的一些关于python编程的效率问题，希望对其他同学有一些启示，有些东西是网上其他博客就有的，感兴趣的同学可以自行搜索，深入学习。 问题起因是这样的：当前有一个pandas的dataframe结构A，A存储了一个数据序列中的各个字段的值，A的每一行表示时刻t的序列数据的具体内容。当前，需要对A进行归一化整合，使之转化为一段hash后的字符串，中间当然省略了一些">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-04-01T12:31:45.655Z">
+<meta property="og:updated_time" content="2019-04-01T12:41:26.300Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="关于提升python程序效率的一些思考">
 <meta name="twitter:description" content="本文难得水一篇，讲一讲最近在工作中遇到的一些关于python编程的效率问题，希望对其他同学有一些启示，有些东西是网上其他博客就有的，感兴趣的同学可以自行搜索，深入学习。 问题起因是这样的：当前有一个pandas的dataframe结构A，A存储了一个数据序列中的各个字段的值，A的每一行表示时刻t的序列数据的具体内容。当前，需要对A进行归一化整合，使之转化为一段hash后的字符串，中间当然省略了一些">
@@ -183,7 +183,9 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dataframe.apply(function,args=(arg1,arg2,....),axis=1)</span><br></pre></td></tr></table></figure>
 <p>但是，实体测试之后，发现，这种方法几乎没有显著的提升，对于1000条数据的性能，只提升了几秒。后来，google查问题，发现pandas的apply方法对于rowwise的遍历性能是很差的，相反它对column_wise的列遍历倒是效果很好。因此和传统的for循环相比，apply on row几乎没有太大优势。</p>
 <p>3、后来又想到了numpy的向量化操作，如果能将上述逻辑转化为向量单位进行操作，会不会有提升？因此就查到了numpy的vectorize方法：</p>
+<blockquote>
 <p><em>Define a vectorized function which takes a nested sequence of objects or</em> <em>numpy arrays as inputs and returns an single or tuple of numpy array as</em> <em>output. The vectorized function evaluates <code>pyfunc</code> over successive tuples</em> <em>of the input arrays like the python map function, except it uses the</em> <em>broadcasting rules of numpy.</em></p>
+</blockquote>
 <p>简单说就是能将一个function改造成numpy支持的向量化操作。当然，这个function的参数是有要求的，dataframe或者series肯定是不行的，因此我将本来传入的参数dataframe按列拆开来（幸好列数不多），将每列以ndarray的形式作为参数传入function，然后再用numpy的vectorize改造：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">do_function</span><span class="params">(array_1,array_2,.....)</span>:</span></span><br><span class="line">    do something</span><br><span class="line">    <span class="keyword">return</span> something</span><br><span class="line">vec_fun = np.vectorize(do_function)</span><br><span class="line">result = vec_fun(array_1,array_2,.....)</span><br></pre></td></tr></table></figure>
 <p>经过实际测试，性能确实有提升，对于1000条数据的性能，提升了30-40秒左右。</p>
@@ -200,7 +202,7 @@
 
 
 
-    <a data-url="http://yoursite.com/2019/04/01/关于提升python程序效率的一些思考/" data-id="cjtycciue0002scutphdk9u4d" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://yoursite.com/2019/04/01/关于提升python程序效率的一些思考/" data-id="cjtzqs6i60007ssutqtmxd32r" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         $('body').on('click', function() {
@@ -341,6 +343,24 @@
                     <li>
                         
                         <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/02/隐马尔科夫模型学习总结之二/" class="title">隐马尔科夫模型学习总结之二</a></p>
+                            <p class="item-date"><time datetime="2019-04-02T11:59:15.000Z" itemprop="datePublished">2019-04-02</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/02/隐马尔科夫模型学习总结之一/" class="title">隐马尔科夫模型学习总结之一</a></p>
+                            <p class="item-date"><time datetime="2019-04-02T11:49:38.000Z" itemprop="datePublished">2019-04-02</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
                             <p class="item-category"><a class="article-category-link" href="/categories/比赛总结/">比赛总结</a></p>
                             <p class="item-title"><a href="/2019/04/01/拍拍贷文本相似度计算大赛总结/" class="title">拍拍贷文本相似度计算大赛总结</a></p>
                             <p class="item-date"><time datetime="2019-04-01T12:32:40.000Z" itemprop="datePublished">2019-04-01</time></p>
@@ -365,24 +385,6 @@
                         </div>
                     </li>
                 
-                    <li>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"><a class="article-category-link" href="/categories/工程经验/">工程经验</a></p>
-                            <p class="item-title"><a href="/2019/03/31/seq2seq之tensorflow源码解析/" class="title">seq2seq之tensorflow源码解析</a></p>
-                            <p class="item-date"><time datetime="2019-03-31T08:23:31.000Z" itemprop="datePublished">2019-03-31</time></p>
-                        </div>
-                    </li>
-                
-                    <li>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"><a class="article-category-link" href="/categories/比赛总结/">比赛总结</a></p>
-                            <p class="item-title"><a href="/2019/03/29/达观文本分类大赛17名思路总结/" class="title">达观文本分类大赛17名思路总结</a></p>
-                            <p class="item-date"><time datetime="2019-03-29T12:27:27.000Z" itemprop="datePublished">2019-03-29</time></p>
-                        </div>
-                    </li>
-                
             </ul>
         </div>
     </div>
@@ -392,7 +394,7 @@
     <div class="widget-wrap widget-list">
         <h3 class="widget-title">分类</h3>
         <div class="widget">
-            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -402,7 +404,7 @@
     <div class="widget-wrap widget-list">
         <h3 class="widget-title">归档</h3>
         <div class="widget">
-            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
         </div>
     </div>
 
@@ -412,7 +414,7 @@
     <div class="widget-wrap widget-list">
         <h3 class="widget-title">标签</h3>
         <div class="widget">
-            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li></ul>
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HMM/">HMM</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markov-assumption/">Markov assumption</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -422,7 +424,7 @@
     <div class="widget-wrap widget-float">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/RNN/" style="font-size: 20px;">RNN</a> <a href="/tags/attention/" style="font-size: 20px;">attention</a> <a href="/tags/dynamic-programming/" style="font-size: 10px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 20px;">seq2seq</a> <a href="/tags/tensorflow/" style="font-size: 15px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a>
+            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/HMM/" style="font-size: 15px;">HMM</a> <a href="/tags/Markov-assumption/" style="font-size: 10px;">Markov assumption</a> <a href="/tags/RNN/" style="font-size: 20px;">RNN</a> <a href="/tags/attention/" style="font-size: 20px;">attention</a> <a href="/tags/dynamic-programming/" style="font-size: 10px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 20px;">seq2seq</a> <a href="/tags/tensorflow/" style="font-size: 15px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a>
         </div>
     </div>
 
@@ -522,6 +524,21 @@
 <!-- Custom Scripts -->
 <script src="/js/main.js"></script>
 
-    </div><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+    </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 </body>
 </html>
