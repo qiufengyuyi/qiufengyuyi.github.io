@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+
+    
+
+    
+    <title>隐马尔科夫模型学习总结之Viterbi算法应用 | qiufengyuyi&#39;s blog</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <meta name="keywords" content="HMM,viterbi,dynamic programming">
+    
+    <meta name="description" content="本章将描述总结隐马尔科夫模型的最后一个问题，即已知观测序列和模型参数集，求该观测序列对应的最有可能出现的隐状态序列是什么样的？即找到出现概率最大的隐状态序列。这个问题常见于NLP中的分词、词性标注、语音识别等任务中，如中文分词任务中，每个中文字符作为观测变量，而该字符在词中的角色（如词首，词中，词尾，单独成词）作为隐变量状态，假设当前已经通过大量文本训练得到了HMM模型的参数集，我们的任务就是给定">
+<meta name="keywords" content="HMM,viterbi,dynamic programming">
+<meta property="og:type" content="article">
+<meta property="og:title" content="隐马尔科夫模型学习总结之Viterbi算法应用">
+<meta property="og:url" content="http://yoursite.com/2019/04/03/隐马尔科夫模型学习总结之Viterbi算法应用/index.html">
+<meta property="og:site_name" content="qiufengyuyi&#39;s blog">
+<meta property="og:description" content="本章将描述总结隐马尔科夫模型的最后一个问题，即已知观测序列和模型参数集，求该观测序列对应的最有可能出现的隐状态序列是什么样的？即找到出现概率最大的隐状态序列。这个问题常见于NLP中的分词、词性标注、语音识别等任务中，如中文分词任务中，每个中文字符作为观测变量，而该字符在词中的角色（如词首，词中，词尾，单独成词）作为隐变量状态，假设当前已经通过大量文本训练得到了HMM模型的参数集，我们的任务就是给定">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/04/03/隐马尔科夫模型学习总结之Viterbi算法应用/v2-af66d0a1cf24426d033a1fd53834146c_b.jpg">
+<meta property="og:updated_time" content="2019-04-03T13:59:44.884Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="隐马尔科夫模型学习总结之Viterbi算法应用">
+<meta name="twitter:description" content="本章将描述总结隐马尔科夫模型的最后一个问题，即已知观测序列和模型参数集，求该观测序列对应的最有可能出现的隐状态序列是什么样的？即找到出现概率最大的隐状态序列。这个问题常见于NLP中的分词、词性标注、语音识别等任务中，如中文分词任务中，每个中文字符作为观测变量，而该字符在词中的角色（如词首，词中，词尾，单独成词）作为隐变量状态，假设当前已经通过大量文本训练得到了HMM模型的参数集，我们的任务就是给定">
+<meta name="twitter:image" content="http://yoursite.com/2019/04/03/隐马尔科夫模型学习总结之Viterbi算法应用/v2-af66d0a1cf24426d033a1fd53834146c_b.jpg">
+    
+
+    
+
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/titillium-web/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="wrap">
+        <header id="header">
+    <div id="header-outer" class="outer">
+        <div class="container">
+            <div class="container-inner">
+                <div id="header-title">
+                    <h1 class="logo-wrap">
+                        <a href="/" class="logo"></a>
+                    </h1>
+                    
+                        <h2 class="subtitle-wrap">
+                            <p class="subtitle">backlog of a man&#39;s road to AI learning</p>
+                        </h2>
+                    
+                </div>
+                <div id="header-inner" class="nav-container">
+                    <a id="main-nav-toggle" class="nav-icon fa fa-bars"></a>
+                    <div class="nav-container-inner">
+                        <ul id="main-nav">
+                            
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/">主页</a>
+                                </li>
+                            
+                                        <ul class="main-nav-list"><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/基础算法/">基础算法</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/学习笔记/">学习笔记</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/工程经验/">工程经验</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/比赛总结/">比赛总结</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/论文总结/">论文总结</a></li></ul>
+                                    
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/about/index.html">关于</a>
+                                </li>
+                            
+                        </ul>
+                        <nav id="sub-nav">
+                            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+        <div class="container">
+            <div class="main-body container-inner">
+                <div class="main-body-inner">
+                    <section id="main">
+                        <div class="main-body-header">
+    <h1 class="header">
+    
+    <a class="page-title-link" href="/categories/学习笔记/">学习笔记</a>
+    </h1>
+</div>
+
+                        <div class="main-body-content">
+                            <article id="post-隐马尔科夫模型学习总结之Viterbi算法应用" class="article article-single article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+        隐马尔科夫模型学习总结之Viterbi算法应用
+        </h1>
+    
+
+            </header>
+        
+        
+            <div class="article-meta">
+                
+    <div class="article-date">
+        <a href="/2019/04/03/隐马尔科夫模型学习总结之Viterbi算法应用/" class="article-date">
+            <time datetime="2019-04-03T13:46:51.000Z" itemprop="datePublished">2019-04-03</time>
+        </a>
+    </div>
+
+		
+
+                
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/HMM/">HMM</a>, <a class="tag-link" href="/tags/dynamic-programming/">dynamic programming</a>, <a class="tag-link" href="/tags/viterbi/">viterbi</a>
+    </div>
+
+            </div>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+            <p>本章将描述总结隐马尔科夫模型的最后一个问题，即已知观测序列和模型参数集，求该观测序列对应的最有可能出现的隐状态序列是什么样的？即找到出现概率最大的隐状态序列。这个问题常见于NLP中的分词、词性标注、语音识别等任务中，如中文分词任务中，每个中文字符作为观测变量，而该字符在词中的角色（如词首，词中，词尾，单独成词）作为隐变量状态，假设当前已经通过大量文本训练得到了HMM模型的参数集，我们的任务就是给定一段中文的文本，给这段文本的每个中文字符打上隐状态标记，（识别词首到词尾，以及单独成词的字串）从而完成分词任务。通常这个也叫做标注任务。</p>
+<p>那么如何解决这个问题呢？一种方法是在给定观测序列的条件下，穷举所有可能的隐状态序列，根据参数集，计算该隐状态序列的联合概率（使用贝叶斯公式）。最后找出联合概率最大的那个序列即可。这种解法很简单，但是需要 $O(k^T) $计算复杂度，其中k表示隐状态个数，T表示序列长度（或者说是时刻长度）。</p>
+<p>因此基于上述问题，需要使用一种动态规划算法来解决该问题，这个问题相当于可以转化为对一个有向无环带权重图，找到起点至终点路径最短的（即概率最大）的结点集合。这里使用了一个非常著名的动态规划算法，Viterbi算法，该算法在通信行业领域使用比较广泛，它特别适合上述这种寻找最短路径的问题。</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之Viterbi算法应用/v2-af66d0a1cf24426d033a1fd53834146c_b.jpg" alt="img"></p>
+<p>我是在看了吴军的数学之美以及一篇博客后，对该算法有了一定的了解。博客链接如下：</p>
+<p>（该博客貌似有点错误，具体先下面详细说明）</p>
+<p>Viterbi算法的基础概括成下面三点：</p>
+<p>1、如果概率最大的路径P（或者说是最短路径）经过某点a，那么这条路径上从起始点s到a的这一段子路径一定是s到a之间的最短路径。否则用s到a的最短路径来替换上述路径，便构成了一条比P更短的路径，矛盾。</p>
+<p>2、从S到E的路径必定经过第i时刻的某个状态，假定第i时刻有k个状态，那么如果记录了从S到第i个状态的所有k个节点的最短路径，最终的最短路径必经过其中的一条。这样，在任何时刻，只需要考虑非常有限条最短路径即可。</p>
+<p>3、结合上述两点，假定当我们从状态i进入状态i+1时，从S到状态i上各个节点的最短路径已经找到，并且记录在这些节点上，那么在计算从起点S到前一个状态i所有的k个结点的最短路径，以及从这k个节点到Xi+1，j的距离即可。</p>
+<p>基于上述基础，有如下算法：</p>
+<p>step1：从点S出发，对于第一个状态 $X_{1} $的各个节点，不妨假定有 $n_{1}$ 个，计算出S到它们的距离 $d(S,X_{1i})$ ，其中 $X_{1i}$ 代表任意状态1的节点。因为只有一步，所以这些距离都是S到它们各自的最短距离。</p>
+<p>step2：对于第二个状态 $X_{2} $的所有节点，要计算出从S到它们的最短距离。对于特点的节点 $X_{2i}$ ，从S到它的路径可以经过状态1的 $n_{1}$ 中任何一个节点 $X_{1i}$ ，对应的路径长度就是 $d(S,X_{2i})=d(S,X_{1j})+d(X_{1j},X_{2i})$ 。由于j有 $n_{1}$ 种可能性，我们要一一计算，找出最小值。即：</p>
+<script type="math/tex; mode=display">
+d(S,X_{2i})=min_{j=1,n_{1}}d(S,X_{1j})+d(X_{1j},X_{2i})</script><p>这样对于第二个状态的每个节点，需要 $n_{1} $次乘法计算。假定这个状态有 $n_{2} $个节点，把S这些节点的距离都算一遍，就有 $O(n_{1}*n_{2})$ 次计算。</p>
+<p>step3：接下来，类似地按照上述方法从第二个状态走到第三个状态，一直走到最后一个状态，就得到了整个网格从头到尾的最短路径。每一步计算的复杂度都和相邻两个状态Si和Si+1各自的节点数目 $n_{i}$ ， $n_{i+1}$ 的乘积成正比，即 $O(n_{i}*n_{i+1})$ </p>
+<p>step4：要获取最终路径节点，只要在回溯上述计算过程，就能得到对应的路径节点。</p>
+<p><strong><em>补充：原博客中并未提及回溯的过程，且他确定每个时刻的状态时，貌似采用的是每个时刻取最大的贪心算法，而看了知乎上一个回答，发现确定隐状态结点序列，是需要根据当前已确定的最新结点往前回溯，即假设t=3的天气是Rainy，则需要在</em></strong></p>
+<p>$<em>P_{2}(Sunny)A_{Sunny,Rainy},P_{2}(Cloudy)A_{Cloudy,Rainy},P_{2}(Rainy)A_{Rainy,Rainy}</em> $<strong><em>中选取最大的作为t=2时刻的天气，而不应该是直接在</em></strong> <strong><em>$P_{2}(Sunny),P_{2}(Cloudy),P_{2}(Rainy)​$</em></strong> <strong><em>中选最大的。个人感觉该博客在这地方有问题，最后我代码计算得到的序列是{Sunny,Cloudy,Rainy}，与原博客也不同。</em></strong></p>
+<p>上述是从吴军老师的书中摘取的，个人感觉已经非常明确简洁了，如果想知道实例怎么计算的，可以去上面我贴出的链接里面看，非常清楚。</p>
+<p>贴一下我用python实现的上述例子吧：使用了numpy，向量化一些计算，省去了一些循环。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># coding=utf-8</span></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">observed_status = &#123;<span class="number">0</span>:<span class="string">"Dry"</span>,<span class="number">1</span>:<span class="string">"Dryish"</span>,<span class="number">2</span>:<span class="string">"Damp"</span>,<span class="number">3</span>:<span class="string">"Soggy"</span>&#125;</span><br><span class="line">hidden_status = &#123;<span class="number">0</span>:<span class="string">"Sunny"</span>,<span class="number">1</span>:<span class="string">"Cloudy"</span>,<span class="number">2</span>:<span class="string">"Rainy"</span>&#125;</span><br><span class="line">sequence_observe = [<span class="number">0</span>,<span class="number">2</span>,<span class="number">3</span>]</span><br><span class="line"><span class="comment">#初始状态概率</span></span><br><span class="line">pi_0 = np.array([<span class="number">0.63</span>,<span class="number">0.17</span>,<span class="number">0.20</span>])</span><br><span class="line">A_matrix = np.array([[<span class="number">0.5</span>,<span class="number">0.375</span>,<span class="number">0.125</span>],[<span class="number">0.25</span>,<span class="number">0.125</span>,<span class="number">0.625</span>],[<span class="number">0.25</span>,<span class="number">0.375</span>,<span class="number">0.375</span>]])</span><br><span class="line">B_matrix = np.array([[<span class="number">0.6</span>,<span class="number">0.2</span>,<span class="number">0.15</span>,<span class="number">0.05</span>],[<span class="number">0.25</span>,<span class="number">0.25</span>,<span class="number">0.25</span>,<span class="number">0.25</span>],[<span class="number">0.05</span>,<span class="number">0.10</span>,<span class="number">0.35</span>,<span class="number">0.5</span>]])</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">viterbi</span><span class="params">(A_matrix,B_matrix,pi_0,sequence_observe)</span>:</span></span><br><span class="line">    <span class="comment">#序列长度</span></span><br><span class="line">    sequence_length = len(sequence_observe)</span><br><span class="line">    state_length = len(hidden_status)</span><br><span class="line">    <span class="comment">#初始化一个矩阵存放每轮计算得到的prob</span></span><br><span class="line">    curren_prob = np.zeros((sequence_length,state_length))</span><br><span class="line">    <span class="comment">#存放结果隐状态序列index</span></span><br><span class="line">    final_result_list = []</span><br><span class="line">    <span class="comment">#用于回溯的存放前一个结点最大计算概率</span></span><br><span class="line">    prob_max = []</span><br><span class="line">    <span class="comment">#起点到第一天</span></span><br><span class="line">    curren_prob[<span class="number">0</span>,:] = np.multiply(pi_0,B_matrix[:,sequence_observe[<span class="number">0</span>]])</span><br><span class="line">    <span class="comment">#t=1 to T:</span></span><br><span class="line">    <span class="keyword">for</span> t <span class="keyword">in</span> range(<span class="number">1</span>,sequence_length):</span><br><span class="line">        tmp_dict = &#123;&#125;</span><br><span class="line">        <span class="keyword">for</span> state_j <span class="keyword">in</span> hidden_status.keys():</span><br><span class="line">            <span class="comment">#计算前时刻状态到本时刻状态最大概率</span></span><br><span class="line">            curr_state_prob_max = np.max(np.multiply(curren_prob[t<span class="number">-1</span>,:],A_matrix[:,state_j]))</span><br><span class="line">            curr_state_max = np.argmax(np.multiply(curren_prob[t<span class="number">-1</span>,:],A_matrix[:,state_j]))</span><br><span class="line">            tmp_dict[state_j] = curr_state_max</span><br><span class="line">            <span class="comment">#计算本时刻转移到state_j状态的联合概率</span></span><br><span class="line">            curren_prob[t,state_j] = curr_state_prob_max*B_matrix[state_j,sequence_observe[t]]</span><br><span class="line">        prob_max.append(tmp_dict)</span><br><span class="line">    <span class="comment">#backtrace</span></span><br><span class="line">    final_pick_status = np.argmax(curren_prob[<span class="number">-1</span>,:])</span><br><span class="line">    final_result_list.append(final_pick_status)</span><br><span class="line">    curr_status = final_pick_status</span><br><span class="line">    <span class="keyword">for</span> t <span class="keyword">in</span> range(sequence_length<span class="number">-1</span>,<span class="number">0</span>,<span class="number">-1</span>):</span><br><span class="line">        <span class="comment">#根据已处理的最新结点，找到上一时刻概率最大的结点</span></span><br><span class="line">        previous = prob_max[t<span class="number">-1</span>][curr_status]</span><br><span class="line">        final_result_list.insert(<span class="number">0</span>,previous)</span><br><span class="line">        curr_status = previous</span><br><span class="line">    final_result_str_list = [hidden_status[weather_index] <span class="keyword">for</span> weather_index <span class="keyword">in</span> final_result_list]</span><br><span class="line">    <span class="keyword">return</span> final_result_str_list</span><br><span class="line"></span><br><span class="line">print(viterbi(A_matrix,B_matrix,pi_0,sequence_observe))</span><br></pre></td></tr></table></figure>
+<p>终于把HMM的相关内容整理总结了一下，其实HMM的知识远不止我总结的这几篇文章，包括引入最大熵的MEMM模型、引入二阶马尔科夫性质的HMM等等，但个人不会短时间再深入了，因为作为一名做工程的，需要平衡工程和数学统计的研究时间，既不能完全忽略数学统计的作用，也不能跟专业学术界的大牛一样钻研其中，容易出不来，而且目前暂时的实际应用中，HMM算法的效果已经可以接受了，而且从HMM算法中，可以学到很多解决问题的思想和方法，包括最大似然估计，贝叶斯公式，拉格朗日乘子法，动态规划算法以及各种消元思想。后续有时间的话还可能对条件随机场进行总结，毕竟这两种模型代表了不同的建模方式（联合概率和条件概率），且条件随机场的效果在NLP里面通常都比HMM要好。</p>
+<p>预告：下一个系列会对SVM支持向量机算法进行一个详细的总结，该算法本身的思想很简单，但是使用了大量的数学、凸优化知识来帮助构建该模型，值得好好剖析。</p>
+<p>reference：</p>
+<p>吴军 《数学之美》</p>
+<p>wiki百科：<a href="https://en.wikipedia.org/wiki/Viterbi_algorithm" target="_blank" rel="noopener">Viterbi algorithm</a></p>
+<p><a href="https://www.cnblogs.com/Denise-hzf/p/6612212.html" target="_blank" rel="noopener">HMM模型和Viterbi算法 - Denise_hzf - 博客园</a></p>
+
+        </div>
+        <footer class="article-footer">
+            
+
+
+
+    <a data-url="http://yoursite.com/2019/04/03/隐马尔科夫模型学习总结之Viterbi算法应用/" data-id="cju19ze2v0011t4uth0phkzha" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+        </footer>
+    </div>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "author": {
+            "@type": "Person",
+            "name": "qiufengyuyi"
+        },
+        "headline": "隐马尔科夫模型学习总结之Viterbi算法应用",
+        "image": "http://yoursite.com/2019/04/03/隐马尔科夫模型学习总结之Viterbi算法应用/v2-af66d0a1cf24426d033a1fd53834146c_b.jpg",
+        "keywords": "HMM viterbi dynamic programming",
+        "genre": "学习笔记",
+        "datePublished": "2019-04-03",
+        "dateCreated": "2019-04-03",
+        "dateModified": "2019-04-03",
+        "url": "http://yoursite.com/2019/04/03/隐马尔科夫模型学习总结之Viterbi算法应用/",
+        "description": "本章将描述总结隐马尔科夫模型的最后一个问题，即已知观测序列和模型参数集，求该观测序列对应的最有可能出现的隐状态序列是什么样的？即找到出现概率最大的隐状态序列。这个问题常见于NLP中的分词、词性标注、语音识别等任务中，如中文分词任务中，每个中文字符作为观测变量，而该字符在词中的角色（如词首，词中，词尾，单独成词）作为隐变量状态，假设当前已经通过大量文本训练得到了HMM模型的参数集，我们的任务就是给定"
+        "wordCount": 504
+    }
+</script>
+
+</article>
+
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
+
+
+                        </div>
+                    </section>
+                    <aside id="sidebar">
+    <a class="sidebar-toggle" title="Expand Sidebar"><i class="toggle icon"></i></a>
+    
+        
+<nav id="article-nav">
+    
+    
+        <a href="/2019/04/03/隐马尔科夫模型学习总结之三/" id="article-nav-older" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">上一篇</strong>
+        <p class="article-nav-title">隐马尔科夫模型学习总结之三</p>
+        <i class="icon fa fa-chevron-left" id="icon-chevron-left"></i>
+        </a>
+    
+</nav>
+
+    
+    <div class="widgets-container">
+        
+            
+                
+
+            
+                
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/03/隐马尔科夫模型学习总结之Viterbi算法应用/" class="title">隐马尔科夫模型学习总结之Viterbi算法应用</a></p>
+                            <p class="item-date"><time datetime="2019-04-03T13:46:51.000Z" itemprop="datePublished">2019-04-03</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/03/隐马尔科夫模型学习总结之三/" class="title">隐马尔科夫模型学习总结之三</a></p>
+                            <p class="item-date"><time datetime="2019-04-03T13:31:10.000Z" itemprop="datePublished">2019-04-03</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/02/隐马尔科夫模型学习总结之二/" class="title">隐马尔科夫模型学习总结之二</a></p>
+                            <p class="item-date"><time datetime="2019-04-02T11:59:15.000Z" itemprop="datePublished">2019-04-02</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/02/隐马尔科夫模型学习总结之一/" class="title">隐马尔科夫模型学习总结之一</a></p>
+                            <p class="item-date"><time datetime="2019-04-02T11:49:38.000Z" itemprop="datePublished">2019-04-02</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/比赛总结/">比赛总结</a></p>
+                            <p class="item-title"><a href="/2019/04/01/拍拍贷文本相似度计算大赛总结/" class="title">拍拍贷文本相似度计算大赛总结</a></p>
+                            <p class="item-date"><time datetime="2019-04-01T12:32:40.000Z" itemprop="datePublished">2019-04-01</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EM/">EM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HMM/">HMM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markov-assumption/">Markov assumption</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/viterbi/">viterbi</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-float">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/EM/" style="font-size: 10px;">EM</a> <a href="/tags/HMM/" style="font-size: 20px;">HMM</a> <a href="/tags/Markov-assumption/" style="font-size: 10px;">Markov assumption</a> <a href="/tags/RNN/" style="font-size: 16.67px;">RNN</a> <a href="/tags/attention/" style="font-size: 16.67px;">attention</a> <a href="/tags/dynamic-programming/" style="font-size: 13.33px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 16.67px;">seq2seq</a> <a href="/tags/tensorflow/" style="font-size: 13.33px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a> <a href="/tags/viterbi/" style="font-size: 10px;">viterbi</a>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.zhihu.com/people/qiu-zhen-yu-87">zhihu</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://github.com/qiufengyuyi">github</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+            
+        
+    </div>
+</aside>
+
+                </div>
+            </div>
+        </div>
+        <footer id="footer">
+    <div class="container">
+        <div class="container-inner">
+            <a id="back-to-top" href="javascript:;"><i class="icon fa fa-angle-up"></i></a>
+            <div class="credit">
+                <h1 class="logo-wrap">
+                    <a href="/" class="logo"></a>
+                </h1>
+                <p>&copy; 2019 qiufengyuyi</p>
+                <p>Powered by <a href="//hexo.io/" target="_blank">Hexo</a>. Theme by <a href="//github.com/ppoffice" target="_blank">PPOffice</a></p>
+            </div>
+            <div class="footer-plugins">
+              
+    
+
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+        
+    
+    <script>
+    var disqus_shortname = 'hexo-theme-hueman';
+    
+    
+    var disqus_url = 'http://yoursite.com/2019/04/03/隐马尔科夫模型学习总结之Viterbi算法应用/';
+    
+    (function() {
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>

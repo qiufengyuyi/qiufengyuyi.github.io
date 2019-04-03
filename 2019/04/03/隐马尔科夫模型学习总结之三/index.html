@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+
+    
+
+    
+    <title>隐马尔科夫模型学习总结之三 | qiufengyuyi&#39;s blog</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <meta name="keywords" content="HMM,EM">
+    
+    <meta name="description" content="本章节主要是总结一下HMM的模型训练问题。即只给定观测序列，如何训练HMM模型，得到模型的参数集 $\lambda=\left\{ \pi,A,B \right\} $,其中 $\pi$ 表示初始隐状态的概率，A表示状态概率转移矩阵，B表示发射概率矩阵。 怎么求这个参数集呢？一般求模型的参数集，是使用极大似然估计方法，求参数，使得给定参数的条件下，观测序列的概率最大化，即：  \lambda_{M">
+<meta name="keywords" content="HMM,EM">
+<meta property="og:type" content="article">
+<meta property="og:title" content="隐马尔科夫模型学习总结之三">
+<meta property="og:url" content="http://yoursite.com/2019/04/03/隐马尔科夫模型学习总结之三/index.html">
+<meta property="og:site_name" content="qiufengyuyi&#39;s blog">
+<meta property="og:description" content="本章节主要是总结一下HMM的模型训练问题。即只给定观测序列，如何训练HMM模型，得到模型的参数集 $\lambda=\left\{ \pi,A,B \right\} $,其中 $\pi$ 表示初始隐状态的概率，A表示状态概率转移矩阵，B表示发射概率矩阵。 怎么求这个参数集呢？一般求模型的参数集，是使用极大似然估计方法，求参数，使得给定参数的条件下，观测序列的概率最大化，即：  \lambda_{M">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/04/03/隐马尔科夫模型学习总结之三/v2-ca2e24a2d99390bc1abe303c4be3579d_b.jpg">
+<meta property="og:updated_time" content="2019-04-03T13:46:03.166Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="隐马尔科夫模型学习总结之三">
+<meta name="twitter:description" content="本章节主要是总结一下HMM的模型训练问题。即只给定观测序列，如何训练HMM模型，得到模型的参数集 $\lambda=\left\{ \pi,A,B \right\} $,其中 $\pi$ 表示初始隐状态的概率，A表示状态概率转移矩阵，B表示发射概率矩阵。 怎么求这个参数集呢？一般求模型的参数集，是使用极大似然估计方法，求参数，使得给定参数的条件下，观测序列的概率最大化，即：  \lambda_{M">
+<meta name="twitter:image" content="http://yoursite.com/2019/04/03/隐马尔科夫模型学习总结之三/v2-ca2e24a2d99390bc1abe303c4be3579d_b.jpg">
+    
+
+    
+
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/titillium-web/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="wrap">
+        <header id="header">
+    <div id="header-outer" class="outer">
+        <div class="container">
+            <div class="container-inner">
+                <div id="header-title">
+                    <h1 class="logo-wrap">
+                        <a href="/" class="logo"></a>
+                    </h1>
+                    
+                        <h2 class="subtitle-wrap">
+                            <p class="subtitle">backlog of a man&#39;s road to AI learning</p>
+                        </h2>
+                    
+                </div>
+                <div id="header-inner" class="nav-container">
+                    <a id="main-nav-toggle" class="nav-icon fa fa-bars"></a>
+                    <div class="nav-container-inner">
+                        <ul id="main-nav">
+                            
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/">主页</a>
+                                </li>
+                            
+                                        <ul class="main-nav-list"><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/基础算法/">基础算法</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/学习笔记/">学习笔记</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/工程经验/">工程经验</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/比赛总结/">比赛总结</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/论文总结/">论文总结</a></li></ul>
+                                    
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/about/index.html">关于</a>
+                                </li>
+                            
+                        </ul>
+                        <nav id="sub-nav">
+                            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+        <div class="container">
+            <div class="main-body container-inner">
+                <div class="main-body-inner">
+                    <section id="main">
+                        <div class="main-body-header">
+    <h1 class="header">
+    
+    <a class="page-title-link" href="/categories/学习笔记/">学习笔记</a>
+    </h1>
+</div>
+
+                        <div class="main-body-content">
+                            <article id="post-隐马尔科夫模型学习总结之三" class="article article-single article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+        隐马尔科夫模型学习总结之三
+        </h1>
+    
+
+            </header>
+        
+        
+            <div class="article-meta">
+                
+    <div class="article-date">
+        <a href="/2019/04/03/隐马尔科夫模型学习总结之三/" class="article-date">
+            <time datetime="2019-04-03T13:31:10.000Z" itemprop="datePublished">2019-04-03</time>
+        </a>
+    </div>
+
+		
+
+                
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/EM/">EM</a>, <a class="tag-link" href="/tags/HMM/">HMM</a>
+    </div>
+
+            </div>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+            <p>本章节主要是总结一下HMM的模型训练问题。即只给定观测序列，如何训练HMM模型，得到模型的参数集 $\lambda=\left\{ \pi,A,B \right\} $,其中 $\pi$ 表示初始隐状态的概率，A表示状态概率转移矩阵，B表示发射概率矩阵。</p>
+<p>怎么求这个参数集呢？一般求模型的参数集，是使用极大似然估计方法，求参数，使得给定参数的条件下，观测序列的概率最大化，即：</p>
+<script type="math/tex; mode=display">
+\lambda_{MLE}=argmax_{\lambda}lnP(Y|\lambda)</script><p>其中，一般求解极大似然估计函数，为了方便最优化，通常会在外层增加一个log函数，将连乘的形式转化为求和的形式，一来，log函数（其实是e为底的log函数）是单调增的，二来求和的形式相对于连乘的形式更容易最优化。求解这个问题，如果已知参数的概率分布的样式，只需求参数的概率分布参数，这个问题时很简单的，如已知参数的概率分布是高斯分布，则只需求解该高斯分布的均值和方差就可以了。但是在HMM的问题中，我们并不知道参数的概率分布是什么形式的。此时有一个方法可以解决该问题，即期望最大化方法（Expectation Maxmization）。</p>
+<p>简单的说，该方法是一种以迭代形式求参数的方法，通过引入隐变量Z，然后假设已知迭代g的参数 $\theta^g​$ ,建立 $\theta^{g+1}​$ 与 $\theta^g​$ 的关系式，然后该试进行求期望将隐变量（E-Step），估计Z的概率分布，然后根据Z，间接求参数(M-Step)。E-Step和M-Step迭代进行，直到收敛。（关于EM算法的具体原理以及其收敛性证明以后有时间另开系列总结）</p>
+<h2 id="使用EM算法求解HMM的模型学习问题"><a href="#使用EM算法求解HMM的模型学习问题" class="headerlink" title="使用EM算法求解HMM的模型学习问题"></a>使用EM算法求解HMM的模型学习问题</h2><p>首先写出我们的问题求解，即极大似然估计概率式子： $\lambda_{MLE}=argmax_{\lambda}lnP(Y|\lambda) $</p>
+<p>在HMM中，隐状态Q就相当于是EM算法中引入的隐变量，因此可以写出EM算法的原始问题式，假设当前已求得迭代g的参数 $\lambda^g$ ,建立 $\lambda^{g+1}$ 和 $\lambda^g$ 的关系式如下：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-ca2e24a2d99390bc1abe303c4be3579d_b.jpg" alt="img"></p>
+<p>关于该公式的说明：</p>
+<ol>
+<li>在原问题式中增加了隐状态q，为了不改变原概率问题，通过积分的形式，将该变量的影响消除（之前有提过该方法），所以就形成了上述式子。</li>
+<li>上述等号右边的第二个乘式可以进一步化简：</li>
+</ol>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-1e5c4963ced032f2eb8d17f09e8c581f_b.jpg" alt="img"></p>
+<p><strong>注意一点：</strong> $\lambda^g$ <strong>在这个式子中是已知的常量。所以上式中</strong> $P(Y|\lambda^g)$ 相当于一个常量，对优化求极值问题没有作用，因此可以删除，最后整个式子化简为：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-a1e79faf5063270bcf66b12929ba090b_b.jpg" alt="img"></p>
+<p>后面为了描述方便，用 $Q(\lambda,\lambda^g) $表示这个式子，</p>
+<p><strong>E-Step:</strong></p>
+<p>由于隐变量是一个离散型的变量，所以对其积分相当于是求和形式，故上式化为如下形式：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-9c81bb901fe686c00f7b7a2ae512ba6f_b.jpg" alt="img"></p>
+<p>其中，外层有0-T个求和，每个求和有k项，而每项的式子对log函数展开成和的形式。而 $P(q,Y|\lambda^{(g)})​$ 则原封不动。</p>
+<p><strong>M-Step：</strong></p>
+<p>对该式子求极值，可以分别对参数求偏导，使其为0，求得参数的表达式。</p>
+<p>首先求解参数 $\pi $，对 $\pi$ 求偏导，注意到只有第一个加项存在 $\pi $，因此其他项可以忽略。</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-e2ba6b5bc1308307d68ff8f695d569a2_b.jpg" alt="img"></p>
+<p>上式中，不包含的初始状态 $q_{0} $的项可以忽略，因此可以化简得到等号右边的式子。</p>
+<p>注意到 $\sum_{i=1}^{k}{\pi_{i}}=1$ ，面对这种带等式约束的多项式求极值的问题，自然就想到使用拉格朗日乘子法。</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-9f025509774006bea5b8f25ec5b71d97_b.jpg" alt="img"></p>
+<p>该多项式对 $\pi_{i} $求偏导，令偏导为0，得到：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-05c9fa54115eb0776f17cd14ff5254ac_b.jpg" alt="img"></p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-e9e605059af1518a1a2e860f1d564de3_b.jpg" alt="img"></p>
+<p>1式</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-ccbbe070c807a94f39e1675e4465581c_b.jpg" alt="img"></p>
+<p>2式</p>
+<p>该多项式对 $\tau​$ 求偏导，令偏导为0，得到：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-6f4434a6ec92d60a2e98512e279d87ba_b.jpg" alt="img"></p>
+<p>将1式两边求和，得到：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-b6d34d35fc7956daa94f01cd8dae5194_b.jpg" alt="img"></p>
+<p>得到 $\tau$ 的表达式，然后将该表达式带入2式，得到参数 $\pi_{i}$ 的表达式：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-62303c874051f721565bd5e551477586_b.jpg" alt="img"></p>
+<p>$P(q_{0}=i,Y|\lambda^{g}) ​$怎么求？看过我之前文章的可以知道，我在第二章节最后讲到的用前向后向算法得到的三个推导式中，就有这个概率的表达式的推导，直接拿来替换得到参数 <img src="https://www.zhihu.com/equation?tex=%5Cpi_%7Bi%7D" alt="\pi_{i}">\pi_{i} 的最终表达式：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-951cb62dc0a5a9e90d8790cb165cf124_b.jpg" alt="img"></p>
+<p>然后求解状态转移矩阵A的元素，即 $Q(\lambda,\lambda^g)​$ 对A作偏导，令偏导为0，发现只有第二个项包含A，所以只考虑第二项。</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-18da51f69b257d9f02d48f1400cff68a_b.jpg" alt="img"></p>
+<p>由于当前式子中的 $a_{q_{t-1},q_{t}} $表示只考虑相邻时刻的两个状态，因此整个式子可化简为：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-9a3203a44c1e2b1be5ded2ae92117a5b_b.jpg" alt="img"></p>
+<p>另外，我们记得A矩阵的每一行的元素之和都应当是1，即 $\sum_{j}^{k}{a_{i,j}}=1 $，因此相当于有k个约束条件，也可以当做一个包含k个等式约束条件的多项式约束问题，可以使用拉格朗日乘子法来解决，只不过此时引入的拉格朗日乘子应当为k个。</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-de992ee1299587e9b59ab7a5cfeda5eb_b.jpg" alt="img"></p>
+<p>同样，分别对 $a_{i,j} ​$和 $\tau_{i}​$ 求偏导，令偏导为0。</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-cca9d8320723542d1c887c9adf53711a_b.jpg" alt="img"></p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-77d215290fc10c136bacf1083b404b34_b.jpg" alt="img"></p>
+<p>得到 $a_{i,j}$ 的表达式为：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-00916c1298766f54f0fd11869d34d8da_b.jpg" alt="img"></p>
+<p>式3</p>
+<p>对式3等式两边同时求和，得到：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-12041fca37123326706b76b49e385363_b.jpg" alt="img"></p>
+<p>由于A矩阵中的每一行概率和都为1，所以上式最后为：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-8683c0bd4545786c322a0b7f32d1ffc3_b.jpg" alt="img"></p>
+<p>然后将 $-\sum_{i=1}^{k}{\tau_{i}} ​$的表达式替换掉，得到 <img src="https://www.zhihu.com/equation?tex=a_%7Bi%2Cj%7D" alt="a_{i,j}">a_{i,j} </p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-3c06fa474eec90d21d16cdfb457355f4_b.jpg" alt="img"></p>
+<p>同理，使用前一章最后总结的三个推导式，可以带入该表达式中，以高效率的方式求出A：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-b95d85e099456cfd335068ce35458735_b.jpg" alt="img"></p>
+<p>备注：等式右侧的A和B矩阵是前迭代算出来的当前的概率矩阵，右侧是本迭代需要计算的概率矩阵。</p>
+<p>最后求解发射矩阵B。同理，也是 $Q(\lambda,\lambda^g)$ 对B元素求偏导，并令偏导为0，注意到Q只有第三个term包含B，所以偏导如下：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-b9b6d900ccb099473c515cc319aecda2_b.jpg" alt="img"></p>
+<p>由于式中只考虑t时刻的b的发射矩阵，所以该项中的很多求和项可以忽略，最后化简为：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-af3964d8f79b2609b5908c4e9f4e6b73_b.jpg" alt="img"></p>
+<p>注意到发射矩阵B的每一行概率和也为1，所以该等式中只考虑一个等式约束：$\sum_{j}^{k}{b_{j}(y_{t})}=1​$ ，可以使用拉格朗日乘子法：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-32ac9745dd8aba9bf5c55a714d2fba13_b.jpg" alt="img"></p>
+<p>分别对 $b_{j}(y_{t}) ​$和 $\tau​$ 求偏导，得到：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-ed0d30f8a186346d4e79fddeff8d7f83_b.jpg" alt="img"></p>
+<p>4式</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-e41c712458794f461305972f3e76b782_b.jpg" alt="img"></p>
+<p>5式</p>
+<p>由4式得到 $b_{j}(y_{t}) ​$的表达式：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-adff724a897f643f34da6589aa535028_b.jpg" alt="img"></p>
+<p>6式</p>
+<p>同时对6式等号两边求和：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-1f0eed41313b8e7cf3286b608602cc0e_b.jpg" alt="img"></p>
+<p>因为5式，所以上式可进一步化简，得到：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-bef43929eacc573d74961a523d34c003_b.jpg" alt="img"></p>
+<p>然后将 $\tau$ 的表达式反带入 $b_{j}(y_{t})$ 的表达式，得到最后的发射矩阵的表达式：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-82a44600df2415127fd8c959118a5dea_b.jpg" alt="img"></p>
+<p>注意到等号右边的分母中，可以将外层的求和消去，同时为了引入前向后向算法的结果，引入 $q_{t-1}=i$ ,同时防止其影响原式子的概率，故对其积分，消除影响，得到：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-7e2338127274652459277e5080f1e68a_b.jpg" alt="img"></p>
+<p>用前向后向算法替换，得到：</p>
+<p><img src="/2019/04/03/隐马尔科夫模型学习总结之三/v2-9a52d35d2e8b8756c468b18288d0c6ba_b.jpg" alt="img"></p>
+<p>备注：由于HMM的参数学习问题函数是非凸的，所以存在很多局部极值，用EM算法，很容易就得到局部极值了。所以参数的初始化很重要。Andrew Ng的notes说到需要重复多次不同的试验，保证在一定程度上到达全局极值。另外，还要注意平滑问题，即所有最后得到的表达式的分母都要注意为0的问题，所以最好是分母都增加一个平滑算法（如拉普拉斯平滑等）。</p>
+<h2 id="结尾"><a href="#结尾" class="headerlink" title="结尾"></a>结尾</h2><p>呼。。。终于把HMM中最难的一部分总结完了，总的来说还是很累人的，不同教程里面的符号还有说法有的都不一样，而且有的教程中推导一笔带过，完全看得云里雾里，不过好在还是打通了。HMM系列还有最后一部分——维特比算法解决标注问题，希望在下一篇章节中完美收尾。</p>
+<p>总结：HMM模型训练学习中用到的知识点如下：EM算法，前向后向算法，拉格朗日乘子法、贝叶斯公式以及各种消元的小trick。</p>
+<p>reference：</p>
+<p>cs229 Andrew ng的相关notes</p>
+<p>徐亦达老师的notes</p>
+
+        </div>
+        <footer class="article-footer">
+            
+
+
+
+    <a data-url="http://yoursite.com/2019/04/03/隐马尔科夫模型学习总结之三/" data-id="cju19ze2x0014t4utxqcdhzol" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+        </footer>
+    </div>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "author": {
+            "@type": "Person",
+            "name": "qiufengyuyi"
+        },
+        "headline": "隐马尔科夫模型学习总结之三",
+        "image": "http://yoursite.com/2019/04/03/隐马尔科夫模型学习总结之三/v2-ca2e24a2d99390bc1abe303c4be3579d_b.jpg",
+        "keywords": "HMM EM",
+        "genre": "学习笔记",
+        "datePublished": "2019-04-03",
+        "dateCreated": "2019-04-03",
+        "dateModified": "2019-04-03",
+        "url": "http://yoursite.com/2019/04/03/隐马尔科夫模型学习总结之三/",
+        "description": "本章节主要是总结一下HMM的模型训练问题。即只给定观测序列，如何训练HMM模型，得到模型的参数集 $\lambda=\left\{ \pi,A,B \right\} $,其中 $\pi$ 表示初始隐状态的概率，A表示状态概率转移矩阵，B表示发射概率矩阵。
+怎么求这个参数集呢？一般求模型的参数集，是使用极大似然估计方法，求参数，使得给定参数的条件下，观测序列的概率最大化，即：
+
+\lambda_{M"
+        "wordCount": 167
+    }
+</script>
+
+</article>
+
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
+
+
+                        </div>
+                    </section>
+                    <aside id="sidebar">
+    <a class="sidebar-toggle" title="Expand Sidebar"><i class="toggle icon"></i></a>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2019/04/03/隐马尔科夫模型学习总结之Viterbi算法应用/" id="article-nav-newer" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">下一篇</strong>
+        <p class="article-nav-title">
+        
+            隐马尔科夫模型学习总结之Viterbi算法应用
+        
+        </p>
+        <i class="icon fa fa-chevron-right" id="icon-chevron-right"></i>
+    </a>
+    
+    
+        <a href="/2019/04/02/隐马尔科夫模型学习总结之二/" id="article-nav-older" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">上一篇</strong>
+        <p class="article-nav-title">隐马尔科夫模型学习总结之二</p>
+        <i class="icon fa fa-chevron-left" id="icon-chevron-left"></i>
+        </a>
+    
+</nav>
+
+    
+    <div class="widgets-container">
+        
+            
+                
+
+            
+                
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/03/隐马尔科夫模型学习总结之Viterbi算法应用/" class="title">隐马尔科夫模型学习总结之Viterbi算法应用</a></p>
+                            <p class="item-date"><time datetime="2019-04-03T13:46:51.000Z" itemprop="datePublished">2019-04-03</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/03/隐马尔科夫模型学习总结之三/" class="title">隐马尔科夫模型学习总结之三</a></p>
+                            <p class="item-date"><time datetime="2019-04-03T13:31:10.000Z" itemprop="datePublished">2019-04-03</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/02/隐马尔科夫模型学习总结之二/" class="title">隐马尔科夫模型学习总结之二</a></p>
+                            <p class="item-date"><time datetime="2019-04-02T11:59:15.000Z" itemprop="datePublished">2019-04-02</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/02/隐马尔科夫模型学习总结之一/" class="title">隐马尔科夫模型学习总结之一</a></p>
+                            <p class="item-date"><time datetime="2019-04-02T11:49:38.000Z" itemprop="datePublished">2019-04-02</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/比赛总结/">比赛总结</a></p>
+                            <p class="item-title"><a href="/2019/04/01/拍拍贷文本相似度计算大赛总结/" class="title">拍拍贷文本相似度计算大赛总结</a></p>
+                            <p class="item-date"><time datetime="2019-04-01T12:32:40.000Z" itemprop="datePublished">2019-04-01</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EM/">EM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HMM/">HMM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markov-assumption/">Markov assumption</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/viterbi/">viterbi</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-float">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/EM/" style="font-size: 10px;">EM</a> <a href="/tags/HMM/" style="font-size: 20px;">HMM</a> <a href="/tags/Markov-assumption/" style="font-size: 10px;">Markov assumption</a> <a href="/tags/RNN/" style="font-size: 16.67px;">RNN</a> <a href="/tags/attention/" style="font-size: 16.67px;">attention</a> <a href="/tags/dynamic-programming/" style="font-size: 13.33px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 16.67px;">seq2seq</a> <a href="/tags/tensorflow/" style="font-size: 13.33px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a> <a href="/tags/viterbi/" style="font-size: 10px;">viterbi</a>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.zhihu.com/people/qiu-zhen-yu-87">zhihu</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://github.com/qiufengyuyi">github</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+            
+        
+    </div>
+</aside>
+
+                </div>
+            </div>
+        </div>
+        <footer id="footer">
+    <div class="container">
+        <div class="container-inner">
+            <a id="back-to-top" href="javascript:;"><i class="icon fa fa-angle-up"></i></a>
+            <div class="credit">
+                <h1 class="logo-wrap">
+                    <a href="/" class="logo"></a>
+                </h1>
+                <p>&copy; 2019 qiufengyuyi</p>
+                <p>Powered by <a href="//hexo.io/" target="_blank">Hexo</a>. Theme by <a href="//github.com/ppoffice" target="_blank">PPOffice</a></p>
+            </div>
+            <div class="footer-plugins">
+              
+    
+
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+        
+    
+    <script>
+    var disqus_shortname = 'hexo-theme-hueman';
+    
+    
+    var disqus_url = 'http://yoursite.com/2019/04/03/隐马尔科夫模型学习总结之三/';
+    
+    (function() {
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>
