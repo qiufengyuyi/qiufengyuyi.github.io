@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+
+    
+
+    
+    <title>支持向量机SVM总结之问题描述 | qiufengyuyi&#39;s blog</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <meta name="keywords" content="SVM">
+    
+    <meta name="description" content="本系列开始对支持向量机SVM算法的学习总结，由于SVM涉及到的数学知识很多，包括了向量、几何间距、凸优化、核方法等。因此，会分几个章节进行总结。尽量在一定的数学理论深度上将SVM的思想描述清楚，不过多深入其中的数学机制。总结主要是借鉴了cs229中的相关章节以及notes、林轩田的机器学习技法课程、还有其他博客的相关总结。 SVM可以说是传统机器学习中，除去集成模型外，称为off-the-shel">
+<meta name="keywords" content="SVM">
+<meta property="og:type" content="article">
+<meta property="og:title" content="支持向量机SVM总结之问题描述">
+<meta property="og:url" content="http://yoursite.com/2019/04/04/支持向量机SVM总结之问题描述/index.html">
+<meta property="og:site_name" content="qiufengyuyi&#39;s blog">
+<meta property="og:description" content="本系列开始对支持向量机SVM算法的学习总结，由于SVM涉及到的数学知识很多，包括了向量、几何间距、凸优化、核方法等。因此，会分几个章节进行总结。尽量在一定的数学理论深度上将SVM的思想描述清楚，不过多深入其中的数学机制。总结主要是借鉴了cs229中的相关章节以及notes、林轩田的机器学习技法课程、还有其他博客的相关总结。 SVM可以说是传统机器学习中，除去集成模型外，称为off-the-shel">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/04/04/支持向量机SVM总结之问题描述/v2-f1e30df8c3620ae50835db4090d7b30e_b.jpg">
+<meta property="og:updated_time" content="2019-04-04T12:33:45.857Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="支持向量机SVM总结之问题描述">
+<meta name="twitter:description" content="本系列开始对支持向量机SVM算法的学习总结，由于SVM涉及到的数学知识很多，包括了向量、几何间距、凸优化、核方法等。因此，会分几个章节进行总结。尽量在一定的数学理论深度上将SVM的思想描述清楚，不过多深入其中的数学机制。总结主要是借鉴了cs229中的相关章节以及notes、林轩田的机器学习技法课程、还有其他博客的相关总结。 SVM可以说是传统机器学习中，除去集成模型外，称为off-the-shel">
+<meta name="twitter:image" content="http://yoursite.com/2019/04/04/支持向量机SVM总结之问题描述/v2-f1e30df8c3620ae50835db4090d7b30e_b.jpg">
+    
+
+    
+
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/titillium-web/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="wrap">
+        <header id="header">
+    <div id="header-outer" class="outer">
+        <div class="container">
+            <div class="container-inner">
+                <div id="header-title">
+                    <h1 class="logo-wrap">
+                        <a href="/" class="logo"></a>
+                    </h1>
+                    
+                        <h2 class="subtitle-wrap">
+                            <p class="subtitle">backlog of a man&#39;s road to AI learning</p>
+                        </h2>
+                    
+                </div>
+                <div id="header-inner" class="nav-container">
+                    <a id="main-nav-toggle" class="nav-icon fa fa-bars"></a>
+                    <div class="nav-container-inner">
+                        <ul id="main-nav">
+                            
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/">主页</a>
+                                </li>
+                            
+                                        <ul class="main-nav-list"><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/基础算法/">基础算法</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/学习笔记/">学习笔记</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/工程经验/">工程经验</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/比赛总结/">比赛总结</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/论文总结/">论文总结</a></li></ul>
+                                    
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/about/index.html">关于</a>
+                                </li>
+                            
+                        </ul>
+                        <nav id="sub-nav">
+                            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+        <div class="container">
+            <div class="main-body container-inner">
+                <div class="main-body-inner">
+                    <section id="main">
+                        <div class="main-body-header">
+    <h1 class="header">
+    
+    <a class="page-title-link" href="/categories/学习笔记/">学习笔记</a>
+    </h1>
+</div>
+
+                        <div class="main-body-content">
+                            <article id="post-支持向量机SVM总结之问题描述" class="article article-single article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+        支持向量机SVM总结之问题描述
+        </h1>
+    
+
+            </header>
+        
+        
+            <div class="article-meta">
+                
+    <div class="article-date">
+        <a href="/2019/04/04/支持向量机SVM总结之问题描述/" class="article-date">
+            <time datetime="2019-04-04T12:26:39.000Z" itemprop="datePublished">2019-04-04</time>
+        </a>
+    </div>
+
+		
+
+                
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/SVM/">SVM</a>
+    </div>
+
+            </div>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+            <p>本系列开始对支持向量机SVM算法的学习总结，由于SVM涉及到的数学知识很多，包括了向量、几何间距、凸优化、核方法等。因此，会分几个章节进行总结。尽量在一定的数学理论深度上将SVM的思想描述清楚，不过多深入其中的数学机制。总结主要是借鉴了cs229中的相关章节以及notes、林轩田的机器学习技法课程、还有其他博客的相关总结。</p>
+<p>SVM可以说是传统机器学习中，除去集成模型外，称为off-the-shelf（拿来即用）且效果通常来说都比较好的有监督算法，即可以用来解决分类问题，也可以用来解决回归问题（支持向量回归），为了问题描述更简洁，只讨论二分类问题。（后续有时间会讨论支持向量回归）</p>
+<h2 id="SVM核心思想"><a href="#SVM核心思想" class="headerlink" title="SVM核心思想"></a>SVM核心思想</h2><p>其实SVM的核心模型很简单且很好理解，难的是他如何去最优化这个模型。首先，我先总结一下它的核心思想——margin。我们在解决分类问题时，预测样本数据的标签是1还是-1，本质上预测的是一个样本属于标签1的概率是多少，若概率大于我们预设的阈值，则属于标签1，反之属于标签-1。</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之问题描述/v2-f1e30df8c3620ae50835db4090d7b30e_b.jpg" alt="img"></p>
+<p>如上图，是典型的分类问题的几何展示，假设当前的样本是二维的，叉数据表示标签为1，圆圈数据表示标签为-1，可以看出当前数据在二维平面上是线性可分的，我们的分类模型能够在两种不同标签的数据之间划分一个界限，类似于象棋中的“楚河汉界“，不同标签的数据各占一面。这里有两点备注说明一下：</p>
+<ol>
+<li>线性可分的概念，这里简单得理解就是在某个n维空间中，能够在n-1维空间上找到一个线性函数将n维空间上的数据分隔，举例子：二维空间中找到一个直线分隔、三维空间中找到一个平面分隔。SVM算法要求数据是线性可分的，如果不是线性可分，需要使用核函数将数据转换到可以线性可分的维度。（后面详细说明。）</li>
+<li>线性可分中，能够将数据分隔的线性函数我们称为hyperplane，可以称为超平面。我们的线性分类模型最终就是要得到这样一个超平面能够将数据很好的分隔。</li>
+</ol>
+<p>下面为了描述方便，假设当前数据是二维的，那么我们最终要求的就是一条直线，即wx+b这个函数中的w和b的参数值（高维的思想类似，只是w和b的维数要做相应的变更），能够将数据按照“楚河汉界”一样分隔，但是这样的直线其实是有很多的，如下图：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之问题描述/v2-67316997fd3e27a9f1dac8c103dbc6c1_b.jpg" alt="img"></p>
+<p>上图中三条直线其实都满足上面的要求，但是我们肯定是要得到一个最优的模型的，那么怎么算是最好的模型呢？即上面三条线哪条比较好呢？有两个思路：</p>
+<ol>
+<li>所有的数据点肯定要离这条直线越远越好，这样说明我对某个数据的分类预测正确的信心就越大。</li>
+<li>离这条直线很近的点分错的可能性很大，将直线稍微旋转一下，可能就会改变一个数据的分类，此时模型的健壮性很差，容易受异常数据的影响。</li>
+</ol>
+<p>因此我们最终要找的这条直线应当朝着最大化所有数据点到该直线间距的目标而去的，称为maximize margin。那么这个margin怎么计算呢？</p>
+<p>首先这个margin就是计算数据点到超平面（即直线）a的距离。这个点到直线的距离在高中已经学过了，很简单，直接通过该数据点，画一条与a平行的直线b，计算直线a按照与w垂直的方向平移到直线b的距离，可得到：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之问题描述/v2-b367161d2a42a062380dd88f4f66cfea_b.jpg" alt="img"></p>
+<p>$\gamma^{i} $表示第i个数据点到超平面的间距，||w||表示 $\sqrt{w^{T}w} $。由于我们的分类标签为1和-1，因此我们同时考虑两种不同分类标签数据的间距margin，如下：相当于上面的间距公式乘以标签</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之问题描述/v2-c0c416fc9c4c5ebdc131d7281d4aff8e_b.jpg" alt="间距margin公式"></p>
+<p>其次，由于对所有点求最大间隔这个优化问题很难，可以说是一个NP-hard难度问题。因此我们转换一下思路，我们只要保证那些距离超平面（后面都以直线wx+b=0相称）最近的那些数据点离直线wx+b尽量就可以了，形式化说法就是，我们定义 $\gamma=min_{i=1,…,m}\gamma^{i} $为所有数据点到直线wx+b最小的间距，我们的目标就是要找到一条直线，去最大化这个间距，即：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之问题描述/v2-f846e56a5d0b5eb3e115868b7723a9a3_b.jpg" alt="img"></p>
+<p>这里有几点说明：</p>
+<ol>
+<li>该优化的目标函数是 $\gamma$ ,优化的参数是 $\gamma,w,b$</li>
+<li>约束条件有两个，第一个就是要求所有数据点的间距要大于 $\gamma$ ，其实就是我上面说的距离直线最近的点，因此其他所有点肯定比这些点要远。</li>
+<li>第二个约束条件的意思是上述间距公式表示的是几何间距，而优化函数我们习惯于对函数进行操作，因此还存在一个函数间距， $y^{(i)}(w^{T}x^{(i)}+b) $，为了将几何间隔与函数间隔对应起来，对我们的 $\gamma$ 公式进行scaling，不会对我们的优化问题有任何影响，因此可以将 $||w||=1$ ，此时也与第一个约束不等式对应起来（若不带这个等式约束，则第一个约束条件要除以||w||）。</li>
+</ol>
+<p>但是上述优化问题显然很难解决，因为 $||w||=1$ 这个约束条件是非凸的（绝对值函数，并没有一个明确的最优），并不好优化。因此要将上述问题进行转化，将这个等式约束条件去掉：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之问题描述/v2-f77241671d5c824128cb1cf0256d049e_b.jpg" alt="img"></p>
+<p>上式将等式约束去掉了，优化目标函数也变化了，但是这个优化函数也是个非凸的函数，也不好优化。那么我们可以对间距函数继续scaling，即同时调整w和b的倍数，使得</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之问题描述/v2-959f2c1838a93c32a6abf2d471b310b4_b.jpg" alt="img"></p>
+<p>，即相当于距离wx+b=0最近的点到该直线的距离设为1，得到优化问题：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之问题描述/v2-4fe87c8da47dfa3ce59f2f3f94f525a2_b.jpg" alt="img"></p>
+<p>有的notes中的优化目标函数为2/||w||，原因是将正反两种标签的数据点到超平面直线的距离都加上了，道理是一样的。如下图所示。</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之问题描述/v2-c526436c800dd70e78ed043ceb497979_b.jpg" alt="img"></p>
+<p>图上这些margin间距最小的点有个名字，叫做<strong>support vector</strong>，即<strong>支持向量</strong>，通常一个数据集中的支持向量的个数不会很多，因此SVM利用这种特性能够提高算法模型的效率，这个在后面讲解具体算法时会说到。</p>
+<p>其实上述目标函数还是不好优化，因此还可以继续转化：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之问题描述/v2-8a1600aafdc1d7aa57acd81bd778d1d8_b.jpg" alt="img"></p>
+<p>其实做了个最大最小化的转化，此时得到一个二次函数，且是求在约束条件下，它的最小值，这是个凸函数，可以使用凸优化相关方法来解决该问题了。至于为什么要加1/2,我理解是后面求偏导时，可以将w前面的系数约去，方便计算。</p>
+<p>下一章继续讲解如何使用拉格朗日对偶方法来解决这个最优化问题。</p>
+
+        </div>
+        <footer class="article-footer">
+            
+
+
+
+    <a data-url="http://yoursite.com/2019/04/04/支持向量机SVM总结之问题描述/" data-id="cju2nr0to0009f4uttwpq8zgo" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+        </footer>
+    </div>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "author": {
+            "@type": "Person",
+            "name": "qiufengyuyi"
+        },
+        "headline": "支持向量机SVM总结之问题描述",
+        "image": "http://yoursite.com/2019/04/04/支持向量机SVM总结之问题描述/v2-f1e30df8c3620ae50835db4090d7b30e_b.jpg",
+        "keywords": "SVM",
+        "genre": "学习笔记",
+        "datePublished": "2019-04-04",
+        "dateCreated": "2019-04-04",
+        "dateModified": "2019-04-04",
+        "url": "http://yoursite.com/2019/04/04/支持向量机SVM总结之问题描述/",
+        "description": "本系列开始对支持向量机SVM算法的学习总结，由于SVM涉及到的数学知识很多，包括了向量、几何间距、凸优化、核方法等。因此，会分几个章节进行总结。尽量在一定的数学理论深度上将SVM的思想描述清楚，不过多深入其中的数学机制。总结主要是借鉴了cs229中的相关章节以及notes、林轩田的机器学习技法课程、还有其他博客的相关总结。
+SVM可以说是传统机器学习中，除去集成模型外，称为off-the-shel"
+        "wordCount": 45
+    }
+</script>
+
+</article>
+
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
+
+
+                        </div>
+                    </section>
+                    <aside id="sidebar">
+    <a class="sidebar-toggle" title="Expand Sidebar"><i class="toggle icon"></i></a>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/" id="article-nav-newer" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">下一篇</strong>
+        <p class="article-nav-title">
+        
+            支持向量机SVM总结之拉格朗日对偶问题
+        
+        </p>
+        <i class="icon fa fa-chevron-right" id="icon-chevron-right"></i>
+    </a>
+    
+    
+        <a href="/2019/04/03/隐马尔科夫模型学习总结之Viterbi算法应用/" id="article-nav-older" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">上一篇</strong>
+        <p class="article-nav-title">隐马尔科夫模型学习总结之Viterbi算法应用</p>
+        <i class="icon fa fa-chevron-left" id="icon-chevron-left"></i>
+        </a>
+    
+</nav>
+
+    
+    <div class="widgets-container">
+        
+            
+                
+
+            
+                
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/" class="title">支持向量机SVM总结之拉格朗日对偶问题</a></p>
+                            <p class="item-date"><time datetime="2019-04-04T12:34:32.000Z" itemprop="datePublished">2019-04-04</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/04/支持向量机SVM总结之问题描述/" class="title">支持向量机SVM总结之问题描述</a></p>
+                            <p class="item-date"><time datetime="2019-04-04T12:26:39.000Z" itemprop="datePublished">2019-04-04</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/03/隐马尔科夫模型学习总结之Viterbi算法应用/" class="title">隐马尔科夫模型学习总结之Viterbi算法应用</a></p>
+                            <p class="item-date"><time datetime="2019-04-03T13:46:51.000Z" itemprop="datePublished">2019-04-03</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/03/隐马尔科夫模型学习总结之三/" class="title">隐马尔科夫模型学习总结之三</a></p>
+                            <p class="item-date"><time datetime="2019-04-03T13:31:10.000Z" itemprop="datePublished">2019-04-03</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/02/隐马尔科夫模型学习总结之二/" class="title">隐马尔科夫模型学习总结之二</a></p>
+                            <p class="item-date"><time datetime="2019-04-02T11:59:15.000Z" itemprop="datePublished">2019-04-02</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EM/">EM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HMM/">HMM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markov-assumption/">Markov assumption</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVM/">SVM</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/convex-optimization/">convex optimization</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/viterbi/">viterbi</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-float">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/EM/" style="font-size: 10px;">EM</a> <a href="/tags/HMM/" style="font-size: 20px;">HMM</a> <a href="/tags/Markov-assumption/" style="font-size: 10px;">Markov assumption</a> <a href="/tags/RNN/" style="font-size: 16.67px;">RNN</a> <a href="/tags/SVM/" style="font-size: 13.33px;">SVM</a> <a href="/tags/attention/" style="font-size: 16.67px;">attention</a> <a href="/tags/convex-optimization/" style="font-size: 10px;">convex optimization</a> <a href="/tags/dynamic-programming/" style="font-size: 13.33px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 16.67px;">seq2seq</a> <a href="/tags/tensorflow/" style="font-size: 13.33px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a> <a href="/tags/viterbi/" style="font-size: 10px;">viterbi</a>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.zhihu.com/people/qiu-zhen-yu-87">zhihu</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://github.com/qiufengyuyi">github</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+            
+        
+    </div>
+</aside>
+
+                </div>
+            </div>
+        </div>
+        <footer id="footer">
+    <div class="container">
+        <div class="container-inner">
+            <a id="back-to-top" href="javascript:;"><i class="icon fa fa-angle-up"></i></a>
+            <div class="credit">
+                <h1 class="logo-wrap">
+                    <a href="/" class="logo"></a>
+                </h1>
+                <p>&copy; 2019 qiufengyuyi</p>
+                <p>Powered by <a href="//hexo.io/" target="_blank">Hexo</a>. Theme by <a href="//github.com/ppoffice" target="_blank">PPOffice</a></p>
+            </div>
+            <div class="footer-plugins">
+              
+    
+
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+        
+    
+    <script>
+    var disqus_shortname = 'hexo-theme-hueman';
+    
+    
+    var disqus_url = 'http://yoursite.com/2019/04/04/支持向量机SVM总结之问题描述/';
+    
+    (function() {
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>

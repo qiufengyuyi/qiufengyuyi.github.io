@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+
+    
+
+    
+    <title>支持向量机SVM总结之拉格朗日对偶问题 | qiufengyuyi&#39;s blog</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <meta name="keywords" content="SVM,convex optimization">
+    
+    <meta name="description" content="前一章节最后得到了SVM的优化目标函数：  现在我们就需要想方设法去解这个函数优化问题。 凸优化我们的函数优化问题是一个凸优化问题，什么叫凸优化，我下面只是简单得讲一下，不过多深入。 解释一下“凸”。在一段数据区间内[x1,x2]，任意的数据点都可以用 $\theta X_{1}+(1-\theta)X_{2} $表示，其中 $0\leq\theta\leq1$ ，这段区间称为convex set">
+<meta name="keywords" content="SVM,convex optimization">
+<meta property="og:type" content="article">
+<meta property="og:title" content="支持向量机SVM总结之拉格朗日对偶问题">
+<meta property="og:url" content="http://yoursite.com/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/index.html">
+<meta property="og:site_name" content="qiufengyuyi&#39;s blog">
+<meta property="og:description" content="前一章节最后得到了SVM的优化目标函数：  现在我们就需要想方设法去解这个函数优化问题。 凸优化我们的函数优化问题是一个凸优化问题，什么叫凸优化，我下面只是简单得讲一下，不过多深入。 解释一下“凸”。在一段数据区间内[x1,x2]，任意的数据点都可以用 $\theta X_{1}+(1-\theta)X_{2} $表示，其中 $0\leq\theta\leq1$ ，这段区间称为convex set">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-b7a00fc565de3dfece4e3aa81b33fe9e_b.jpg">
+<meta property="og:updated_time" content="2019-04-04T13:09:48.690Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="支持向量机SVM总结之拉格朗日对偶问题">
+<meta name="twitter:description" content="前一章节最后得到了SVM的优化目标函数：  现在我们就需要想方设法去解这个函数优化问题。 凸优化我们的函数优化问题是一个凸优化问题，什么叫凸优化，我下面只是简单得讲一下，不过多深入。 解释一下“凸”。在一段数据区间内[x1,x2]，任意的数据点都可以用 $\theta X_{1}+(1-\theta)X_{2} $表示，其中 $0\leq\theta\leq1$ ，这段区间称为convex set">
+<meta name="twitter:image" content="http://yoursite.com/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-b7a00fc565de3dfece4e3aa81b33fe9e_b.jpg">
+    
+
+    
+
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/titillium-web/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="wrap">
+        <header id="header">
+    <div id="header-outer" class="outer">
+        <div class="container">
+            <div class="container-inner">
+                <div id="header-title">
+                    <h1 class="logo-wrap">
+                        <a href="/" class="logo"></a>
+                    </h1>
+                    
+                        <h2 class="subtitle-wrap">
+                            <p class="subtitle">backlog of a man&#39;s road to AI learning</p>
+                        </h2>
+                    
+                </div>
+                <div id="header-inner" class="nav-container">
+                    <a id="main-nav-toggle" class="nav-icon fa fa-bars"></a>
+                    <div class="nav-container-inner">
+                        <ul id="main-nav">
+                            
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/">主页</a>
+                                </li>
+                            
+                                        <ul class="main-nav-list"><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/基础算法/">基础算法</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/学习笔记/">学习笔记</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/工程经验/">工程经验</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/比赛总结/">比赛总结</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/论文总结/">论文总结</a></li></ul>
+                                    
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/about/index.html">关于</a>
+                                </li>
+                            
+                        </ul>
+                        <nav id="sub-nav">
+                            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+        <div class="container">
+            <div class="main-body container-inner">
+                <div class="main-body-inner">
+                    <section id="main">
+                        <div class="main-body-header">
+    <h1 class="header">
+    
+    <a class="page-title-link" href="/categories/学习笔记/">学习笔记</a>
+    </h1>
+</div>
+
+                        <div class="main-body-content">
+                            <article id="post-支持向量机SVM总结之拉格朗日对偶问题" class="article article-single article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+        支持向量机SVM总结之拉格朗日对偶问题
+        </h1>
+    
+
+            </header>
+        
+        
+            <div class="article-meta">
+                
+    <div class="article-date">
+        <a href="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/" class="article-date">
+            <time datetime="2019-04-04T12:34:32.000Z" itemprop="datePublished">2019-04-04</time>
+        </a>
+    </div>
+
+		
+
+                
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/SVM/">SVM</a>, <a class="tag-link" href="/tags/convex-optimization/">convex optimization</a>
+    </div>
+
+            </div>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+            <p>前一章节最后得到了SVM的优化目标函数：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-b7a00fc565de3dfece4e3aa81b33fe9e_b.jpg" alt="img"></p>
+<p>现在我们就需要想方设法去解这个函数优化问题。</p>
+<h2 id="凸优化"><a href="#凸优化" class="headerlink" title="凸优化"></a>凸优化</h2><p>我们的函数优化问题是一个凸优化问题，什么叫凸优化，我下面只是简单得讲一下，不过多深入。</p>
+<p>解释一下“凸”。在一段数据区间内[x1,x2]，任意的数据点都可以用 $\theta X_{1}+(1-\theta)X_{2} $表示，其中 $0\leq\theta\leq1$ ，这段区间称为convex set。一个函数如果其变量域是convex set，且任意其变量域中的 $x\neq y$ 都满足： $f(\theta x + (1-\theta)y)\leq\theta f(x)+(1-\theta)f(y)$ ,其中 $0\leq\theta\leq1$ ，则说明这个函数式严格凸的。二次函数曲线在实数域上是典型的一个凸的函数。</p>
+<p>凸优化问题就是去寻找凸函数的极值。一般在没有任何约束条件下，求函数极值一般是求偏导，然后令偏导为0，求得参数的值。这是最简单的情况。但是我们的SVM优化目标函数是有不等式约束条件的。之前在隐马尔可夫模型总结时，遇到过有等式约束的条件下，求函数的极值问题，使用的是拉格朗日乘子法。这个方法的具体内涵可以见quora上的经典回答。</p>
+<p><a href="https://www.quora.com/What-is-the-meaning-of-the-value-of-a-Lagrange-multiplier-when-doing-optimization/answer/Balaji-Pitchai-Kannuwww.quora.com" target="_blank" rel="noopener">https://www.quora.com/What-is-the-meaning-of-the-value-of-a-Lagrange-multiplier-when-doing-optimization/answer/Balaji-Pitchai-Kannuwww.quora.com</a></p>
+<p>等式约束条件下的优化问题已经知道方法了，但是我们的SVM中的优化函数是带不等式约束条件的，这个怎么求？这里我读了几篇博客包括<a href="https://zhuanlan.zhihu.com/p/26514613" target="_blank" rel="noopener">浅谈最优化问题的KKT条件</a>，<a href="https://www.cnblogs.com/xxrxxr/p/7536131.html" target="_blank" rel="noopener">关于SVM数学细节逻辑的个人理解（二）：从基本形式转化为对偶问题 - xxrxxr - 博客园</a>，给出了详细的介绍，下面我先介绍一下对偶问题，然后结合上述博客，详细说明对偶问题的KKT条件是如何推导出来的。</p>
+<h2 id="对偶问题"><a href="#对偶问题" class="headerlink" title="对偶问题"></a>对偶问题</h2><p>考虑同时带等式约束和不等式约束的优化问题：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-ec9a3aa561bdfeea4f447cc27831b125_b.jpg" alt="img"></p>
+<p>我们使用通用的拉格朗日乘子法，得到拉格朗日多项式：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-46de5766f2538f42eadb8700dbac6be9_b.jpg" alt="img"></p>
+<p>其中， $\alpha_{i} ​$是对应于 $g_{i}(w)\leq0 ​$的拉格朗日乘子， $\beta_{i}​$ 是对应于 $h_{i}(w)=0​$ 的拉格朗日乘子。我们定义原始的优化目标：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-3991fe4e3e2fbd0f6ae8c2cc467b0789_b.jpg" alt="img"></p>
+<p>这里， $\alpha_{i} $是非负的，这个目标就是最大化我们的拉格朗日多项式，将上述式子进行展开得到：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-d6dd9d4b88cd5d72892f1195f71aa29c_b.jpg" alt="img"></p>
+<p>从上式可以得到，若我们的参数w不满足 $g_{i}(w)\leq0$ ，此时因为 $\alpha_{i}$ 是非负的，那么取 $\alpha_{i}$ 为正数可以让中间的项永远大于0，因此 $\theta_{p}(w)\rightarrow\infty$ ;若参数w不满足  $h_{i}(w)=0$ ，那么让 $\beta_{i}\rightarrow\infty $,使得 $\theta_{p}(w)\rightarrow\infty$ 。相反，若参数w满足所有的原始约束条件，那么此时可以得到， $\sum_{i=1}^{l}{\beta_{i}h_{i}(w)}=0 ， \sum_{i=1}^{k}{\alpha_{i}g_{i}(w)}\leq0$，要使 $\theta_{p}(w)$ 最大，那么就有： $\theta_{p}(w)=f(w)$ 。因此原始优化目标可以写成：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-88e5f99938af8f67c44755926c99a855_b.jpg" alt="img"></p>
+<p>因此我们S原来的找极小值的优化问题也可以写成：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-a2619594b008c2ab7d71e654ab19261a_b.jpg" alt="img"></p>
+<p>此时为了叙述方便，定义 $p^{*}=min_{w}\theta_{p}(w)$ 表示我们需要求的最优目标值，这个通常叫做原始问题，表示原始的优化目标。</p>
+<p>而往往对应于原始问题，我们能够转化为相应的对偶问题。对偶问题可以理解为在研究目标函数在约束条件下的极大值问题时，通常都存在与之匹配的求极小值的问题。因此上面的例子中，对应的对偶问题形式如下：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-b8826bfe476845891959c9929756b0f1_b.jpg" alt="img"></p>
+<p>相当于是把原始问题中的max和min的位置进行了对调。有一个显而易见的结论，即对一个序列先找极小值，然后在所有极小值中找到一个最大值a；对一个序列先找极大值，然后在所有极大值中找到一个最小值b。 $a\leq b $是明显成立的。因此有：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-b95ee4b868d72bb868da9e915e316513_b.jpg" alt="img"></p>
+<p>为何要研究对偶问题？<strong>我自己的理解是对偶问题比原始问题更容易解，容易在哪里？可以看到对偶问题外层的优化目标参数是拉格朗日参数，然后通过求得的拉格朗日参数，间接得到我们最终要求的超平面的参数w。而原始问题外层的优化目标参数直接是w，无法直接去优化得到这个参数（因为还存在着其他未知的拉格朗日参数）</strong></p>
+<p><strong>那么什么时候对偶问题能够等价于原始问题呢？</strong>由于上式为 $d^<em>\leq p^</em> $，两个问题要等价，相当于要使 $d^<em>=p^</em>$ 。因此有数学家提出了一些理论来让两种问题等价。假设当前函数f以及 $g_{i}$ 都是凸的，且 $h_{i}$ 是仿射的（理解为带截距的线性函数），同时存在w，使得 $g_{i}(w)&lt;0$ 对所有i都成立。此时必然存在参数解 $w^<em>,\alpha^</em>,\beta^<em>$ （第一个是原始问题的解，后两个是对偶问题的解）,使得 $d^</em>=p^<em>=L(w^</em>,\alpha^<em>,\beta^</em>)$ 。 $w^<em>,\alpha^</em>,\beta^*$ 必须要满足这样一个条件，叫Karush-Kuhn-Tucker（KKT）条件：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-9f831b13da606d205c19be5327ba0eeb_b.jpg" alt="img"></p>
+<p>其中第三个条件称为KKT对偶补充条件。当 $\alpha_{i}^<em>&gt;0$ 时，说明 $g_{i}(w^</em>)=0$ 。这个结论对后面提升SVM计算效率很有用，它能够表明只有很少的一部分数据点需要考虑 $g_{i}(w)$ 。</p>
+<h2 id="简单推导KKT"><a href="#简单推导KKT" class="headerlink" title="简单推导KKT"></a>简单推导KKT</h2><p><a href="https://zhuanlan.zhihu.com/p/26514613" target="_blank" rel="noopener">力学渣：浅谈最优化问题的KKT条件</a></p>
+<p><a href="http://www.cnblogs.com/dreamvibe/p/4349886.html" target="_blank" rel="noopener">写在SVM之前—凸优化与对偶问题 - vibe - 博客园</a></p>
+<p>根据上面两个博客中对KKT的推导，我简单得进行总结，尽量用我自己的语言来描述。</p>
+<p>首先，明确我们的目标：即参数解集 $w^<em>,\alpha^</em>,\beta^<em>$ 要使得 $d^</em>=p^*$ 。</p>
+<p> 1、$w^<em>,\alpha^</em>,\beta^*$ 必然是 $min_{w}L(w,\alpha,\beta)$ 的极值解。因此其对应偏导应当为0.</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-3a8e965ead6101bb0e7792eee4f119cf_b.jpg" alt="img"></p>
+<p>2、第二个KKT条件与第一个条件类似</p>
+<p>3、由于 $d^* $属于 $L(w,\alpha,\beta)$ 最小值集中的一个，因此</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-13bef1442b3c9c68c1e9abaab4373542_b.jpg" alt="img"></p>
+<p>而 $p^<em>$ 在上一节中推导对偶问题时，已知 $p^</em>=f(w^*)$ ,因此有如下等式成立：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-b479ccf8d40761c8dd69a2e0532e85df_b.jpg" alt="img"></p>
+<p>因为 $h_{i} =0$本来就是我们的等式约束，因此可以得到：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-c3c51334ad391ae2f9fe123c36a290c8_b.jpg" alt="img"></p>
+<p>而由于 $\alpha_{i}\geq0$ 和 $g_{i}(w)\leq0$ 本来就是约束条件，因此 $\alpha_{i}g_{i}(w)\leq0$ ,要使上述等式成立，求和的每项只能等于0，因此得到：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-29e7c88750c9c7facf7548ccde103af1_b.jpg" alt="img"></p>
+<h2 id="SVM中的对偶问题应用"><a href="#SVM中的对偶问题应用" class="headerlink" title="SVM中的对偶问题应用"></a>SVM中的对偶问题应用</h2><p>上面就是一些对偶问题的数学原理描述，不是很深入，但是对于了解SVM感觉应该够用了。下面就将这个思想应用到我们的SVM模型问题中。重新看一下我们的SVM中的原始问题：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-66442ac67653545c22b9e5bcb73242d6_b.jpg" alt="img"></p>
+<p>可以看到我们只有不等式约束，因此将不等式约束统一改写为标准形式：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-6a5deff7aa2647280c87bcfef0412908_b.jpg" alt="img"></p>
+<p>有KKT互补条件得知， $\alpha_{i}&gt;0$ 也即$g_{i}(w)=0$ 的数据点表示的是那些间距为1的数据样本点，这种样本数据上一章我们提到过，叫支持向量。这里就不细说了。等后面讲到具体的SVM实现时，会提一下。下面我们构造我们的 $L(w,b,\alpha)$ :</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-99cd69cd366f27d904d4ab6b0455c63f_b.jpg" alt="img"></p>
+<p>要得到其对偶形式，首先固定参数 $\alpha ​$,以w和b为参数，求 $L(w,b,\alpha) 的极小值​$。求法很简单，还是用求偏导数，令偏导数为0：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-df11196907705a8f56f5bceb8f17d61c_b.jpg" alt="img"></p>
+<p>得到w的表达式：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-b76b4e339e721d9e464d866fd7fff6f2_b.jpg" alt="img"></p>
+<p>同理对b求偏导，得到：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-2b3afc180eb2296184c9ba859825c6ba_b.jpg" alt="img"></p>
+<p>将w的表达式反代入L中，得到：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-f18784208f8385e1f4c19ba52b2125c5_b.jpg" alt="img"></p>
+<p>最后一项可以得到为0，因此有:</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-659f3b5f4d3112dbc63e1b8acd7be3e9_b.jpg" alt="img"></p>
+<p>再结合我们的约束条件 $\alpha_{i}\geq0$ 以及</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-04346ac272f68ab725c01e776d1837e0_b.jpg" alt="img"></p>
+<p>可以得到我们的对偶问题形式：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-e42d391e43e14410138e101a4746bdca_b.jpg" alt="img"></p>
+<p>其实根据上面我们的推导过程，以及约束条件，可以看出我们的对偶问题满足KKT条件。</p>
+<p>至此，就可以用这个去解决问题了，相当于先求出最优的 $\alpha$ ,然后推得对应的w和b，具体的在后面的SMO中会有讲解。</p>
+<p>这里提一点，我们在训练完模型后，假设得到了最优 $\alpha$ 、w和b,那么预测过程为计算 $w^Tx+b $，若结果大于0，则预测y=1。其实 $w^Tx+b $可以化为：</p>
+<p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-4938627eca1b217d16146958c4d4b537_b.jpg" alt="img"></p>
+<p>实际上， $x^{(i)}$ 为训练样本中的数据点。根据支持向量的性质，支持向量对应的 $\alpha$ 不为0，其他数据的 $\alpha$ 均为0，且支持向量的个数通常都比较少，因此可以极大降低计算的成本。</p>
+<p>接下来有两个问题：</p>
+<p>1、计算样本x之间的内积，计算量还是很大的，有没有什么方法减小计算量呢？</p>
+<p>2、若大部分样本数据在当前维度上不是线性可分的怎么办？</p>
+<p>3、如果出现少量异常点怎么办？</p>
+<p>对于1和2两个问题，下面我们将引入kernel方法，将维度进行转换。对于3这个问题我们将引入惩罚项，类似于regularization，将原来我们的hard-SVM转换为soft-SVM来解决。下两章将着重介绍这两个方面。</p>
+<p>reference：</p>
+<p>cs229 notes</p>
+<p><a href="https://zhuanlan.zhihu.com/p/26514613" target="_blank" rel="noopener">力学渣：浅谈最优化问题的KKT条件</a></p>
+<p><a href="http://www.cnblogs.com/dreamvibe/p/4349886.html" target="_blank" rel="noopener">写在SVM之前—凸优化与对偶问题 - vibe - 博客园</a></p>
+
+        </div>
+        <footer class="article-footer">
+            
+
+
+
+    <a data-url="http://yoursite.com/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/" data-id="cju2nr0wn0019f4utiwkcl0u3" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+        </footer>
+    </div>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "author": {
+            "@type": "Person",
+            "name": "qiufengyuyi"
+        },
+        "headline": "支持向量机SVM总结之拉格朗日对偶问题",
+        "image": "http://yoursite.com/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-b7a00fc565de3dfece4e3aa81b33fe9e_b.jpg",
+        "keywords": "SVM convex optimization",
+        "genre": "学习笔记",
+        "datePublished": "2019-04-04",
+        "dateCreated": "2019-04-04",
+        "dateModified": "2019-04-04",
+        "url": "http://yoursite.com/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/",
+        "description": "前一章节最后得到了SVM的优化目标函数：
+
+现在我们就需要想方设法去解这个函数优化问题。
+凸优化我们的函数优化问题是一个凸优化问题，什么叫凸优化，我下面只是简单得讲一下，不过多深入。
+解释一下“凸”。在一段数据区间内[x1,x2]，任意的数据点都可以用 $\theta X_{1}+(1-\theta)X_{2} $表示，其中 $0\leq\theta\leq1$ ，这段区间称为convex set"
+        "wordCount": 230
+    }
+</script>
+
+</article>
+
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
+
+
+                        </div>
+                    </section>
+                    <aside id="sidebar">
+    <a class="sidebar-toggle" title="Expand Sidebar"><i class="toggle icon"></i></a>
+    
+        
+<nav id="article-nav">
+    
+    
+        <a href="/2019/04/04/支持向量机SVM总结之问题描述/" id="article-nav-older" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">上一篇</strong>
+        <p class="article-nav-title">支持向量机SVM总结之问题描述</p>
+        <i class="icon fa fa-chevron-left" id="icon-chevron-left"></i>
+        </a>
+    
+</nav>
+
+    
+    <div class="widgets-container">
+        
+            
+                
+
+            
+                
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/" class="title">支持向量机SVM总结之拉格朗日对偶问题</a></p>
+                            <p class="item-date"><time datetime="2019-04-04T12:34:32.000Z" itemprop="datePublished">2019-04-04</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/04/支持向量机SVM总结之问题描述/" class="title">支持向量机SVM总结之问题描述</a></p>
+                            <p class="item-date"><time datetime="2019-04-04T12:26:39.000Z" itemprop="datePublished">2019-04-04</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/03/隐马尔科夫模型学习总结之Viterbi算法应用/" class="title">隐马尔科夫模型学习总结之Viterbi算法应用</a></p>
+                            <p class="item-date"><time datetime="2019-04-03T13:46:51.000Z" itemprop="datePublished">2019-04-03</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/03/隐马尔科夫模型学习总结之三/" class="title">隐马尔科夫模型学习总结之三</a></p>
+                            <p class="item-date"><time datetime="2019-04-03T13:31:10.000Z" itemprop="datePublished">2019-04-03</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/02/隐马尔科夫模型学习总结之二/" class="title">隐马尔科夫模型学习总结之二</a></p>
+                            <p class="item-date"><time datetime="2019-04-02T11:59:15.000Z" itemprop="datePublished">2019-04-02</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EM/">EM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HMM/">HMM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markov-assumption/">Markov assumption</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVM/">SVM</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/convex-optimization/">convex optimization</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/viterbi/">viterbi</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-float">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/EM/" style="font-size: 10px;">EM</a> <a href="/tags/HMM/" style="font-size: 20px;">HMM</a> <a href="/tags/Markov-assumption/" style="font-size: 10px;">Markov assumption</a> <a href="/tags/RNN/" style="font-size: 16.67px;">RNN</a> <a href="/tags/SVM/" style="font-size: 13.33px;">SVM</a> <a href="/tags/attention/" style="font-size: 16.67px;">attention</a> <a href="/tags/convex-optimization/" style="font-size: 10px;">convex optimization</a> <a href="/tags/dynamic-programming/" style="font-size: 13.33px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 16.67px;">seq2seq</a> <a href="/tags/tensorflow/" style="font-size: 13.33px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a> <a href="/tags/viterbi/" style="font-size: 10px;">viterbi</a>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.zhihu.com/people/qiu-zhen-yu-87">zhihu</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://github.com/qiufengyuyi">github</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+            
+        
+    </div>
+</aside>
+
+                </div>
+            </div>
+        </div>
+        <footer id="footer">
+    <div class="container">
+        <div class="container-inner">
+            <a id="back-to-top" href="javascript:;"><i class="icon fa fa-angle-up"></i></a>
+            <div class="credit">
+                <h1 class="logo-wrap">
+                    <a href="/" class="logo"></a>
+                </h1>
+                <p>&copy; 2019 qiufengyuyi</p>
+                <p>Powered by <a href="//hexo.io/" target="_blank">Hexo</a>. Theme by <a href="//github.com/ppoffice" target="_blank">PPOffice</a></p>
+            </div>
+            <div class="footer-plugins">
+              
+    
+
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+        
+    
+    <script>
+    var disqus_shortname = 'hexo-theme-hueman';
+    
+    
+    var disqus_url = 'http://yoursite.com/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/';
+    
+    (function() {
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>
