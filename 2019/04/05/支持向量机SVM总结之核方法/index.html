@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+
+    
+
+    
+    <title>支持向量机SVM总结之核方法 | qiufengyuyi&#39;s blog</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <meta name="keywords" content="SVM,kernel method">
+    
+    <meta name="description" content="上一章节最后提到了三个问题： 1、计算样本x之间的内积，计算量还是很大的，有没有什么方法减小计算量呢？ 2、若大部分样本数据在当前维度上不是线性可分的怎么办？ 3、如果出现少量异常点怎么办？ 本章着重总结支持向量机中如何使用核方法来解决前面两个问题。注意，核方法本身与支持向量机没有强相关的关系，是两个独立的知识。核方法本身是一种解决非线性模式分析问题的一种方法，而SVM通过使用核方法，能够对一些在">
+<meta name="keywords" content="SVM,kernel method">
+<meta property="og:type" content="article">
+<meta property="og:title" content="支持向量机SVM总结之核方法">
+<meta property="og:url" content="http://yoursite.com/2019/04/05/支持向量机SVM总结之核方法/index.html">
+<meta property="og:site_name" content="qiufengyuyi&#39;s blog">
+<meta property="og:description" content="上一章节最后提到了三个问题： 1、计算样本x之间的内积，计算量还是很大的，有没有什么方法减小计算量呢？ 2、若大部分样本数据在当前维度上不是线性可分的怎么办？ 3、如果出现少量异常点怎么办？ 本章着重总结支持向量机中如何使用核方法来解决前面两个问题。注意，核方法本身与支持向量机没有强相关的关系，是两个独立的知识。核方法本身是一种解决非线性模式分析问题的一种方法，而SVM通过使用核方法，能够对一些在">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/04/05/支持向量机SVM总结之核方法/v2-350bb9d898e575739ad2a1e4d7d0d86f_b.jpg">
+<meta property="og:updated_time" content="2019-04-05T03:25:50.838Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="支持向量机SVM总结之核方法">
+<meta name="twitter:description" content="上一章节最后提到了三个问题： 1、计算样本x之间的内积，计算量还是很大的，有没有什么方法减小计算量呢？ 2、若大部分样本数据在当前维度上不是线性可分的怎么办？ 3、如果出现少量异常点怎么办？ 本章着重总结支持向量机中如何使用核方法来解决前面两个问题。注意，核方法本身与支持向量机没有强相关的关系，是两个独立的知识。核方法本身是一种解决非线性模式分析问题的一种方法，而SVM通过使用核方法，能够对一些在">
+<meta name="twitter:image" content="http://yoursite.com/2019/04/05/支持向量机SVM总结之核方法/v2-350bb9d898e575739ad2a1e4d7d0d86f_b.jpg">
+    
+
+    
+
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/titillium-web/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="wrap">
+        <header id="header">
+    <div id="header-outer" class="outer">
+        <div class="container">
+            <div class="container-inner">
+                <div id="header-title">
+                    <h1 class="logo-wrap">
+                        <a href="/" class="logo"></a>
+                    </h1>
+                    
+                        <h2 class="subtitle-wrap">
+                            <p class="subtitle">backlog of a man&#39;s road to AI learning</p>
+                        </h2>
+                    
+                </div>
+                <div id="header-inner" class="nav-container">
+                    <a id="main-nav-toggle" class="nav-icon fa fa-bars"></a>
+                    <div class="nav-container-inner">
+                        <ul id="main-nav">
+                            
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/">主页</a>
+                                </li>
+                            
+                                        <ul class="main-nav-list"><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/基础算法/">基础算法</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/学习笔记/">学习笔记</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/工程经验/">工程经验</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/比赛总结/">比赛总结</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/论文总结/">论文总结</a></li></ul>
+                                    
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/about/index.html">关于</a>
+                                </li>
+                            
+                        </ul>
+                        <nav id="sub-nav">
+                            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+        <div class="container">
+            <div class="main-body container-inner">
+                <div class="main-body-inner">
+                    <section id="main">
+                        <div class="main-body-header">
+    <h1 class="header">
+    
+    <a class="page-title-link" href="/categories/学习笔记/">学习笔记</a>
+    </h1>
+</div>
+
+                        <div class="main-body-content">
+                            <article id="post-支持向量机SVM总结之核方法" class="article article-single article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+        支持向量机SVM总结之核方法
+        </h1>
+    
+
+            </header>
+        
+        
+            <div class="article-meta">
+                
+    <div class="article-date">
+        <a href="/2019/04/05/支持向量机SVM总结之核方法/" class="article-date">
+            <time datetime="2019-04-05T03:06:32.000Z" itemprop="datePublished">2019-04-05</time>
+        </a>
+    </div>
+
+		
+
+                
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/SVM/">SVM</a>, <a class="tag-link" href="/tags/kernel-method/">kernel method</a>
+    </div>
+
+            </div>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+            <p>上一章节最后提到了三个问题：</p>
+<p>1、计算样本x之间的内积，计算量还是很大的，有没有什么方法减小计算量呢？</p>
+<p>2、若大部分样本数据在当前维度上不是线性可分的怎么办？</p>
+<p>3、如果出现少量异常点怎么办？</p>
+<p>本章着重总结支持向量机中如何使用核方法来解决前面两个问题。注意，核方法本身与支持向量机没有强相关的关系，是两个独立的知识。核方法本身是一种解决非线性模式分析问题的一种方法，而SVM通过使用核方法，能够对一些在某维空间上不是线性可分的数据点进行分类。由于核方法的知识点很庞大，因此本文只是结合SVM，总结SVM中使用到的核方法的知识，有关于核方法的本质以及其相关知识体系待以后有余力再总结。</p>
+<p>前一章节中，我们推导得到SVM的对偶问题形式，如下：</p>
+<p><img src="/2019/04/05/支持向量机SVM总结之核方法/v2-350bb9d898e575739ad2a1e4d7d0d86f_b.jpg" alt="img"></p>
+<p>上式中，只用到了原始的特征集X，但是现实情况下，为了表示数据的一些复杂的属性和特征，可能要对一些特征做线性的组合，比如使用诸如 $x^2,x^3 $这样的高次多项式作为高级特征，与原来的原始特征x组合在一起，组成新的特征集，然后代替原来的原始特征到计算式中，即我们定义 $\phi$ 为一个特征映射，表示原始特征到新特征的具体映射关系，如：</p>
+<p><img src="/2019/04/05/支持向量机SVM总结之核方法/v2-7c645e159ea3cae8498da76895bfa5e6_b.jpg" alt="img"></p>
+<p>将 $\phi $代替x，代入到SVM中的对偶问题形式，得到：</p>
+<p><img src="/2019/04/05/支持向量机SVM总结之核方法/v2-79d6fc9471b961e82cdbd67dd2b6a82c_b.jpg" alt="img"></p>
+<p>我们定义内积 $&lt;\phi(x),\phi(z)&gt; $为kernel（核）K：</p>
+<p><img src="/2019/04/05/支持向量机SVM总结之核方法/v2-1b4668928477ee58e5d81017e589200c_b.jpg" alt="img"></p>
+<p>继而可以使用核K(x,z)来代替对偶问题中的所有特征数据的内积。现在，只要给定映射 $\phi $，我们可以很容易得计算出K，而且计算K的成本通常都比较小，即使在 $\phi(x)$ 本身由于维数很高的情况下计算量庞大时，K的计算成本也小于单独计算 $\phi(x)$ 。因此，只要在给定映射 $\phi(x)$ ，只要算法能够有效率得去计算K，那么就可以让我们的SVM算法即使在高维特征数据下也能有很好的性能，同时模型学习能力也能得到保证。</p>
+<p>举例说明：给定 $x,z \in\Re^n $,有二阶多项式核函数：</p>
+<p><img src="/2019/04/05/支持向量机SVM总结之核方法/v2-cbcf3443090db75d67572f02b0dccc4f_b.jpg" alt="img"></p>
+<p>为什么称为多项式核方法？我们可以将该核函数拆开，重新组合，得到：</p>
+<p><img src="/2019/04/05/支持向量机SVM总结之核方法/v2-e77d46401bcbaac7f9a4b4999f6c0c23_b.jpg" alt="img"></p>
+<p>因为</p>
+<p><img src="/2019/04/05/支持向量机SVM总结之核方法/v2-43c13138b1102fdc815feab260ff29f2_b.jpg" alt="img"></p>
+<p>因此映射 $\phi$ 显而易见是原始特征的两两线性组合的形式，如下：</p>
+<p><img src="/2019/04/05/支持向量机SVM总结之核方法/v2-a8f61cad0a1c364199b5c41b67bb4a60_b.jpg" alt="img"></p>
+<p>可以知道直接计算 $\phi(x)$ 需要的计算量为 $O(n^2)​$ ,而计算</p>
+<p><img src="/2019/04/05/支持向量机SVM总结之核方法/v2-78dd991608a30f657f5aee6011d934ab_b.jpg" alt="img"></p>
+<p>只需要 $O(n) ​$的计算量。</p>
+<p>上述例子只是多项式核函数的一个特例，若核函数再带一个常数项c，则得到如下核函数：</p>
+<p><img src="/2019/04/05/支持向量机SVM总结之核方法/v2-5d70074e22de1a387596798feaab25b1_b.jpg" alt="img"></p>
+<p>它对应的映射 $\phi $应当是除了特征之间的两两组合外，还有单独的特征的常数倍数，以及常数c，具体如下：</p>
+<p><img src="/2019/04/05/支持向量机SVM总结之核方法/v2-33518d5064e440d898464e1fb1d36bcb_b.jpg" alt="img"></p>
+<p>将上述核函数推广到一般情况，即 $K(x,z)=(x^Tz+c)^d ​$，即d阶多项式核函数，可以将原始特征映射到更高维的特征空间中，同时不需要去计算 $\phi(x)​$ ，而是直接计算K的值（计算成本与特征维数n成线性关系），就可以让模型得到充分学习。</p>
+<p>有一种对核方法的在SVM中的应用的理解，即核方法能够间接表达出两个特征之间的相似度，即两个特征如何非常相似，即对应的特征映射 $\phi(x) $也非常接近，在向量空间中表示为两个向量非常接近，因此其内积应当比较大，从而得到K也应当比较大，反之亦然。因此可以说核函数再一定程度上反映了特征之间的相似度。下面介绍一种非线性的核方法，能够在一定程度上衡量出特征之间的相似度。</p>
+<p>有核方法如下：</p>
+<p><img src="/2019/04/05/支持向量机SVM总结之核方法/v2-32b21383ff2dffe9aa9ff5c14fad1989_b.jpg" alt="img"></p>
+<p>可以看到这个核方法（其实就是sklearn中SVM核方法里面的RBF，Radial Basis Function）有以下特点：</p>
+<ol>
+<li>与之前的线性核方法不同，这个是非线性的核方法，加入了自然底数e的转换</li>
+<li>通过一个距离的度量 $||x-z||^2$ ,表示两个特征之间的相似度。当两个特征不相似，即离得很远，则exp()内部应当趋向于负无穷，因此K趋向于0；当两个特征相似时，即离得近，exp()内部应当趋向于0，因此K趋向于1。</li>
+<li>很明显，这个核方法的表示方法与概率统计中的高斯分布很相似，因此该核方法又称为高斯核。</li>
+<li>这个核函数能够将原始特征映射到无限维的特征空间。</li>
+</ol>
+<p>上面讲了几个核函数，到底什么样的函数才能作为核函数呢？换个说法，即怎么判断一个kernel是有效的？</p>
+<p>首先，定义一个kernel matrix，其中，矩阵元素 $K_{ij}=K(x^{(i)},x^{(j)})$ 。核矩阵表示了每个样本对应的核。假设当前的核函数是有效的，那么有如下等式：</p>
+<p><img src="/2019/04/05/支持向量机SVM总结之核方法/v2-800b70f5764630ec69b8fcc92f17efe8_b.jpg" alt="img"></p>
+<p>可以得到，核矩阵首先是一个对称矩阵。其次定义 $\phi_{k}(x) $为向量 $\phi(x)$ 的第k维元素。对于任意向量z，有如下式子：</p>
+<p><img src="/2019/04/05/支持向量机SVM总结之核方法/v2-2d2cbe4f0531bd66b6ba7eafa22ff3f4_b.jpg" alt="img"></p>
+<p>由半正定矩阵定义可知，核矩阵同样是一个半正定的矩阵（若没有等号的话，则是严格正定）。因此一个核函数如果是有效的，那么他对应样本的核矩阵应当是对称的且是半正定的。这是一个必要条件。其实他也是一个充分条件，这个充分必要条件由一个定理给出，即<strong>mercer定理。关于mercer定理</strong>的完全证明，其实还要用到L2范数，以及再生希尔伯特空间等相关的凸优化理论中的知识，具体可看维基百科中的内容：<a href="https://en.wikipedia.org/wiki/Mercer%27s_theorem" target="_blank" rel="noopener">Mercer’s theorem</a>（其实我也不太会证明，如果有大牛可以清晰的推导的话，请告知我，无比感谢！）</p>
+<p>其实在实际运用中，我们通常先使用线性的核函数对数据进行处理，线性核通常计算速度会快一点，能够得到一个baseline，然后再可以使用一些非线性的核比如RBF，它能够应对数据边界不是规则的数据。有关核函数解决数据线性不可分的效果，可以看如下截图：</p>
+<p><img src="/2019/04/05/支持向量机SVM总结之核方法/v2-5628a7d80b5495d85d48f762483afbca_b.jpg" alt="img"></p>
+<p>可以看到本身二维中的两种不同数据，无法用直接进行分隔，而通过映射到三维中，可以找到一个平面将两种数据分隔。</p>
+<p>reference:</p>
+<p>cs229 notes</p>
+<p><a href="https://www.zhihu.com/question/24627666" target="_blank" rel="noopener">机器学习有很多关于核函数的说法，核函数的定义和作用是什么？</a></p>
+<p><a href="http://blog.csdn.net/chengjun583/article/details/42146719" target="_blank" rel="noopener">核函数的有效性判定 - CSDN博客</a></p>
+<p>其实遇到数据线性不可分的问题，或者说存在一些异常点和噪点不能完美分隔时，还有一种方法，即引入惩罚项（相当于regularization），使得我们的模型不是以完美分隔所有数据为目标，而是允许有一些点可以分错。此时SVM有hard模式转变为soft模式，相当于更懂得变通。下一章将重点总结这个模型。</p>
+
+        </div>
+        <footer class="article-footer">
+            
+
+
+
+    <a data-url="http://yoursite.com/2019/04/05/支持向量机SVM总结之核方法/" data-id="cju3j5mn100054gut9ysksk5a" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+        </footer>
+    </div>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "author": {
+            "@type": "Person",
+            "name": "qiufengyuyi"
+        },
+        "headline": "支持向量机SVM总结之核方法",
+        "image": "http://yoursite.com/2019/04/05/支持向量机SVM总结之核方法/v2-350bb9d898e575739ad2a1e4d7d0d86f_b.jpg",
+        "keywords": "SVM kernel method",
+        "genre": "学习笔记",
+        "datePublished": "2019-04-05",
+        "dateCreated": "2019-04-05",
+        "dateModified": "2019-04-05",
+        "url": "http://yoursite.com/2019/04/05/支持向量机SVM总结之核方法/",
+        "description": "上一章节最后提到了三个问题：
+1、计算样本x之间的内积，计算量还是很大的，有没有什么方法减小计算量呢？
+2、若大部分样本数据在当前维度上不是线性可分的怎么办？
+3、如果出现少量异常点怎么办？
+本章着重总结支持向量机中如何使用核方法来解决前面两个问题。注意，核方法本身与支持向量机没有强相关的关系，是两个独立的知识。核方法本身是一种解决非线性模式分析问题的一种方法，而SVM通过使用核方法，能够对一些在"
+        "wordCount": 90
+    }
+</script>
+
+</article>
+
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
+
+
+                        </div>
+                    </section>
+                    <aside id="sidebar">
+    <a class="sidebar-toggle" title="Expand Sidebar"><i class="toggle icon"></i></a>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2019/04/05/支持向量机SVM总结之soft-Margin与SMO/" id="article-nav-newer" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">下一篇</strong>
+        <p class="article-nav-title">
+        
+            支持向量机SVM总结之soft-Margin与SMO
+        
+        </p>
+        <i class="icon fa fa-chevron-right" id="icon-chevron-right"></i>
+    </a>
+    
+    
+        <a href="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/" id="article-nav-older" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">上一篇</strong>
+        <p class="article-nav-title">支持向量机SVM总结之拉格朗日对偶问题</p>
+        <i class="icon fa fa-chevron-left" id="icon-chevron-left"></i>
+        </a>
+    
+</nav>
+
+    
+    <div class="widgets-container">
+        
+            
+                
+
+            
+                
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/05/支持向量机SVM总结之soft-Margin与SMO/" class="title">支持向量机SVM总结之soft-Margin与SMO</a></p>
+                            <p class="item-date"><time datetime="2019-04-05T03:26:21.000Z" itemprop="datePublished">2019-04-05</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/05/支持向量机SVM总结之核方法/" class="title">支持向量机SVM总结之核方法</a></p>
+                            <p class="item-date"><time datetime="2019-04-05T03:06:32.000Z" itemprop="datePublished">2019-04-05</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/" class="title">支持向量机SVM总结之拉格朗日对偶问题</a></p>
+                            <p class="item-date"><time datetime="2019-04-04T12:34:32.000Z" itemprop="datePublished">2019-04-04</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/04/支持向量机SVM总结之问题描述/" class="title">支持向量机SVM总结之问题描述</a></p>
+                            <p class="item-date"><time datetime="2019-04-04T12:26:39.000Z" itemprop="datePublished">2019-04-04</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/03/隐马尔科夫模型学习总结之Viterbi算法应用/" class="title">隐马尔科夫模型学习总结之Viterbi算法应用</a></p>
+                            <p class="item-date"><time datetime="2019-04-03T13:46:51.000Z" itemprop="datePublished">2019-04-03</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">10</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EM/">EM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HMM/">HMM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markov-assumption/">Markov assumption</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SMO/">SMO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVM/">SVM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/convex-optimization/">convex optimization</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kernel-method/">kernel method</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/soft-margin/">soft margin</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/viterbi/">viterbi</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-float">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/EM/" style="font-size: 10px;">EM</a> <a href="/tags/HMM/" style="font-size: 20px;">HMM</a> <a href="/tags/Markov-assumption/" style="font-size: 10px;">Markov assumption</a> <a href="/tags/RNN/" style="font-size: 16.67px;">RNN</a> <a href="/tags/SMO/" style="font-size: 10px;">SMO</a> <a href="/tags/SVM/" style="font-size: 20px;">SVM</a> <a href="/tags/attention/" style="font-size: 16.67px;">attention</a> <a href="/tags/convex-optimization/" style="font-size: 10px;">convex optimization</a> <a href="/tags/dynamic-programming/" style="font-size: 13.33px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/kernel-method/" style="font-size: 10px;">kernel method</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 16.67px;">seq2seq</a> <a href="/tags/soft-margin/" style="font-size: 10px;">soft margin</a> <a href="/tags/tensorflow/" style="font-size: 13.33px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a> <a href="/tags/viterbi/" style="font-size: 10px;">viterbi</a>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.zhihu.com/people/qiu-zhen-yu-87">zhihu</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://github.com/qiufengyuyi">github</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+            
+        
+    </div>
+</aside>
+
+                </div>
+            </div>
+        </div>
+        <footer id="footer">
+    <div class="container">
+        <div class="container-inner">
+            <a id="back-to-top" href="javascript:;"><i class="icon fa fa-angle-up"></i></a>
+            <div class="credit">
+                <h1 class="logo-wrap">
+                    <a href="/" class="logo"></a>
+                </h1>
+                <p>&copy; 2019 qiufengyuyi</p>
+                <p>Powered by <a href="//hexo.io/" target="_blank">Hexo</a>. Theme by <a href="//github.com/ppoffice" target="_blank">PPOffice</a></p>
+            </div>
+            <div class="footer-plugins">
+              
+    
+
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+        
+    
+    <script>
+    var disqus_shortname = 'hexo-theme-hueman';
+    
+    
+    var disqus_url = 'http://yoursite.com/2019/04/05/支持向量机SVM总结之核方法/';
+    
+    (function() {
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>

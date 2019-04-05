@@ -21,7 +21,7 @@
 <meta property="og:description" content="前一章节最后得到了SVM的优化目标函数：  现在我们就需要想方设法去解这个函数优化问题。 凸优化我们的函数优化问题是一个凸优化问题，什么叫凸优化，我下面只是简单得讲一下，不过多深入。 解释一下“凸”。在一段数据区间内[x1,x2]，任意的数据点都可以用 $\theta X_{1}+(1-\theta)X_{2} $表示，其中 $0\leq\theta\leq1$ ，这段区间称为convex set">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-b7a00fc565de3dfece4e3aa81b33fe9e_b.jpg">
-<meta property="og:updated_time" content="2019-04-04T13:09:48.690Z">
+<meta property="og:updated_time" content="2019-04-04T13:30:02.212Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="支持向量机SVM总结之拉格朗日对偶问题">
 <meta name="twitter:description" content="前一章节最后得到了SVM的优化目标函数：  现在我们就需要想方设法去解这个函数优化问题。 凸优化我们的函数优化问题是一个凸优化问题，什么叫凸优化，我下面只是简单得讲一下，不过多深入。 解释一下“凸”。在一段数据区间内[x1,x2]，任意的数据点都可以用 $\theta X_{1}+(1-\theta)X_{2} $表示，其中 $0\leq\theta\leq1$ ，这段区间称为convex set">
@@ -195,25 +195,25 @@
 <p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-88e5f99938af8f67c44755926c99a855_b.jpg" alt="img"></p>
 <p>因此我们S原来的找极小值的优化问题也可以写成：</p>
 <p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-a2619594b008c2ab7d71e654ab19261a_b.jpg" alt="img"></p>
-<p>此时为了叙述方便，定义 $p^{*}=min_{w}\theta_{p}(w)$ 表示我们需要求的最优目标值，这个通常叫做原始问题，表示原始的优化目标。</p>
+<p>此时为了叙述方便，定义 $p^{\star}=min_{w}\theta_{p}(w)$ 表示我们需要求的最优目标值，这个通常叫做原始问题，表示原始的优化目标。</p>
 <p>而往往对应于原始问题，我们能够转化为相应的对偶问题。对偶问题可以理解为在研究目标函数在约束条件下的极大值问题时，通常都存在与之匹配的求极小值的问题。因此上面的例子中，对应的对偶问题形式如下：</p>
 <p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-b8826bfe476845891959c9929756b0f1_b.jpg" alt="img"></p>
 <p>相当于是把原始问题中的max和min的位置进行了对调。有一个显而易见的结论，即对一个序列先找极小值，然后在所有极小值中找到一个最大值a；对一个序列先找极大值，然后在所有极大值中找到一个最小值b。 $a\leq b $是明显成立的。因此有：</p>
 <p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-b95ee4b868d72bb868da9e915e316513_b.jpg" alt="img"></p>
 <p>为何要研究对偶问题？<strong>我自己的理解是对偶问题比原始问题更容易解，容易在哪里？可以看到对偶问题外层的优化目标参数是拉格朗日参数，然后通过求得的拉格朗日参数，间接得到我们最终要求的超平面的参数w。而原始问题外层的优化目标参数直接是w，无法直接去优化得到这个参数（因为还存在着其他未知的拉格朗日参数）</strong></p>
-<p><strong>那么什么时候对偶问题能够等价于原始问题呢？</strong>由于上式为 $d^<em>\leq p^</em> $，两个问题要等价，相当于要使 $d^<em>=p^</em>$ 。因此有数学家提出了一些理论来让两种问题等价。假设当前函数f以及 $g_{i}$ 都是凸的，且 $h_{i}$ 是仿射的（理解为带截距的线性函数），同时存在w，使得 $g_{i}(w)&lt;0$ 对所有i都成立。此时必然存在参数解 $w^<em>,\alpha^</em>,\beta^<em>$ （第一个是原始问题的解，后两个是对偶问题的解）,使得 $d^</em>=p^<em>=L(w^</em>,\alpha^<em>,\beta^</em>)$ 。 $w^<em>,\alpha^</em>,\beta^*$ 必须要满足这样一个条件，叫Karush-Kuhn-Tucker（KKT）条件：</p>
+<p><strong>那么什么时候对偶问题能够等价于原始问题呢？</strong>由于上式为 $d^\star\leq p^\star $，两个问题要等价，相当于要使 $d^\star=p^\star$ 。因此有数学家提出了一些理论来让两种问题等价。假设当前函数f以及 $g_{i}$ 都是凸的，且 $h_{i}$ 是仿射的（理解为带截距的线性函数），同时存在w，使得 $g_{i}(w)&lt;0$ 对所有i都成立。此时必然存在参数解 $w^\star,\alpha^\star,\beta^\star$ （第一个是原始问题的解，后两个是对偶问题的解）,使得 $d^\star=p^\star=L(w^\star,\alpha^\star,\beta^\star)$ 。 $w^\star,\alpha^\star,\beta^\star$ 必须要满足这样一个条件，叫Karush-Kuhn-Tucker（KKT）条件：</p>
 <p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-9f831b13da606d205c19be5327ba0eeb_b.jpg" alt="img"></p>
-<p>其中第三个条件称为KKT对偶补充条件。当 $\alpha_{i}^<em>&gt;0$ 时，说明 $g_{i}(w^</em>)=0$ 。这个结论对后面提升SVM计算效率很有用，它能够表明只有很少的一部分数据点需要考虑 $g_{i}(w)$ 。</p>
+<p>其中第三个条件称为KKT对偶补充条件。当 $\alpha_{i}^\star&gt;0$ 时，说明 $g_{i}(w^\star)=0$ 。这个结论对后面提升SVM计算效率很有用，它能够表明只有很少的一部分数据点需要考虑 $g_{i}(w)$ 。</p>
 <h2 id="简单推导KKT"><a href="#简单推导KKT" class="headerlink" title="简单推导KKT"></a>简单推导KKT</h2><p><a href="https://zhuanlan.zhihu.com/p/26514613" target="_blank" rel="noopener">力学渣：浅谈最优化问题的KKT条件</a></p>
 <p><a href="http://www.cnblogs.com/dreamvibe/p/4349886.html" target="_blank" rel="noopener">写在SVM之前—凸优化与对偶问题 - vibe - 博客园</a></p>
 <p>根据上面两个博客中对KKT的推导，我简单得进行总结，尽量用我自己的语言来描述。</p>
-<p>首先，明确我们的目标：即参数解集 $w^<em>,\alpha^</em>,\beta^<em>$ 要使得 $d^</em>=p^*$ 。</p>
-<p> 1、$w^<em>,\alpha^</em>,\beta^*$ 必然是 $min_{w}L(w,\alpha,\beta)$ 的极值解。因此其对应偏导应当为0.</p>
+<p>首先，明确我们的目标：即参数解集 $w^\star,\alpha^\star,\beta^\star$ 要使得 $d^\star=p^\star$ 。</p>
+<p> 1、$w^\star,\alpha^\star,\beta^\star$ 必然是 $min_{w}L(w,\alpha,\beta)$ 的极值解。因此其对应偏导应当为0.</p>
 <p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-3a8e965ead6101bb0e7792eee4f119cf_b.jpg" alt="img"></p>
 <p>2、第二个KKT条件与第一个条件类似</p>
-<p>3、由于 $d^* $属于 $L(w,\alpha,\beta)$ 最小值集中的一个，因此</p>
+<p>3、由于 $d^\star ​$属于 $L(w,\alpha,\beta)​$ 最小值集中的一个，因此</p>
 <p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-13bef1442b3c9c68c1e9abaab4373542_b.jpg" alt="img"></p>
-<p>而 $p^<em>$ 在上一节中推导对偶问题时，已知 $p^</em>=f(w^*)$ ,因此有如下等式成立：</p>
+<p>而 $p^\star$ 在上一节中推导对偶问题时，已知 $p^\star=f(w^\star)$ ,因此有如下等式成立：</p>
 <p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-b479ccf8d40761c8dd69a2e0532e85df_b.jpg" alt="img"></p>
 <p>因为 $h_{i} =0$本来就是我们的等式约束，因此可以得到：</p>
 <p><img src="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/v2-c3c51334ad391ae2f9fe123c36a290c8_b.jpg" alt="img"></p>
@@ -260,7 +260,7 @@
 
 
 
-    <a data-url="http://yoursite.com/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/" data-id="cju2nr0wn0019f4utiwkcl0u3" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="http://yoursite.com/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/" data-id="cju3j5mq6001h4gutaaipmuiv" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         $('body').on('click', function() {
@@ -369,6 +369,16 @@
         
 <nav id="article-nav">
     
+        <a href="/2019/04/05/支持向量机SVM总结之核方法/" id="article-nav-newer" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">下一篇</strong>
+        <p class="article-nav-title">
+        
+            支持向量机SVM总结之核方法
+        
+        </p>
+        <i class="icon fa fa-chevron-right" id="icon-chevron-right"></i>
+    </a>
+    
     
         <a href="/2019/04/04/支持向量机SVM总结之问题描述/" id="article-nav-older" class="article-nav-link-wrap">
         <strong class="article-nav-caption">上一篇</strong>
@@ -390,6 +400,24 @@
         <h3 class="widget-title">最新文章</h3>
         <div class="widget">
             <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/05/支持向量机SVM总结之soft-Margin与SMO/" class="title">支持向量机SVM总结之soft-Margin与SMO</a></p>
+                            <p class="item-date"><time datetime="2019-04-05T03:26:21.000Z" itemprop="datePublished">2019-04-05</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/05/支持向量机SVM总结之核方法/" class="title">支持向量机SVM总结之核方法</a></p>
+                            <p class="item-date"><time datetime="2019-04-05T03:06:32.000Z" itemprop="datePublished">2019-04-05</time></p>
+                        </div>
+                    </li>
                 
                     <li>
                         
@@ -418,24 +446,6 @@
                         </div>
                     </li>
                 
-                    <li>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
-                            <p class="item-title"><a href="/2019/04/03/隐马尔科夫模型学习总结之三/" class="title">隐马尔科夫模型学习总结之三</a></p>
-                            <p class="item-date"><time datetime="2019-04-03T13:31:10.000Z" itemprop="datePublished">2019-04-03</time></p>
-                        </div>
-                    </li>
-                
-                    <li>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
-                            <p class="item-title"><a href="/2019/04/02/隐马尔科夫模型学习总结之二/" class="title">隐马尔科夫模型学习总结之二</a></p>
-                            <p class="item-date"><time datetime="2019-04-02T11:59:15.000Z" itemprop="datePublished">2019-04-02</time></p>
-                        </div>
-                    </li>
-                
             </ul>
         </div>
     </div>
@@ -445,7 +455,7 @@
     <div class="widget-wrap widget-list">
         <h3 class="widget-title">分类</h3>
         <div class="widget">
-            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">10</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -455,7 +465,7 @@
     <div class="widget-wrap widget-list">
         <h3 class="widget-title">归档</h3>
         <div class="widget">
-            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">10</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
         </div>
     </div>
 
@@ -465,7 +475,7 @@
     <div class="widget-wrap widget-list">
         <h3 class="widget-title">标签</h3>
         <div class="widget">
-            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EM/">EM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HMM/">HMM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markov-assumption/">Markov assumption</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVM/">SVM</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/convex-optimization/">convex optimization</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/viterbi/">viterbi</a><span class="tag-list-count">1</span></li></ul>
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EM/">EM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HMM/">HMM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markov-assumption/">Markov assumption</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SMO/">SMO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVM/">SVM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/convex-optimization/">convex optimization</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kernel-method/">kernel method</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/soft-margin/">soft margin</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/viterbi/">viterbi</a><span class="tag-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -475,7 +485,7 @@
     <div class="widget-wrap widget-float">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/EM/" style="font-size: 10px;">EM</a> <a href="/tags/HMM/" style="font-size: 20px;">HMM</a> <a href="/tags/Markov-assumption/" style="font-size: 10px;">Markov assumption</a> <a href="/tags/RNN/" style="font-size: 16.67px;">RNN</a> <a href="/tags/SVM/" style="font-size: 13.33px;">SVM</a> <a href="/tags/attention/" style="font-size: 16.67px;">attention</a> <a href="/tags/convex-optimization/" style="font-size: 10px;">convex optimization</a> <a href="/tags/dynamic-programming/" style="font-size: 13.33px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 16.67px;">seq2seq</a> <a href="/tags/tensorflow/" style="font-size: 13.33px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a> <a href="/tags/viterbi/" style="font-size: 10px;">viterbi</a>
+            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/EM/" style="font-size: 10px;">EM</a> <a href="/tags/HMM/" style="font-size: 20px;">HMM</a> <a href="/tags/Markov-assumption/" style="font-size: 10px;">Markov assumption</a> <a href="/tags/RNN/" style="font-size: 16.67px;">RNN</a> <a href="/tags/SMO/" style="font-size: 10px;">SMO</a> <a href="/tags/SVM/" style="font-size: 20px;">SVM</a> <a href="/tags/attention/" style="font-size: 16.67px;">attention</a> <a href="/tags/convex-optimization/" style="font-size: 10px;">convex optimization</a> <a href="/tags/dynamic-programming/" style="font-size: 13.33px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/kernel-method/" style="font-size: 10px;">kernel method</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 16.67px;">seq2seq</a> <a href="/tags/soft-margin/" style="font-size: 10px;">soft margin</a> <a href="/tags/tensorflow/" style="font-size: 13.33px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a> <a href="/tags/viterbi/" style="font-size: 10px;">viterbi</a>
         </div>
     </div>
 
