@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+
+    
+
+    
+    <title>EM算法总结 | qiufengyuyi&#39;s blog</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <meta name="keywords" content="EM">
+    
+    <meta name="description" content="最近因工作需要，要学习概率图模型，来对一些序列对象进行一些建模。概率图模型根据不同情况的不同概率假设，能够有效解释一些现实问题，使得我们的模型能够在一定程度上拟合现实的问题，但是存在模型不确定、参数不确定，建模比较难的特点。因此有很多思想方法帮助我们去进行参数估计和建模，本文准备将EM算法总结一下。 什么是EM算法EM算法全称Expectation-Maximization算法，即最大化期望算法。">
+<meta name="keywords" content="EM">
+<meta property="og:type" content="article">
+<meta property="og:title" content="EM算法总结">
+<meta property="og:url" content="http://yoursite.com/2019/04/08/EM算法总结/index.html">
+<meta property="og:site_name" content="qiufengyuyi&#39;s blog">
+<meta property="og:description" content="最近因工作需要，要学习概率图模型，来对一些序列对象进行一些建模。概率图模型根据不同情况的不同概率假设，能够有效解释一些现实问题，使得我们的模型能够在一定程度上拟合现实的问题，但是存在模型不确定、参数不确定，建模比较难的特点。因此有很多思想方法帮助我们去进行参数估计和建模，本文准备将EM算法总结一下。 什么是EM算法EM算法全称Expectation-Maximization算法，即最大化期望算法。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/04/08/EM算法总结/v2-5898947d4272ec479fc496596efcd995_b.jpg">
+<meta property="og:updated_time" content="2019-04-08T13:12:20.414Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="EM算法总结">
+<meta name="twitter:description" content="最近因工作需要，要学习概率图模型，来对一些序列对象进行一些建模。概率图模型根据不同情况的不同概率假设，能够有效解释一些现实问题，使得我们的模型能够在一定程度上拟合现实的问题，但是存在模型不确定、参数不确定，建模比较难的特点。因此有很多思想方法帮助我们去进行参数估计和建模，本文准备将EM算法总结一下。 什么是EM算法EM算法全称Expectation-Maximization算法，即最大化期望算法。">
+<meta name="twitter:image" content="http://yoursite.com/2019/04/08/EM算法总结/v2-5898947d4272ec479fc496596efcd995_b.jpg">
+    
+
+    
+
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/titillium-web/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="wrap">
+        <header id="header">
+    <div id="header-outer" class="outer">
+        <div class="container">
+            <div class="container-inner">
+                <div id="header-title">
+                    <h1 class="logo-wrap">
+                        <a href="/" class="logo"></a>
+                    </h1>
+                    
+                        <h2 class="subtitle-wrap">
+                            <p class="subtitle">backlog of a man&#39;s road to AI learning</p>
+                        </h2>
+                    
+                </div>
+                <div id="header-inner" class="nav-container">
+                    <a id="main-nav-toggle" class="nav-icon fa fa-bars"></a>
+                    <div class="nav-container-inner">
+                        <ul id="main-nav">
+                            
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/">主页</a>
+                                </li>
+                            
+                                        <ul class="main-nav-list"><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/基础算法/">基础算法</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/学习笔记/">学习笔记</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/工程经验/">工程经验</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/比赛总结/">比赛总结</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/论文总结/">论文总结</a></li></ul>
+                                    
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/about/index.html">关于</a>
+                                </li>
+                            
+                        </ul>
+                        <nav id="sub-nav">
+                            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+        <div class="container">
+            <div class="main-body container-inner">
+                <div class="main-body-inner">
+                    <section id="main">
+                        <div class="main-body-header">
+    <h1 class="header">
+    
+    <a class="page-title-link" href="/categories/学习笔记/">学习笔记</a>
+    </h1>
+</div>
+
+                        <div class="main-body-content">
+                            <article id="post-EM算法总结" class="article article-single article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+        EM算法总结
+        </h1>
+    
+
+            </header>
+        
+        
+            <div class="article-meta">
+                
+    <div class="article-date">
+        <a href="/2019/04/08/EM算法总结/" class="article-date">
+            <time datetime="2019-04-08T12:18:39.000Z" itemprop="datePublished">2019-04-08</time>
+        </a>
+    </div>
+
+		
+
+                
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/EM/">EM</a>
+    </div>
+
+            </div>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+            <p>最近因工作需要，要学习概率图模型，来对一些序列对象进行一些建模。概率图模型根据不同情况的不同概率假设，能够有效解释一些现实问题，使得我们的模型能够在一定程度上拟合现实的问题，但是存在模型不确定、参数不确定，建模比较难的特点。因此有很多思想方法帮助我们去进行参数估计和建模，本文准备将EM算法总结一下。</p>
+<h2 id="什么是EM算法"><a href="#什么是EM算法" class="headerlink" title="什么是EM算法"></a>什么是EM算法</h2><p>EM算法全称Expectation-Maximization算法，即最大化期望算法。根据这个名字就能很清楚知道这个算法的核心元素，一个是期望，另一个是期望的最大化。而这两个元素代表了EM算法的两个流程。首先EM算法是一个迭代性质的算法，即每个迭代都能得到新的经过学习后的参数，迭代的结束标志一般是人为定义阈值或者参数收敛。其次EM算法每个迭代主要执行两个步骤：</p>
+<ol>
+<li>求期望，得到一个关于参数的期望函数式。类似于我将样本数据输入到</li>
+<li>对期望函数式求使其最大化的参数。</li>
+</ol>
+<p>上述描述比较简略，下面会详细将这两个步骤说明。</p>
+<h2 id="为什么用EM算法"><a href="#为什么用EM算法" class="headerlink" title="为什么用EM算法"></a>为什么用EM算法</h2><p>EM算法的好处，或者说它被需要的原因是什么？其实之前我已经在HMM模型的参数估计章节中，对EM算法的具体应用已经有了一个专门的描述，感兴趣的同学可以去看我之前的文章：《隐马尔科夫模型学习总结之三》。从HMM的例子中，我们知道当一个实际问题中，除了可观测的变量外，还需要一些隐变量帮助我们去建模，此时EM算法可以帮助对这种包含隐变量的问题进行参数估计，除了HMM外，还有k-means聚类算法也运用了EM算法，它的隐变量可以说是具体的那些聚类本身。</p>
+<p>除此以外，我们会存在无法确定问题对应的具体的模型的样式的时候。说的有点拗口，我举个例子，大家感受一下。</p>
+<p><strong>logistics regression的二分类例子</strong></p>
+<p>首先，我举个能确定具体模型的例子，即使用logitstic regression对二分类数据进行建模，其中样本数据之间是相互独立的，没有关联，且当前数据标签只有两种0和1。其实这种数据分布可以看成是一个二项分布，即重复n次独立的伯努利试验。在每次试验中只有两种可能的结果，而且两种结果发生与否互相对立，并且相互独立，与其它各次试验结果无关。对应于我们的数据就是每个样本相当于一次抛硬币，要么正面要么反面，且两次抛硬币（两个数据样本）之间没有任何关联，互不影响。那么我们假设模型参数为 $\theta $,模型为 $h(x,\theta)$ 样本数据集为 $\{(x_1,y_1),(x_2,y_2),…,(x_m,y_m)\} $，m表示m个样本，那么我们给定参数的情况下，每个样本数据标签的条件概率为： $P(y_i|\theta)=h(x_i,\theta)^{y_i}(1-h(x_i,\theta))^{(1-y_i)}$ ,这个式子其实是两个式子的合并，我们知道logistics regression是生成样本属于标签1的概率，因此有如下两个式子： $P(y_i=1|\theta)=h(x_i,\theta) $， $P(y_i=0|\theta)=1-h(x_i,\theta) $，两个式子合并，就成上面的式子。</p>
+<p>由于样本数据之间相互独立，因此整个样本集的预测目标概率为：</p>
+<script type="math/tex; mode=display">
+P(y|\theta)=P(y_1|\theta)P(y_2|\theta)...P(y_m|\theta)</script><p>我们训练模型的利用已知的样本数据，反推最大概率能够得到样本数据的模型参数。因此对于这种已经确定模型形式，需要进行参数估计的问题，我们很自然想到使用极大似然估计方法MLE，即 $argmax_{\theta}P(y|x,\theta) $。由于连乘式的求极值很好不做，且概率的多次连乘，尤其是在数据样本很大的情况下，很容易造成最后结果几乎为0，因此考虑在概率式子之前增加log函数，由于log函数的单调性，保证了原来概率式的性质，且可以将连乘式化简为求和式。</p>
+<p><img src="/2019/04/08/EM算法总结/v2-5898947d4272ec479fc496596efcd995_b.jpg" alt="img"></p>
+<p>然后就是以 $\theta$ 为参数，对 $L(\theta)$ 求偏导数，并令偏导为0，求出 $\theta$ 的表达式。</p>
+<p>上述的例子说明只要是数据分布确定后，求具体数据分布的参数是比较容易的，一般是使用MLE方法。然而现实生活中存在很多数据分布无法确定的情形，如之前讲的HMM中的问题，因为它引入了一个隐变量，带来了不确定性，因此不能简单地使用MLE方法，一步到位得将我们的参数估计出来，因此需要EM算法，迭代得去估计我们的参数。</p>
+<h2 id="高斯混合模型应用EM算法举例"><a href="#高斯混合模型应用EM算法举例" class="headerlink" title="高斯混合模型应用EM算法举例"></a>高斯混合模型应用EM算法举例</h2><p><strong>EM算法问题描述</strong></p>
+<p>下面准备拿很多人都举过的高斯混合模型的例子来讲解EM算法，参考了cs229以及徐亦达老师的讲义。</p>
+<p><img src="/2019/04/08/EM算法总结/v2-5080599290720043b92fb307625e50b4_b.jpg" alt="img"></p>
+<p>假设当前数据符合上述分布，很明显，该数据不是一种概率分布就能简单得描述的，大致可以看出该数据有三个不同的概率分布，每个概率分布可先用高斯分布来解释（分布中心数据密度大，周围数据密度小，与高斯分布特征相符）。高斯分布的概率密度公式如下：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-6a30a90189d2ea3dad0289d71d501fcc_b.jpg" alt="img"></p>
+<p>其中， $\mu$ 表示期望， $\Sigma $表示方差。在混合高斯模型中，假设有k个高斯分布混合，概率密度公式为：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-536f9b34650ea6bd60d8e85c346bf513_b.jpg" alt="img"></p>
+<p>其中，有约束条件：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-dc6911cd3a2990cd6662f44bf5b4b043_b.jpg" alt="img"></p>
+<p>因此参数集合为：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-636abe7a9389c66e4ec18fd596921da3_b.jpg" alt="img"></p>
+<p>若使用MLE方法来进行参数估计，则极大似然估计函数为：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-7546b20c1aae23124efb8d8a35846792_b.jpg" alt="img"></p>
+<p>如果单纯使用求偏导的方式来求极值的参数是很难的，无法简单做到。</p>
+<p>此时，由于我们不知道这些数据具体从属于哪个概率分布，因此引入一个隐变量Z，表示数据属于哪个高斯分布。原始的MLE函数式为：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-fabc5bf48c399652057870a6374b9ef0_b.jpg" alt="img"></p>
+<p>这个函数式无法一次使用求偏导的方法求出极值，因此需要迭代的方法，每个迭代产生参数估计。然后我们引入隐变量Z，在不改变原式子的情况下，我们可以采用贝叶斯公式以及期望积分的方式，将隐变量Z引入上式（之前讲HMM的时候已经讲过这种方法，感兴趣的同学可以回头去看一下），因此得到EM算法每步迭代的问题描述式：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-5a49c2b7511d600934f15b9ea97d39df_b.jpg" alt="img"></p>
+<p>首先这是某步迭代的函数式，假设之前的迭代已经估计出了参数 $\theta^{(g)}$ ,因此在此式中 $\theta^{(g)}$ 是一个已知的常数值，这个在后面化简推导的时候很有用。其次在外层增加了对隐变量z的积分，结合内部的贝叶斯条件概率公式，可以将z的影响消除。</p>
+<p>备注：隐变量引入不是随便的，有一些要求，比如需要引入后简化模型的求解，另外不能改变原边缘分布，即 $P(x)=\int_{z}^{}P(x|z)P(z)dz$ ,在高斯混合模型中，引入的隐变量z表示对应数据属于哪个高斯，因此P(z)属于先验知识，来自于上面提到的 $\alpha_l$,表示高斯分布的权重。因此可以很容易证明 $P(x)=\int_{z}^{}P(x|z)P(z)dz$ ，这边就不写了，有兴趣的同学自己推导，很简单.</p>
+<p><strong>EM算法迭代收敛性证明</strong></p>
+<p>既然是迭代的方法，那么势必要保证这种方法最后能够收敛，事实上EM算法的收敛性是可以证明的，下面简单对这个收敛性做一个证明。即证明：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-cb57f6727deb8e6acb1d74c75ed9cb9c_b.jpg" alt="img"></p>
+<p>首先根据条件概率公式，有：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-13311912f03939e964af26570dd34088_b.jpg" alt="img"></p>
+<p>等式两边同时加log，得到：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-1282bd4f6da9f918d4f8538791a65285_b.jpg" alt="img"></p>
+<p>等式左边引入隐变量z，并对z做积分的期望，右边同理，可得：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-b0b89bda523eb98141767b67f30ba43a_b.jpg" alt="img"></p>
+<p>（上述使用了这个等式： $\int_{z}^{}P(z|x , \theta^{(g)})=1 $）</p>
+<p>我们将上面等号右边的被减子式定义为 $Q(\theta,\theta^{(g)})$ ,减子式定义为 $H(\theta,\theta^{(g)})$ ，因此$log(P(X|\theta))=Q(\theta,\theta^{(g)})-H(\theta,\theta^{(g)})$ ,我们要证明 $log(P(X|\theta^{(g+1)}))\geq log(P(X|\theta^{(g)})) $，可以看到我们的Q项其实与我们一开始提出的EM算法问题描述式是一样的，即每个迭代， $\theta^{(g+1)}$ 都是在Q项上求极大值后的参数，因此$Q(\theta^{(g+1)},\theta^{(g)})\geq Q(\theta^{(g)},\theta^{(g)})$ 是必然成立的（因为本来就是求极大值，因此极大值只可能比上个迭代大或者一样）。那么我们接下来只要证明H项在每个迭代都在逐渐减小或者不变，即： $H(\theta^{(g+1)},\theta^{(g)})\leq H(\theta^{(g)},\theta^{(g)}) $</p>
+<p>证明：我们将要证明的不等式做一个转换，问题可以转换为：</p>
+<p>对任意的 $\theta$ ，我们要证明$H(\theta,\theta^{(g)})\leq H(\theta^{(g)},\theta^{(g)}) $，有如下化简：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-cf37f8016433317d4c888178f892546d_b.jpg" alt="img"></p>
+<p>其中-log()是一个凸函数，函数图如下：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-a9c755f5af331bec2121d3987b61262f_b.jpg" alt="-log()函数曲线"></p>
+<p>对于凸函数我先介绍一个性质：Jensen不等式：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-57bf85c379ff2805e6f402dff88d8503_b.jpg" alt="jensen不等式"></p>
+<p>我们引入一个变量 $t\in(0,1)$ ，假设当前数据区间为 $[x_1,x_2] $，那么该区间内任意一个数都可以用如下式子表示： $(1-t)x_1+tx_2$ 。而将函数曲线的两端的点连接构成一条直线，该直线上的点可以表示为：$(1-t)f(x_1)+tf(x_2)$。那么在函数为凸的情况下，根据图上的示例（虽然比较难看），可以看出 $(1-t)f(x_1)+tf(x_2)\geq f((1-t)x_1+tx_2) $，这个就是Jensen不等式，应用到我们这边证明，其实可以泛化为不等式左边的式子可以看成是函数的期望，不等式右边看成是期望的函数，其中t，1-t都是某个函数值的概率，因此可以写成 期望的函数小于等于函数的期望 ，即</p>
+<p><img src="/2019/04/08/EM算法总结/v2-53bcd94f6a20aebcacf627c7a46176f4_b.jpg" alt="img"></p>
+<p>而</p>
+<p><img src="/2019/04/08/EM算法总结/v2-e7599ba6b852226842ebf6a9418391ba_b.jpg" alt="img"></p>
+<p>是函数的期望，因此它比大于期望的函数：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-14c7440c61327dfcb9b7c262e121b499_b.jpg" alt="img"></p>
+<p>因此，证毕。</p>
+<p><strong>使用EM算法解决高斯混合模型问题</strong></p>
+<p>下面定义问题描述式中的具体项：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-ab11ee117ff18cf25135b35187152db7_b.jpg" alt="img"></p>
+<p>其中 $N(X|\mu_l,\Sigma_l)$ 表示一个高斯分布， $\alpha_l$ 表示这个高斯分布的权重。k表示有k个不同的高斯分布，n表示数据样本数。</p>
+<p>定义 $P(X,z|\theta) $，因为数据间独立，且有贝叶斯公式：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-e3467a96632b9310c326f75e28b80fbc_b.jpg" alt="img"></p>
+<p>因此有：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-e9cada423bb75db022cff79d76aa2b4f_b.jpg" alt="img"></p>
+<p>定义 $P(z|X,\theta) ​$，根据数据独立性，贝叶斯公式和积分期望，有如下式子：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-ef637bc9705fd4304c40acedee96ed5e_b.jpg" alt="img"></p>
+<p>因此可定义 $P(z|X,\theta)$ 为：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-dd51e18990fc010c3eb0476dee2bdd54_b.jpg" alt="img"></p>
+<p>将上述两个定义式代入之前的Q项中（H项已不需要），开始EM算法中的E-step：</p>
+<p><strong>E-step：</strong></p>
+<p><img src="/2019/04/08/EM算法总结/v2-a2cfd611965c78ded3217e5bf87eb900_b.jpg" alt="img"></p>
+<p>将式子</p>
+<p><img src="/2019/04/08/EM算法总结/v2-bf745eda2c53654039f4e4e7a97aa206_b.jpg" alt="img"></p>
+<p>定义为 $f_i(z_i) $,将式子</p>
+<p><img src="/2019/04/08/EM算法总结/v2-d4d3ae3a559e9a23c3ede469bcff2a74_b.jpg" alt="img"></p>
+<p>定义为 $P(z_1,….z_n) $。</p>
+<p>对上述式子肯定是要进行化简的：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-e8b10f078962147244479ed9a2417a36_b.jpg" alt="img"></p>
+<p>把上述式子展开，其实是一个包含N个sum项的式子，我们把第一个sum式拿出来单独分析：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-723db8746035e41c3787f0e2640e9d3a_b.jpg" alt="img"></p>
+<p>上式中，后面对z2…zn的积分式，其实可以看做是z1变量的边缘概率分布，因为其他z都被积分积掉了（原谅我用这么口语的方式表达），因此上式可化简为：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-f5caeaec0f92007144ebff0c35f2e590_b.jpg" alt="img"></p>
+<p>很明显，其他sum项也可以做这样的化简，因此对所有N个sum项都做如此化简后，可得如下式子：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-96507693edb0e4b77a8a6d23d7b527a7_b.jpg" alt="img"></p>
+<p>最后得到的式子中，加号前面的只包含参数 $\alpha$ ，加号后面的只包含参数 $\mu,\Sigma$ ，因此可以单独对两个式子分别求极大值，然后求得本次迭代的参数。下面就是我们的M-step。</p>
+<p><strong>M-Step：</strong></p>
+<p>主要是开始对E-Step构造的式子进行参数最大化，按照上面说的，将式子根据加号一拆为二，首先估计参数 $\alpha $。对式子求偏导，并令偏导为0，得到：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-e905d859233a54f128872483b36a6871_b.jpg" alt="img"></p>
+<p>说明一下，为了描述方便，这里定义 $z_i=l ​$。</p>
+<p>这个式子求解方法已经很熟悉了，之前SVM以及HMM中都讲过这个，就不多说了，直接使用拉格朗日乘子法，得到：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-8b190e9e6cf30487f85c15272cdd4947_b.jpg" alt="img"></p>
+<p>接下来就是求参数 $\mu,\Sigma$ 。这个推导比较复杂，因为牵扯到一些矩阵向量的求导的trick和小公式，先把公式列出来，有同学感兴趣，我再把这些公式的推导过程列出来：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-17a0733a157dd66a3fc8d21fba6bfb19_b.jpg" alt="img"></p>
+<p>我们对Q项加号的第二项进行分析，即：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-61751374b54f82778c9618dfa4974d58_b.jpg" alt="img"></p>
+<p>首先，我们对参数 $\mu$ 进行估计，我们将下面的高斯分布的概率密度公式代入。</p>
+<p>其中， $\Sigma$ 的多项式在此式可以视作一个const最后，对式子求偏导，令偏导为0，得到：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-2043b54e85b507dafd305f93bce7f2e9_b.jpg" alt="img"></p>
+<p>接下来是对 $\Sigma $的推导，为了推导简便，我们改变求偏导的变量对象，转而对 $\Sigma^{-1}$ 求偏导，这样利用上面的一些facts（fact2），然后得到：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-770c58040bd91617e891859519132ddc_b.jpg" alt="img"></p>
+<p>这样我们就将所有本迭代的参数求出来了，细心的同学可以发现所有参数里面都包含一个式子： $P(l|X_i,\theta)$ ，这个式子我们在之前的推导中已经得到，为：</p>
+<p><img src="/2019/04/08/EM算法总结/v2-657cdc2a65d3a4d537e2d7dffa0653c6_b.jpg" alt="img"></p>
+<p>因此，使用这个式子，加上迭代的方式，就可以一步一步逼近最优解。</p>
+<h2 id="备注："><a href="#备注：" class="headerlink" title="备注："></a>备注：</h2><p>对于EM算法来说，有一个非常重要的一个地方就是它不能保证对每个应用场景的问题都能都到全局最优解，如果我们的目标函数是凸函数（本文我们讨论到的-log()），那么可以保证得到全局最优解。但是，若我们的目标函数不是凸的，比如在聚类问题中，若对文本分类中的余弦相似度计算函数就不能保证是凸的，此时EM算法就有可能给出局部最优。</p>
+<p>reference:</p>
+<p>cs229 notes</p>
+<p>徐亦达 notes</p>
+<p>《数学之美》 吴军</p>
+
+        </div>
+        <footer class="article-footer">
+            
+
+
+
+    <a data-url="http://yoursite.com/2019/04/08/EM算法总结/" data-id="cju8dlrst0000vsutje8u8jv4" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+        </footer>
+    </div>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "author": {
+            "@type": "Person",
+            "name": "qiufengyuyi"
+        },
+        "headline": "EM算法总结",
+        "image": "http://yoursite.com/2019/04/08/EM算法总结/v2-5898947d4272ec479fc496596efcd995_b.jpg",
+        "keywords": "EM",
+        "genre": "学习笔记",
+        "datePublished": "2019-04-08",
+        "dateCreated": "2019-04-08",
+        "dateModified": "2019-04-08",
+        "url": "http://yoursite.com/2019/04/08/EM算法总结/",
+        "description": "最近因工作需要，要学习概率图模型，来对一些序列对象进行一些建模。概率图模型根据不同情况的不同概率假设，能够有效解释一些现实问题，使得我们的模型能够在一定程度上拟合现实的问题，但是存在模型不确定、参数不确定，建模比较难的特点。因此有很多思想方法帮助我们去进行参数估计和建模，本文准备将EM算法总结一下。
+什么是EM算法EM算法全称Expectation-Maximization算法，即最大化期望算法。"
+        "wordCount": 202
+    }
+</script>
+
+</article>
+
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
+
+
+                        </div>
+                    </section>
+                    <aside id="sidebar">
+    <a class="sidebar-toggle" title="Expand Sidebar"><i class="toggle icon"></i></a>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2019/04/08/PCA算法之特征值分解/" id="article-nav-newer" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">下一篇</strong>
+        <p class="article-nav-title">
+        
+            PCA算法之特征值分解
+        
+        </p>
+        <i class="icon fa fa-chevron-right" id="icon-chevron-right"></i>
+    </a>
+    
+    
+        <a href="/2019/04/05/支持向量机SVM总结之soft-Margin与SMO/" id="article-nav-older" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">上一篇</strong>
+        <p class="article-nav-title">支持向量机SVM总结之soft-Margin与SMO</p>
+        <i class="icon fa fa-chevron-left" id="icon-chevron-left"></i>
+        </a>
+    
+</nav>
+
+    
+    <div class="widgets-container">
+        
+            
+                
+
+            
+                
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/08/PCA算法之特征值分解/" class="title">PCA算法之特征值分解</a></p>
+                            <p class="item-date"><time datetime="2019-04-08T12:40:42.000Z" itemprop="datePublished">2019-04-08</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/08/EM算法总结/" class="title">EM算法总结</a></p>
+                            <p class="item-date"><time datetime="2019-04-08T12:18:39.000Z" itemprop="datePublished">2019-04-08</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/05/支持向量机SVM总结之soft-Margin与SMO/" class="title">支持向量机SVM总结之soft-Margin与SMO</a></p>
+                            <p class="item-date"><time datetime="2019-04-05T03:26:21.000Z" itemprop="datePublished">2019-04-05</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/05/支持向量机SVM总结之核方法/" class="title">支持向量机SVM总结之核方法</a></p>
+                            <p class="item-date"><time datetime="2019-04-05T03:06:32.000Z" itemprop="datePublished">2019-04-05</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/" class="title">支持向量机SVM总结之拉格朗日对偶问题</a></p>
+                            <p class="item-date"><time datetime="2019-04-04T12:34:32.000Z" itemprop="datePublished">2019-04-04</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EM/">EM</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HMM/">HMM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markov-assumption/">Markov assumption</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PCA/">PCA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SMO/">SMO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVM/">SVM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/convex-optimization/">convex optimization</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kernel-method/">kernel method</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linear-algebra/">linear algebra</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/soft-margin/">soft margin</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/viterbi/">viterbi</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-float">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/EM/" style="font-size: 13.33px;">EM</a> <a href="/tags/HMM/" style="font-size: 20px;">HMM</a> <a href="/tags/Markov-assumption/" style="font-size: 10px;">Markov assumption</a> <a href="/tags/PCA/" style="font-size: 10px;">PCA</a> <a href="/tags/RNN/" style="font-size: 16.67px;">RNN</a> <a href="/tags/SMO/" style="font-size: 10px;">SMO</a> <a href="/tags/SVM/" style="font-size: 20px;">SVM</a> <a href="/tags/attention/" style="font-size: 16.67px;">attention</a> <a href="/tags/convex-optimization/" style="font-size: 10px;">convex optimization</a> <a href="/tags/dynamic-programming/" style="font-size: 13.33px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/kernel-method/" style="font-size: 10px;">kernel method</a> <a href="/tags/linear-algebra/" style="font-size: 10px;">linear algebra</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 16.67px;">seq2seq</a> <a href="/tags/soft-margin/" style="font-size: 10px;">soft margin</a> <a href="/tags/tensorflow/" style="font-size: 13.33px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a> <a href="/tags/viterbi/" style="font-size: 10px;">viterbi</a>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.zhihu.com/people/qiu-zhen-yu-87">zhihu</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://github.com/qiufengyuyi">github</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+            
+        
+    </div>
+</aside>
+
+                </div>
+            </div>
+        </div>
+        <footer id="footer">
+    <div class="container">
+        <div class="container-inner">
+            <a id="back-to-top" href="javascript:;"><i class="icon fa fa-angle-up"></i></a>
+            <div class="credit">
+                <h1 class="logo-wrap">
+                    <a href="/" class="logo"></a>
+                </h1>
+                <p>&copy; 2019 qiufengyuyi</p>
+                <p>Powered by <a href="//hexo.io/" target="_blank">Hexo</a>. Theme by <a href="//github.com/ppoffice" target="_blank">PPOffice</a></p>
+            </div>
+            <div class="footer-plugins">
+              
+    
+
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+        
+    
+    <script>
+    var disqus_shortname = 'hexo-theme-hueman';
+    
+    
+    var disqus_url = 'http://yoursite.com/2019/04/08/EM算法总结/';
+    
+    (function() {
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>

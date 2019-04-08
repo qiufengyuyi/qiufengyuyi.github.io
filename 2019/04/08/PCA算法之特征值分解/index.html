@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+
+    
+
+    
+    <title>PCA算法之特征值分解 | qiufengyuyi&#39;s blog</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <meta name="keywords" content="PCA,linear algebra">
+    
+    <meta name="description" content="前面一些文章主要对一些算法模型进行了一些总结，牵扯到概率统计的知识比较多，涉及线性代数的知识相对来说较少，且在以往参加的一些数据竞赛中，经常使用PCA方法来对数据进行一个二维或者三维的可视化，使得我能够对高维数据的分布有一个大致了解。然而，对PCA的具体实现原理也止步于了解到其协方差矩阵进行特征值分解或者奇异值分解，具体的特征值分解和奇异值分解到底是什么？为什么能够满足PCA的要求？这些问题还需要">
+<meta name="keywords" content="PCA,linear algebra">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PCA算法之特征值分解">
+<meta property="og:url" content="http://yoursite.com/2019/04/08/PCA算法之特征值分解/index.html">
+<meta property="og:site_name" content="qiufengyuyi&#39;s blog">
+<meta property="og:description" content="前面一些文章主要对一些算法模型进行了一些总结，牵扯到概率统计的知识比较多，涉及线性代数的知识相对来说较少，且在以往参加的一些数据竞赛中，经常使用PCA方法来对数据进行一个二维或者三维的可视化，使得我能够对高维数据的分布有一个大致了解。然而，对PCA的具体实现原理也止步于了解到其协方差矩阵进行特征值分解或者奇异值分解，具体的特征值分解和奇异值分解到底是什么？为什么能够满足PCA的要求？这些问题还需要">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/04/08/PCA算法之特征值分解/v2-e1e649d1c7f1294e5ab72f1c21d087f7_b.jpg">
+<meta property="og:updated_time" content="2019-04-08T13:02:59.399Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PCA算法之特征值分解">
+<meta name="twitter:description" content="前面一些文章主要对一些算法模型进行了一些总结，牵扯到概率统计的知识比较多，涉及线性代数的知识相对来说较少，且在以往参加的一些数据竞赛中，经常使用PCA方法来对数据进行一个二维或者三维的可视化，使得我能够对高维数据的分布有一个大致了解。然而，对PCA的具体实现原理也止步于了解到其协方差矩阵进行特征值分解或者奇异值分解，具体的特征值分解和奇异值分解到底是什么？为什么能够满足PCA的要求？这些问题还需要">
+<meta name="twitter:image" content="http://yoursite.com/2019/04/08/PCA算法之特征值分解/v2-e1e649d1c7f1294e5ab72f1c21d087f7_b.jpg">
+    
+
+    
+
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/titillium-web/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="wrap">
+        <header id="header">
+    <div id="header-outer" class="outer">
+        <div class="container">
+            <div class="container-inner">
+                <div id="header-title">
+                    <h1 class="logo-wrap">
+                        <a href="/" class="logo"></a>
+                    </h1>
+                    
+                        <h2 class="subtitle-wrap">
+                            <p class="subtitle">backlog of a man&#39;s road to AI learning</p>
+                        </h2>
+                    
+                </div>
+                <div id="header-inner" class="nav-container">
+                    <a id="main-nav-toggle" class="nav-icon fa fa-bars"></a>
+                    <div class="nav-container-inner">
+                        <ul id="main-nav">
+                            
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/">主页</a>
+                                </li>
+                            
+                                        <ul class="main-nav-list"><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/基础算法/">基础算法</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/学习笔记/">学习笔记</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/工程经验/">工程经验</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/比赛总结/">比赛总结</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/论文总结/">论文总结</a></li></ul>
+                                    
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/about/index.html">关于</a>
+                                </li>
+                            
+                        </ul>
+                        <nav id="sub-nav">
+                            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+        <div class="container">
+            <div class="main-body container-inner">
+                <div class="main-body-inner">
+                    <section id="main">
+                        <div class="main-body-header">
+    <h1 class="header">
+    
+    <a class="page-title-link" href="/categories/学习笔记/">学习笔记</a>
+    </h1>
+</div>
+
+                        <div class="main-body-content">
+                            <article id="post-PCA算法之特征值分解" class="article article-single article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+        PCA算法之特征值分解
+        </h1>
+    
+
+            </header>
+        
+        
+            <div class="article-meta">
+                
+    <div class="article-date">
+        <a href="/2019/04/08/PCA算法之特征值分解/" class="article-date">
+            <time datetime="2019-04-08T12:40:42.000Z" itemprop="datePublished">2019-04-08</time>
+        </a>
+    </div>
+
+		
+
+                
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/PCA/">PCA</a>, <a class="tag-link" href="/tags/linear-algebra/">linear algebra</a>
+    </div>
+
+            </div>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+            <p>前面一些文章主要对一些算法模型进行了一些总结，牵扯到概率统计的知识比较多，涉及线性代数的知识相对来说较少，且在以往参加的一些数据竞赛中，经常使用PCA方法来对数据进行一个二维或者三维的可视化，使得我能够对高维数据的分布有一个大致了解。然而，对PCA的具体实现原理也止步于了解到其协方差矩阵进行特征值分解或者奇异值分解，具体的特征值分解和奇异值分解到底是什么？为什么能够满足PCA的要求？这些问题还需要我深入探究。因此本文将着重对线性代数中的特征值分解进行一个深入的探究，以完善自己对PCA的理解。下一篇文章会对奇异值分解做一个简单的总结描述。</p>
+<p>奇异值分解和特征值分解都是对矩阵进行分解的不同方法，所谓分解，即使将原矩阵拆分成另一种表达方式，且新的表达方式比原矩阵更简单，更具有实际意义。奇异值分解对象可以使任意n<em>m维的矩阵，而特征值分解只能针对n</em>n的方阵，特征值分解从某种意义上来说可以算是奇异值分解的一种特殊情况，所以下面先对特征值分解进行一个描述。</p>
+<h2 id="特征值分解"><a href="#特征值分解" class="headerlink" title="特征值分解"></a>特征值分解</h2><p>首先，我回顾一下以前大学学过的关于特征值和特征向量的内容。</p>
+<p><strong>什么是特征值和特征向量？</strong></p>
+<p>一个n*n的方阵A的特征向量指的是一种向量v，该向量与A相乘后相当于是对该向量进行数值上的缩放操作，且该向量是非零向量，用公式表示就是： $Av=\lambda v$ 。其中，标量 $\lambda$ 称为这个特征向量对应的特征值。</p>
+<p>之前大学学线性代数的时候，学完了上面的定义描述后，就学习了怎么计算特征值和特征向量，然后就直接给出了特征分解的定义和矩阵的相似对角化内容。当时我还没办法将这些知识串联起来。直到最近看了MIT的线性代数公开课以及3Blue1Brown的关于线性代数的科普视频，才发现原来向量和矩阵是具有几何上的意义的，对应的特征向量和特征值也是有对应的几何意义的。通过几何角度去学习特征向量和特征值的内容，可以帮助我们对矩阵和向量有更直观的理解。</p>
+<p><strong>矩阵的几何意义</strong></p>
+<p>在几何意义上，每个矩阵都代表了某种变换。为了描述方便，下面我都会以二维举例，三维甚至更高维的情况与二维的原理相同，只是维数更高，不好可视化。假设现在有个2*2的矩阵A： $\left[ \begin{matrix} 3 &amp; 1 \ 0 &amp; 2 \ \end{matrix} \right] $,这个矩阵可以有多种解释，我在大学学习线性代数时，通常老师只会以行向量的角度去看，比如解该矩阵对应的线性方程组，会写成： $\begin{equation} \left\{ \begin{aligned} 3x_1+x_2=a\ 2x_2=b \end{aligned} \right. \end{equation}$ ,其实要从几何意义上了解一个矩阵，从列向量的角度上去看会比较好，此时上述方程组可以写作： $\left[ \begin{matrix} 3 \ 0 \ \end{matrix} \right]x_1+\left[ \begin{matrix} 1 \ 2 \ \end{matrix} \right]x_2=\left[ \begin{matrix} a \ b \ \end{matrix} \right] $，其中 $x_1$ 和 $x_2$ 分别表示二维向量 $\left[ \begin{matrix} x_1 \ x_2 \ \end{matrix} \right] $的两个维度。而在二维平面系中，任意一个向量可以由两个基向量线性表示，我们日常使用的基向量为 $\left[ \begin{matrix} 1 \ 0 \ \end{matrix} \right]$ 和 $\left[\begin{matrix} 0 \ 1 \ \end{matrix} \right]$ ,分别对应坐标系的x轴上的单位向量，和y轴上的单位向量。如图：</p>
+<p><img src="/2019/04/08/PCA算法之特征值分解/v2-e1e649d1c7f1294e5ab72f1c21d087f7_b.jpg" alt="img"></p>
+<p>(备注：基向量可以理解为能够线性表示该维度平面上的任意一个向量，因此基向量不唯一，这里举的例子纯属习惯。)</p>
+<p>因此平面上的任意向量都可以用 $\left[ \begin{matrix} 1 \ 0 \ \end{matrix} \right]x_1+\left[ \begin{matrix} 0 \ 1 \ \end{matrix} \right]x_2$ 得到。而上面提到的方程组，现在可以很清晰得看到它相当于是将x轴上的基向量增长到3倍，而y轴上的基向量变换略微复杂，是一种shear操作，形象得说相当于将一条垂直的线倾斜一定的角度，变换后的基向量变为了 $\left[ \begin{matrix} 3 \ 0 \ \end{matrix} \right] $和 $\left[ \begin{matrix} 1 \ 2 \ \end{matrix} \right]$ ,如图所示：</p>
+<p><img src="/2019/04/08/PCA算法之特征值分解/v2-384e390764c4d6ea21ec70fb0cdd0298_b.jpg" alt="img"></p>
+<p>当基向量改变时，原来的由基向量线性表示的向量也会发生改变，因此整个平面的网格都会发生变化，上面的例子中就发生了这种变化，但是这个变化有两个不变，一个是本来是原点的位置，变换后还是原点；另一个是网格之间的相对距离仍然没有变化。这种变换通常我们叫做<strong>线性变换。</strong>其实矩阵的线性变换有专门的定理和证明，要满足可加性和乘子性，具体的就不展开了，有兴趣的同学可以深入研究。（简单说就是线性变化f,要满足f(A+B)=f(A)+f(B),以及f(kA)=kf(A)，其中k为实数。就像我之前说的，作为一名非科班的人员，需要对数学机理有一定了解，但是切忌太过深入其中，出不来就不好了。）</p>
+<p>说了那么多，还没扯到特征向量是怎么回事？别急，马上就讲到了。一般一个向量在经过一个线性变换后，不大会维持在原向量所张成的空间上的，这里又出现个新名字<strong>张成（span）,</strong>这个概念说实话我在看《线性代数应该这样学》时，很头疼，这边大家可以理解为一个向量张成的空间为这个向量的延长线，如图：</p>
+<p><img src="/2019/04/08/PCA算法之特征值分解/v2-2c7c93e5dbfda58ae21960282be6099f_b.jpg" alt="img"></p>
+<p>它经过上述线性变换后，与原向量不共线。</p>
+<p><img src="/2019/04/08/PCA算法之特征值分解/v2-5141585d7192ca51a201bd4a66760bc2_b.jpg" alt="img"></p>
+<p>图中，绿色的为原向量，而蓝色的为线性变换后的向量。两个向量并不共线。但是有时候会存在这样的一个向量，它在线性变换后，仍然处在原向量张成的空间上，上述例子中有一个很明显的例子，就是位于x轴上的向量，在线性变换后，仍然在x轴上。这样的向量我们就称之为特征向量，而该向量相对于原来向量的缩放比例则称为其对应的特征值，值得注意的是特征值可以为负数，表示的是特征向量与原来的向量的方向相反。这个几何意义可以与我们一开始介绍的公式相对应，等式左边表示 $A\vec v $表示对向量 $\vec v$ 进行一个矩阵A对应的线性变换，等式右边表示该向量做 $\lambda$ 的缩放。</p>
+<p>关于特征向量的解法，相信大学都教过，就是得到 $(A-\lambda I) \vec v=\vec 0$ ，下面的过程可能大家就不太明白里面的意思了，即令 $|A-\lambda I|=0$ ，然后根据行列式求 $\lambda $的值。为什么令行列式为0就可以满足上个等式呢？这里牵扯到行列式的几何意义，这里就提一下，一个矩阵的行列式相当于是将一个坐标系变换后得到的新的基向量所围成的四边形的面积（二维下）。上图中，相当于是一个单位菱形格的面积。那么要使得向量 $\vec v$ 经过变换后，为零向量，就要使得我的变换后的单位菱形格面积为0，即对应的我的变换矩阵的行列式为0。</p>
+<p>特征向量的用处在哪里呢？首先根据上面的描述，一个矩阵的特征向量通常是那些经过矩阵变换后，在方向和位置上仍然没有发生变化的向量，而其他向量或多或少都发生了一些偏移，因此特征向量能够帮助我们很好得去描述一个矩阵。</p>
+<p>其次，了解下这样一个矩阵： $\left[ \begin{matrix} -1&amp;0 \ 0&amp;2 \ \end{matrix} \right] $，该矩阵的特征向量可以很轻易就能看出来，分别为原来的基向量 $\left[ \begin{matrix} 1 \ 0 \ \end{matrix} \right] $和 $\left[ \begin{matrix} 0 \ 1 \ \end{matrix} \right] $,其对应的特征值分别为矩阵对其各自维度的缩放程度。此时我们的基向量就是该矩阵对应的特征向量。</p>
+<p><img src="/2019/04/08/PCA算法之特征值分解/v2-f836fe545fb4be3becb9f95e164f71c2_b.jpg" alt="img"></p>
+<p>如图红色实线为y轴方向原基向量，绿色实线为x轴原基向量，对应颜色虚线为线性变换后的基向量。其实这种矩阵有特殊性，比如除了其主对角线元素外的所有元素都是0，这种矩阵我们称之为<strong>对角阵</strong>。为什么要讲到这个矩阵？它可是有大用处。根据上面的描述，可以知道对角阵的特征向量是该维度空间上的基向量。对角阵有以下便利的性质：</p>
+<p>如果对一个向量做n次相同的对角阵的变换，即多个相同的对角阵的连乘，按上面的例子,可得：$\{\prod_{}^{n}\left[ \begin{matrix} -1&amp;0 \ 0&amp;2 \ \end{matrix} \right] \}\left[ \begin{matrix} a \ b \ \end{matrix} \right]=\left[ \begin{matrix} (-1)^na \ 2^nb \ \end{matrix} \right] $，最后的结果就是向量对应的维度元素与变换矩阵的特征值的n次方的乘积。</p>
+<p>如果是普通的非对角矩阵，那么做n次连续的矩阵变换，要获取最后变换得到的向量是需要庞大的计算量的，且非常复杂。</p>
+<p>因此基于上述性质，可以利用对角阵的这种优点，来将原始矩阵进行转换化简，将其与对角阵建立某种变换关系，使得我对原始矩阵的计算可以转换到对角阵上，最后化简我们的计算。这就是相似对角化的内容。</p>
+<p><strong>备注：一个矩阵是否能相似对角化是有条件的，即能够找到这样一组基，使得该矩阵对应的线性变换对于该组基上的每个向量都是一个缩放动作。</strong></p>
+<p><strong>特征值分解</strong></p>
+<p>为什么还要讲相似对角化？首先截图一下百度百科中关于特征值分解的定义：</p>
+<p><img src="/2019/04/08/PCA算法之特征值分解/v2-7ed05b3010e3a1c95b3edb3b933fc717_b.jpg" alt="img"></p>
+<p>其实这个定义可以与上面的描述对应，首先能够特征值分解的矩阵必须是方阵，其次具有N个线性无关的特征向量，由于n维向量空间中，n个线性无关的不同向量可以作为该空间中的一组基，使得该空间中任一向量都可以用这一组基线性表示，这个也是A需要满足能够相似对角化的条件。此时，A可以相似对角化为一个对角矩阵。下面探究特征分解等式的几何意义。</p>
+<p>首先明确一个概念，基变换。这里我简单说明：以二维空间为例，存在着多个不同的基向量组，因此我们二维空间中的任意向量都可以用不同的基向量来表示，虽然是同一个向量，但是用不同基表示时，得到的表示值会不一样。举例：以 $\left[ \begin{matrix} 1 \ 0 \ \end{matrix} \right] $和 $\left[ \begin{matrix} 0 \ 1 \ \end{matrix} \right]$ 为基，向量 $\left[ \begin{matrix} 3 \ 2 \ \end{matrix} \right] $可以表示为 $3\left[ \begin{matrix} 1 \ 0 \ \end{matrix} \right]+2\left[ \begin{matrix} 0 \ 1 \ \end{matrix} \right] $。但是若用另外一组基： $\left[ \begin{matrix} 2\ 1 \ \end{matrix} \right] $和 $\left[ \begin{matrix} -1 \ 1 \ \end{matrix} \right] $为基，上述向量应该表示为 $\frac{5}{3}\left[ \begin{matrix} 2\ 1 \ \end{matrix} \right]+\frac{1}{3}\left[ \begin{matrix} -1\ 1 \ \end{matrix} \right] $，此时新的基 $\left[\begin{matrix} 2\ 1 \ \end{matrix} \right]$ 和 $\left[ \begin{matrix} -1 \ 1 \ \end{matrix} \right] $其实扮演的是原来 $\left[ \begin{matrix} 1 \ 0 \ \end{matrix} \right]$ 和 $\left[ \begin{matrix} 0 \ 1 \ \end{matrix} \right] $的作用，但是新的向量表示确变成了 $\left[ \begin{matrix} \frac{5}{3}\ \frac{1}{3} \ \end{matrix} \right]$ ，虽然向量还是那个向量，但是确实不同坐标系下的表示。这时矩阵 $\left[ \begin{matrix} 2&amp;-1\ 1&amp;1 \ \end{matrix} \right] $其实代表了一个基变换。此时如果我们已知某坐标系有一个线性变换矩阵，我们想知道该线性变换在另一个坐标系上的样式，就可以使用这个基变换，假设线性变换的矩阵为$ \left[ \begin{matrix} 0&amp;-1\ 1&amp;0 \ \end{matrix} \right] $,是对A坐标系的线性变换，假设有向量 $\vec v$ 是在B坐标系下的表示，$ \left[ \begin{matrix} 2&amp;-1\ 1&amp;1 \ \end{matrix} \right]$ 可以将B坐标系转换到A坐标系，具体转换步骤如下:</p>
+<ol>
+<li>首先利用基变换矩阵，得到向量在A坐标系的向量表示： $\left[ \begin{matrix} 2&amp;-1\ 1&amp;1 \ \end{matrix} \right]\vec v $</li>
+<li>然后在新的A坐标系上，对向量进行矩阵的线性变换： $\left[ \begin{matrix} 0&amp;-1\ 1&amp;0 \ \end{matrix} \right]\left[ \begin{matrix} 2&amp;-1\ 1&amp;1 \ \end{matrix} \right]\vec v $，得到了A坐标系中转换后的向量。</li>
+<li>最后需要将A坐标系的新向量转换回到B坐标系，因此对步骤2的得到的向量进行逆基变换： $\left[ \begin{matrix} 2&amp;-1\ 1&amp;1 \ \end{matrix} \right]^{-1}\left[ \begin{matrix} 0&amp;-1\ 1&amp;0 \ \end{matrix} \right]\left[ \begin{matrix} 2&amp;-1\ 1&amp;1 \ \end{matrix} \right]\vec v$ ,最后得到我想知道的变换后的向量在B坐标系上的向量表示。</li>
+</ol>
+<p>利用上述基变换的概念，我们可以将原始坐标系转换为用线性变换矩阵的特征向量组成基的坐标系。</p>
+<p>还是以矩阵 $\left[ \begin{matrix} 3 &amp; 1 \ 0 &amp; 2 \ \end{matrix} \right] $为例子，它的特征向量分别为： $\left[ \begin{matrix} 1\ 0 \ \end{matrix} \right]$ 和 $\left[ \begin{matrix} -1\ 1\ \end{matrix} \right] $，此时将两个向量组合成的矩阵 $\left[ \begin{matrix} 1&amp;-1\ 0&amp;1 \ \end{matrix} \right]$ 作为我们的基变换矩阵，（我们的目的就是要将原始坐标系转换为我们用特征向量作为基的坐标系），然后运用上述基变换过程，得到一个综合的转换矩阵：</p>
+<p>$\left[ \begin{matrix} 1&amp;-1\ 0&amp;1 \ \end{matrix} \right]^{-1}\left[ \begin{matrix} 3 &amp; 1 \ 0 &amp; 2 \ \end{matrix} \right]\left[ \begin{matrix} 1&amp;-1\ 0&amp;1 \ \end{matrix} \right] $.</p>
+<p>这样一个转换矩阵应该得到一个对角阵，原因在于在这个新的坐标系中，基就是该矩阵对应的特征向量，因此它对应的线性变换只是对两个基向量做了缩放，并没有改变其原本的轨迹。之前已经说到了对角阵的好处，是不是与这个有惊人的吻合！对角阵的主对角元素为对应的特征向量的特征值，即线性变换矩阵 $\left[ \begin{matrix} 3 &amp; 1 \ 0 &amp; 2 \ \end{matrix} \right]$ 对其特征向量的缩放程度，在这里，对角阵为 $\left[ \begin{matrix} 3 &amp; 0 \ 0 &amp; 2 \ \end{matrix} \right]$ 。这样通过矩阵的运算，我们可以将一个矩阵转换为对角阵的表现形式：</p>
+<p>$\left[ \begin{matrix} 3 &amp; 1 \ 0 &amp; 2 \ \end{matrix} \right]=\left[ \begin{matrix} 1&amp;-1\ 0&amp;1 \ \end{matrix} \right]\left[ \begin{matrix} 3 &amp; 0 \ 0 &amp; 2 \ \end{matrix} \right]\left[ \begin{matrix} 1&amp;-1\ 0&amp;1 \ \end{matrix} \right]^{-1} $</p>
+<p>最后的计算过程是不是与我一开始给出的特征值分解公式吻合！此时一个矩阵的任意次连乘得到极大的简化。（具体计算不讲了，总之在连乘过程中，右边式子可以得到无数个单位矩阵连乘，而对角阵本身的连乘是很简单的。）</p>
+<p>最后看一下这个特征分解的形式，中间的对角阵其实告诉了我们这个线性变换的变换程度，而两边对应的基变换矩阵中的特征向量告诉了我们线性变换的变换角度等性质。这样一个比较复杂的矩阵变换通过特征分解，就能得到很好的解释。这也是PCA中能够使用该方法的原因之一。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>虽然特征分解很好用，但是也有其缺点，最重要的就是它不是对所有矩阵通用，需要满足一定的条件，否则就无法进行分解。因此有另外一种分解方法叫做奇异值分解，它能够对任意维度的矩阵进行分解，并且能够帮助我们删选不需要的特征维度。因此PCA主要使用的还是奇异值分解。之所以讲了这么多特征值分解，其实为了奇异值分解做知识的铺垫。下一篇将继续讲解奇异值分解。</p>
+<p>后记：</p>
+<p>我说这篇文章我断断续续写了两个星期你敢信？？！！线性代数不愧是我的苦主，在大学期间是我比较头疼的一门课，当时学的也是不扎实。但是在钻研机器学习和深度学习时，发现线性代数的重要性，同时看了著名博主3Blue1Brown的线性代数小视频，顿时感觉打开了新世界的大门，因此狠下心来对线性代数做一个新的角度的学习。当然学习深度肯定不能和科班同学相比，只是达到能在研究模型算法时，遇到相关知识点能够知其所以然足矣。</p>
+<p>reference:</p>
+<p>百度百科</p>
+<p>3Blue1Brown的视频</p>
+
+        </div>
+        <footer class="article-footer">
+            
+
+
+
+    <a data-url="http://yoursite.com/2019/04/08/PCA算法之特征值分解/" data-id="cju8d9m5t002ix8ut8tluvdz8" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+        </footer>
+    </div>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "author": {
+            "@type": "Person",
+            "name": "qiufengyuyi"
+        },
+        "headline": "PCA算法之特征值分解",
+        "image": "http://yoursite.com/2019/04/08/PCA算法之特征值分解/v2-e1e649d1c7f1294e5ab72f1c21d087f7_b.jpg",
+        "keywords": "PCA linear algebra",
+        "genre": "学习笔记",
+        "datePublished": "2019-04-08",
+        "dateCreated": "2019-04-08",
+        "dateModified": "2019-04-08",
+        "url": "http://yoursite.com/2019/04/08/PCA算法之特征值分解/",
+        "description": "前面一些文章主要对一些算法模型进行了一些总结，牵扯到概率统计的知识比较多，涉及线性代数的知识相对来说较少，且在以往参加的一些数据竞赛中，经常使用PCA方法来对数据进行一个二维或者三维的可视化，使得我能够对高维数据的分布有一个大致了解。然而，对PCA的具体实现原理也止步于了解到其协方差矩阵进行特征值分解或者奇异值分解，具体的特征值分解和奇异值分解到底是什么？为什么能够满足PCA的要求？这些问题还需要"
+        "wordCount": 516
+    }
+</script>
+
+</article>
+
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
+
+
+                        </div>
+                    </section>
+                    <aside id="sidebar">
+    <a class="sidebar-toggle" title="Expand Sidebar"><i class="toggle icon"></i></a>
+    
+        
+<nav id="article-nav">
+    
+    
+        <a href="/2019/04/08/EM算法总结/" id="article-nav-older" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">上一篇</strong>
+        <p class="article-nav-title">EM算法总结</p>
+        <i class="icon fa fa-chevron-left" id="icon-chevron-left"></i>
+        </a>
+    
+</nav>
+
+    
+    <div class="widgets-container">
+        
+            
+                
+
+            
+                
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/08/PCA算法之特征值分解/" class="title">PCA算法之特征值分解</a></p>
+                            <p class="item-date"><time datetime="2019-04-08T12:40:42.000Z" itemprop="datePublished">2019-04-08</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/08/EM算法总结/" class="title">EM算法总结</a></p>
+                            <p class="item-date"><time datetime="2019-04-08T12:18:39.000Z" itemprop="datePublished">2019-04-08</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/05/支持向量机SVM总结之soft-Margin与SMO/" class="title">支持向量机SVM总结之soft-Margin与SMO</a></p>
+                            <p class="item-date"><time datetime="2019-04-05T03:26:21.000Z" itemprop="datePublished">2019-04-05</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/05/支持向量机SVM总结之核方法/" class="title">支持向量机SVM总结之核方法</a></p>
+                            <p class="item-date"><time datetime="2019-04-05T03:06:32.000Z" itemprop="datePublished">2019-04-05</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/04/支持向量机SVM总结之拉格朗日对偶问题/" class="title">支持向量机SVM总结之拉格朗日对偶问题</a></p>
+                            <p class="item-date"><time datetime="2019-04-04T12:34:32.000Z" itemprop="datePublished">2019-04-04</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EM/">EM</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HMM/">HMM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markov-assumption/">Markov assumption</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PCA/">PCA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SMO/">SMO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVM/">SVM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/convex-optimization/">convex optimization</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kernel-method/">kernel method</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linear-algebra/">linear algebra</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/soft-margin/">soft margin</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/viterbi/">viterbi</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-float">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/EM/" style="font-size: 13.33px;">EM</a> <a href="/tags/HMM/" style="font-size: 20px;">HMM</a> <a href="/tags/Markov-assumption/" style="font-size: 10px;">Markov assumption</a> <a href="/tags/PCA/" style="font-size: 10px;">PCA</a> <a href="/tags/RNN/" style="font-size: 16.67px;">RNN</a> <a href="/tags/SMO/" style="font-size: 10px;">SMO</a> <a href="/tags/SVM/" style="font-size: 20px;">SVM</a> <a href="/tags/attention/" style="font-size: 16.67px;">attention</a> <a href="/tags/convex-optimization/" style="font-size: 10px;">convex optimization</a> <a href="/tags/dynamic-programming/" style="font-size: 13.33px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/kernel-method/" style="font-size: 10px;">kernel method</a> <a href="/tags/linear-algebra/" style="font-size: 10px;">linear algebra</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 16.67px;">seq2seq</a> <a href="/tags/soft-margin/" style="font-size: 10px;">soft margin</a> <a href="/tags/tensorflow/" style="font-size: 13.33px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a> <a href="/tags/viterbi/" style="font-size: 10px;">viterbi</a>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.zhihu.com/people/qiu-zhen-yu-87">zhihu</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://github.com/qiufengyuyi">github</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+            
+        
+    </div>
+</aside>
+
+                </div>
+            </div>
+        </div>
+        <footer id="footer">
+    <div class="container">
+        <div class="container-inner">
+            <a id="back-to-top" href="javascript:;"><i class="icon fa fa-angle-up"></i></a>
+            <div class="credit">
+                <h1 class="logo-wrap">
+                    <a href="/" class="logo"></a>
+                </h1>
+                <p>&copy; 2019 qiufengyuyi</p>
+                <p>Powered by <a href="//hexo.io/" target="_blank">Hexo</a>. Theme by <a href="//github.com/ppoffice" target="_blank">PPOffice</a></p>
+            </div>
+            <div class="footer-plugins">
+              
+    
+
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+        
+    
+    <script>
+    var disqus_shortname = 'hexo-theme-hueman';
+    
+    
+    var disqus_url = 'http://yoursite.com/2019/04/08/PCA算法之特征值分解/';
+    
+    (function() {
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>
