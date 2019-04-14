@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+
+    
+
+    
+    <title>PCA-主成分分析 | qiufengyuyi&#39;s blog</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <meta name="keywords" content="PCA">
+    
+    <meta name="description" content="前面两篇废了大力气总结了线性代数中最重要的两个概念：特征值分解和奇异值分解，一方面是为了更新和回溯自己对线性代数的理解，另一方面则是为了本篇总结PCA提供了数学的前置基础。下面结合吴恩达老师的cs229、周志华老师的机器学习教材还有其他一些博客的分析，对PCA进行一个总结。 PCA干什么用？不同于先介绍PCA的原理，首先我准备讲一下PCA的应用场景。我个人来说，使用过PCA的场景如下：  可视化，">
+<meta name="keywords" content="PCA">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PCA-主成分分析">
+<meta property="og:url" content="http://yoursite.com/2019/04/14/PCA-主成分分析/index.html">
+<meta property="og:site_name" content="qiufengyuyi&#39;s blog">
+<meta property="og:description" content="前面两篇废了大力气总结了线性代数中最重要的两个概念：特征值分解和奇异值分解，一方面是为了更新和回溯自己对线性代数的理解，另一方面则是为了本篇总结PCA提供了数学的前置基础。下面结合吴恩达老师的cs229、周志华老师的机器学习教材还有其他一些博客的分析，对PCA进行一个总结。 PCA干什么用？不同于先介绍PCA的原理，首先我准备讲一下PCA的应用场景。我个人来说，使用过PCA的场景如下：  可视化，">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/04/14/PCA-主成分分析/v2-3f14d57e2ff8297d26d092b2665f29bb_b.jpg">
+<meta property="og:updated_time" content="2019-04-14T09:32:29.322Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PCA-主成分分析">
+<meta name="twitter:description" content="前面两篇废了大力气总结了线性代数中最重要的两个概念：特征值分解和奇异值分解，一方面是为了更新和回溯自己对线性代数的理解，另一方面则是为了本篇总结PCA提供了数学的前置基础。下面结合吴恩达老师的cs229、周志华老师的机器学习教材还有其他一些博客的分析，对PCA进行一个总结。 PCA干什么用？不同于先介绍PCA的原理，首先我准备讲一下PCA的应用场景。我个人来说，使用过PCA的场景如下：  可视化，">
+<meta name="twitter:image" content="http://yoursite.com/2019/04/14/PCA-主成分分析/v2-3f14d57e2ff8297d26d092b2665f29bb_b.jpg">
+    
+
+    
+
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/titillium-web/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="wrap">
+        <header id="header">
+    <div id="header-outer" class="outer">
+        <div class="container">
+            <div class="container-inner">
+                <div id="header-title">
+                    <h1 class="logo-wrap">
+                        <a href="/" class="logo"></a>
+                    </h1>
+                    
+                        <h2 class="subtitle-wrap">
+                            <p class="subtitle">backlog of a man&#39;s road to AI learning</p>
+                        </h2>
+                    
+                </div>
+                <div id="header-inner" class="nav-container">
+                    <a id="main-nav-toggle" class="nav-icon fa fa-bars"></a>
+                    <div class="nav-container-inner">
+                        <ul id="main-nav">
+                            
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/">主页</a>
+                                </li>
+                            
+                                        <ul class="main-nav-list"><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/基础算法/">基础算法</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/学习笔记/">学习笔记</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/工程经验/">工程经验</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/比赛总结/">比赛总结</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/论文总结/">论文总结</a></li></ul>
+                                    
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/about/index.html">关于</a>
+                                </li>
+                            
+                        </ul>
+                        <nav id="sub-nav">
+                            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+        <div class="container">
+            <div class="main-body container-inner">
+                <div class="main-body-inner">
+                    <section id="main">
+                        <div class="main-body-header">
+    <h1 class="header">
+    
+    <a class="page-title-link" href="/categories/学习笔记/">学习笔记</a>
+    </h1>
+</div>
+
+                        <div class="main-body-content">
+                            <article id="post-PCA-主成分分析" class="article article-single article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+        PCA-主成分分析
+        </h1>
+    
+
+            </header>
+        
+        
+            <div class="article-meta">
+                
+    <div class="article-date">
+        <a href="/2019/04/14/PCA-主成分分析/" class="article-date">
+            <time datetime="2019-04-14T08:52:39.000Z" itemprop="datePublished">2019-04-14</time>
+        </a>
+    </div>
+
+		
+
+                
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/PCA/">PCA</a>
+    </div>
+
+            </div>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+            <p>前面两篇废了大力气总结了线性代数中最重要的两个概念：特征值分解和奇异值分解，一方面是为了更新和回溯自己对线性代数的理解，另一方面则是为了本篇总结PCA提供了数学的前置基础。下面结合吴恩达老师的cs229、周志华老师的机器学习教材还有其他一些博客的分析，对PCA进行一个总结。</p>
+<h2 id="PCA干什么用？"><a href="#PCA干什么用？" class="headerlink" title="PCA干什么用？"></a>PCA干什么用？</h2><p>不同于先介绍PCA的原理，首先我准备讲一下PCA的应用场景。我个人来说，使用过PCA的场景如下：</p>
+<ul>
+<li><strong>可视化</strong>，对于高维特征的数据，尤其是现在很多大数据竞赛、算法大赛里面的数据基本上都有几十个，这些还只是原始特征，要使模型能够很好地解决问题，还必须进行特征的提取和筛选，最后得到几百维特征都不奇怪。此时我们没有什么途径可以通过画图来讲样本数据进行可视化，相当于对数据并没有一个直观的概念。因此我会使用PCA，当然如果数据特征之间的相关性大部分不是线性的（常见），我会使用t-sne。但是PCA的速度更快，它可以帮助我将样本数据可视化在一个3d或者2d的坐标系中，哪些数据比较接近，哪些数据是异常点可以通过它初步判断。</li>
+<li><strong>降维</strong>，事实上，可视化也相当于是降维，所谓的降维，通俗点说，就是我一开始使尽了浑身解数，提了几百几千维特征，然后也把一些对模型训练无效的特征筛选掉了，但是我发现很多特征之间是差不多意思，比如一个人的身高和他的臂长大多数情况下是相差不大的。此时过多维数据并不能提升我的模型效果，反之由于数据矩阵的稀疏性，维度过多等问题，导致我的模型计算效率低下，甚至会有过拟合的风险。因此需要进行降维。当然有很多降维方法，但是PCA是我的首选，因为它够快，但是实际上很多特征之间不是线性的相关，因此需要使用一些非线性的降维方法，比如使用带核的PCA等，来进行降维。</li>
+</ul>
+<p>除了上面我使用的，在吴恩达老师的教程中，还提到了在人脸图像分析中，会使用PCA提取特征脸，来做人脸相似度计算，（当然在现今深度学习火热的情况下，该方法的效果肯定没有cnn等神经网络的效果好）。另外在自然语言处理中，还应用到了LSI，即一般文本处理时，使用one-hot编码时，很多单词未出现，因此文本矩阵表示很稀疏，且维度很大，使用pca后能有效进行降维，同时不会损失很重要的信息。</p>
+<h2 id="PCA为什么能降维？"><a href="#PCA为什么能降维？" class="headerlink" title="PCA为什么能降维？"></a>PCA为什么能降维？</h2><p>上一节讲了很多PCA的应用，其实所有应用都有一个共同的部分，降维！无论是可视化还是图像分析提取特征脸，都是将原始高维数据映射到了一个更低的维度。因此可以将目光聚焦到降维。</p>
+<p><strong>为什么能降维？</strong></p>
+<p>准备从两个不同的角度来说说降维这个问题。</p>
+<ul>
+<li>拿吴恩达老师的例子来说吧，给定一个数据集，用来描述m个不同类型的汽车的，每个样本特征有n维，包括诸如用码数来表示的最大时速，以及用每小时公里数表达的最大时速等。可以看到这两个特征几乎是线性相关的。因此整个数据可以近似看成分布在n-1维的向量子空间上。我拿掉关于最大时速的一个特征，原样本数据的信息损失是很小的。这里我是直接筛除一个特征。还有一些情况是某两个特征虽然表面上并看不出相似的地方，但是通过计算相关系数，能够得出两个特征之间是线性相关的，比如评价一个人工作能力，有他的技能特征，还有他对工作的态度特征，在某种程度上，只有态度很认真向上的人，他的工作技能才会提高。因此两个特征是线性相关的，但是我们不能简单舍弃其中一个，因此我需要将这两个维度综合成一个维度来表示，这个维度就是这个人的工作能力表示。如下图所示： $\vec u_1$ 方向表示最后合成的工作能力表示，与之垂直的 $\vec u_2 $方向表示我需要抛弃掉的信息量。</li>
+</ul>
+<p><img src="/2019/04/14/PCA-主成分分析/v2-3f14d57e2ff8297d26d092b2665f29bb_b.jpg" alt="img"></p>
+<ul>
+<li>另一个角度实际上式从纯线性代数的角度，我们的样本数据最后实际上都是化为一个矩阵来处理，假设行表示一个样本，列表示一个特征，因此一个m*n的矩阵表示m个样本n个特征，在列方向上，如果该矩阵满秩，表示该矩阵的所有列向量能够张成当前的整个n维空间，即列向量之间线性无关。但实际情况下，满秩的矩阵很少，此时矩阵总会存在一个或多个列向量能够被其他列向量通过线性组合的方式表示，这就表明有的列向量是多余的，对于张成这个空间的任务并没有任何帮助。举个例子：如矩阵 $\left[ \begin{matrix} 2 &amp; 3&amp; 12 \\ 0 &amp; 2&amp;4 \\ 1&amp;2&amp;7 \end{matrix} \right]$ ，我用 $\vec v_i$ 表示列向量，可知 $\vec v_3 = 3\vec v_1 + 2\vec v_2$ ,因此列向量 $\vec v_3$ 可以说是那个多余的向量，在前两个列向量存在的情况下，对于样本数据的表达没有更多的作用，因此可以舍弃。</li>
+</ul>
+<p><strong>PCA的降维原理</strong></p>
+<p>下面开始介绍PCA的原理。上一节讲到降维其实就是在数据样本近似于符合低维度的子空间的条件下，将数据投影到一个低维度的超平面上。前面线性代数篇幅说过投影实际上是一种矩阵的线性变换，因此PCA是一种<strong>线性</strong>降维方法。线性变换将原数据从一个坐标系，转换到另一个坐标系，投影的作用是使得基向量的维度减小了。那么此时我们的目标就是找到那个最好的投影方向。怎么算是最好的投影方向呢，有很多对PCA的不同解释，比如投影距离最小，还有投影后方差最大等等。我感觉后一个的解释比较清楚，因此下面就使用这个解释。</p>
+<p>首先回顾一下方差的概念，实际上方差表示的是数据间的多样性程度。对于一维的离散型随机变量X，其方差为: $E(X^2)-(E(X))^2$ ，其中E(X)表示随机变量的均值。但是对于多维的随机变量集合 $\{X_1,X_2,…,X_n\} $,其实使用协方差 $Cov(X_i,X_j)=E(X_iX_j)-E(X_i)E(X_j)$ 来表示数据之间的多样性程度。对于当前机器学习的输入数据，可以表示为如下矩阵形式： </p>
+<script type="math/tex; mode=display">
+\left[ \begin{matrix} \\\ X_{11}&X_{12}&\cdots&X_{1n} \\\ X_{21}&X_{22}&\cdots&X_{2n} \\\ \vdots&\vdots&\ddots \\\ X_{m1}&X_{m2}&\cdots&X_{mn} \end{matrix} \right]</script><p>我们用 $X^{i}$ 表示矩阵的列向量。</p>
+<p>因为该数据不是序列数据，且基于一些假设，样本之间是相互独立的，样本特征之间的相关系数为0，因此对应的协方差也为0，此时 $Cov(X^i,X^j)=0,i\neq j $。而样本特征之间的协方差最后可以构成一个矩阵 $\Sigma$ ,矩阵元素 $\Sigma_{ij}$ 表示样本特征 $X^i,X^j$ 的协方差，由上述性质可知，该矩阵是一个对角阵，因为 $Cov(X^i,X^j)=0,i\neq j​$ ，只有主对角线上的元素为非0元素。</p>
+<p>其次，为什么要投影到方差最大的方向上？从数学上其实是有推导的，但是水平有限，也怕大家理解困难，可以从更直观的形式去理解这个问题。我们能够应用机器学习模型去对数据进行分类的原因是什么？当然是样本特征能够将数据有效的进行区分，举个例子就是男性的体重普遍比同龄的女性大，因此体重可以作为区分男性女性的特征，因为它有足够的区分度，这个区分度就是上面所说的方差。只有在这个特征上的方差足够大，才能通过这个特征去分类，否则这个特征就是不好的特征。</p>
+<p>基于上述理解，PCA的降维原理也很直观了，就是将原数据样本投影的一个方向的超平面后，数据点在这个超平面上的区分度要尽量大，否则相当于丢失了能够帮助我们分类的信息，得不偿失。如图所示（图画的比较丑，见谅）</p>
+<p><img src="/2019/04/14/PCA-主成分分析/v2-9f294947ed5cb6547e73a00e83fa3f1d_b.jpg" alt="img"></p>
+<p>假设在二维空间下，我要降维到一维直线上，图上的A和B为可选的两个方向，可以看到，数据点投影到A方向后，点与点之间还是有区分度的，但是投影到B上后，几个点几乎重叠了，区分度急剧减小，表示丢失了信息，不可取。因此A的投影方向比B好。</p>
+<h2 id="PCA的实现"><a href="#PCA的实现" class="headerlink" title="PCA的实现"></a>PCA的实现</h2><p>那么怎么找到如A这样的好的投影方向呢？这就是PCA做的事情。其实有两种实现PCA的方法，一个是通过协方差矩阵，另一个是直接对原数据矩阵进行奇异值分解。这两个方法其实是等价的。下面通过分别介绍两个方法来描述PCA的实现</p>
+<p><strong>协方差矩阵实现法</strong></p>
+<ol>
+<li><p>首先需要对所有数据进行标准化。什么是标准化？即先将某个维度的特征上的所有数据都转化为均值为0，方差为1的数据格式。即第j维特征上， $\mu_j=\frac{1}{m}\sum_{m}^{i}{X_{i}^{j}}$ ，然后令所有 $X_i^j $替换为 $X_i^j-\mu^j$ 。这一步的意义在于计算协方差矩阵的时候回用到均值，将均值去0化，可以减小计算量。其次计算第j维特征上的方差： $\sigma_j^2=\frac{1}{m}\sum_{i}^{}{(X^j_i)^2}$ （此时均值都是0 了，所以可以化简为这个式子），然后令所有的 $X_i^j$ 替换为 $X_i^j/\sigma_j$ 。这一步的意义在于保证不同特征的数据的量级都保持在一个水平上，防止一个量级为1000，另一个量级为0.001这种情况。</p>
+</li>
+<li><p>由于投影方向可以使无限长度，为了约束投影向量，我们将投影向量 $\vec \mu $的模约束为1，即 $\vec \mu$ 为一个单位向量。如下图所示，两个向量的夹角余弦为： $cos\theta=\frac{A^TB}{||A|||B||} $，因为此时B的模为1，投影后的向量表示为 $||A||\frac{A^TB}{||A|||B||}=A^TB$ ,因此本实例中用 $x^Tu$ 表示。而求方差的公式上面已经给出了，同时由于经过标准化后，样本均值为0，因此最后得到的方差为如下公式，我们的目的就是要最大化这个式子。细心的同志可能发现中间括号里的不就是我之前讲过的协方差矩阵 $\Sigma$ 嘛？这个后面会有大用处。我们接下来就是要优化这个函数式。</p>
+<script type="math/tex; mode=display">
+\begin{equation}\begin{split} \begin{aligned} \frac{1}{m}\sum_{i=1}^{m}{(x_i^T\mu)^2} &=\frac{1}{m}\sum_{i=1}^{m}{\mu^Tx_ix_i^T\mu}\\ &=\mu^T(\frac{1}{m}\sum_{i=1}^{m}{x_ix_i^T})\mu \end{aligned}\end{split} \end{equation}</script></li>
+</ol>
+<p><img src="/2019/04/14/PCA-主成分分析/v2-0c274f18e75d2604d928a1403e36cc26_b.jpg" alt="img"></p>
+<ol>
+<li>根据约束条件 $||\mu||_2=1​$ ,可知上面的最大化问题可以使用拉格朗日乘子法，即：<script type="math/tex; mode=display">
+\begin{equation} \begin{aligned} L(\mu,\lambda) &=\mu^T\Sigma\mu-\lambda(\mu^T\mu-1)\\ \end{aligned}\end{equation}</script></li>
+</ol>
+<p>,然后令该式子对 $\mu ​$求偏导，可得：</p>
+<p>$\Sigma\mu=\lambda\mu ​$，具体的矩阵向量求导的计算可以参考cs229里面关于线性代数的notes，里面有详细的推导，这里就不具体描述了，推导不是很复杂。我们来关注最后这个式子，是不是有种熟悉的感觉？没错，这个就是之前我介绍过的特征值与特征向量的内容。求 $\mu​$ 不就是求协方差矩阵 $\Sigma​$ 的特征向量吗！求 $\lambda​$ 不就是求的对应的特征值吗！而且由于协方差矩阵是对角阵，因此其不同特征值对应的特征向量是互相正交的，且由于模为1，因此这些特征向量都可作为线性变换后新空间的基向量。</p>
+<p>​     4.最后如何将上述步骤应用于降维呢？假设我们要求降维到k维，一般降维的维数需要用户指定。此时，我们需要根据上面求得的特征值的大小排序，从大到小依次挑选k个对应的特征向量作为最后的 $\mu_k ​$集合。这些特征向量称为主特征向量。<strong>主成分</strong>在这边就体现出来，其实就是<strong>协方差矩阵的主特征向量</strong>。为什么这么选呢？其实根据之前关于特征向量的总结很容易就能知道，如果特征值很小接近为0，那么相当于这个线性变换对特征向量的操作就是将该特征向量缩减至零向量，实际上就是将该维度的特征抹去，因此降维就是降的这个维度。其他特征值大的维度。最后怎么用得到的投影向量表示数据呢？很简单，只要将原数据X的每个样本与每个投影向量做内积就可以得到： $\left[ \begin{matrix} \mu_1^Tx_i \\ \mu_2^Tx_i \\ \vdots&amp; \\ \mu_k^Tx_i\end{matrix} \right]\in\Re^k​$ .</p>
+<p><strong>SVD实现方法</strong></p>
+<p>前一篇文章花了大力气总结了SVD的内容，但是到现在貌似没有发现SVD与PCA的联系，别急，下面就讲一下SVD如何实现PCA。回顾一下SVD的内容(具体的SVD的描述包括几何意义详见前一篇文章)，它是一种矩阵分解，对于任意维度m*n的矩阵A，能够将矩阵分解为如下形式：</p>
+<script type="math/tex; mode=display">
+X_{m*n}=U_{m*n}\Sigma_{n*n}V_{n*n}^T\\</script><p>其中U为左奇异矩阵，该矩阵的列向量两两正交，且为单位向量，实际上，该矩阵是有方阵 $XX^T$ 的所有特征向量构成的。V为右奇异矩阵，该矩阵的列向量两两正交，且为单位向量，实际上，该矩阵是有方阵 $X^TX$ 的所有特征向量构成的。中间的 $\Sigma$ 是一个对角阵，其中主对角元素为A的奇异值，实际上奇异值就是方阵 $XX^T$ 或 $X^TX$ 的特征值的平方根。即有如下表示：</p>
+<script type="math/tex; mode=display">
+\begin{equation} \begin{aligned} XX^T&=U\Sigma V^TV\Sigma^{T}U^T \\\ &=U\Sigma I\Sigma^T U^T \\\ &=U\left[ \begin{matrix} \sigma_1^2&0&\cdots&0 \\\ 0&\sigma_2^2&\cdots&0 \\\ \vdots&\vdots&\ddots \\\ 0&0&\cdots&\sigma_n^2 \end{matrix} \right]U^T \end{aligned} \end{equation}\\</script><p>这里我只列出了 $XX^T​$ 的例子，细心的同学可能会发现之前我们推导的需要最大化的函数式 $\mu^T(\frac{1}{m}\sum_{i=1}^{m}{x_ix_i^T})\mu​$ ，在完成标准化这一步骤后，我们的最终目标是去求 $\Sigma​$ 的特征值和特征向量，其实相当于是求 $XX^T​$ 的特征值和特征向量，这不就是奇异值分解的求解过程吗？此时我们甚至不用去求协方差矩阵，直接对原始数据样本X矩阵进行奇异值分解。由于奇异值分解的特性，能够将冗余的信息对应的奇异值几乎转换为0，而且这部分信息占比是很大的，可以说奇异值对角阵 $\Sigma_{n<em>n}​$ 中，前5%的奇异值的值总和就可以占据所有奇异值总和的90%，因此根据这个性质，可以发挥降维的作用，只需要需前5%大的奇异值对应的U的左奇异向量就能达到降维的效果，即： $X_{m</em>k}\approx U_{m<em>k}\Sigma_{k</em>k}V_{k<em>k}^T ​$，——这与PCA的过程是等价的。<em>*因此实现了SVD，等价于实现了PCA</em></em>。那么使用SVD实现PCA有什么好处呢？</p>
+<ol>
+<li>不需要构造协方差矩阵，实际上当数据量特别大，维数特别高的时候，构造协方差矩阵是一个效率很低的事情，算法效率为O(m*n)，而且绝大部分的值都为0，比较稀疏。直接用SVD分解原始矩阵，一步到位，效率高。</li>
+<li>通过协方差矩阵只能向一个方向进行分解，而使用SVD，还可以进行对数据行进行降维，只需要使用 $X^TX$ 的计算方式就可以了，有兴趣的同学可以自己推导一下。（实际上前一篇文章已经推导过了。）</li>
+</ol>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>最好提一下PCA的线性代数几何意义，实际上就是将一个基坐标系上的数据转换到另一个基坐标系，同时减少一些维度，筛选掉一些无用的信息，同时不会影响原来的数据分布。</p>
+<p>实际上，在使用过程中，PCA对于复杂数据的降维效果并不好。这很好理解，因为现实中的数据特征之间不可能是简单的线性关系，存在很多非线性的关系。因此需要使用一些非线性的降维方法，但是PCA的逻辑与实现都很简单明了，可以先作为一个尝试的方法，让我们对数据有一个初步的印象。</p>
+<p>备注：本文的所有数据矩阵描述都是行为一个数据记录，列为一个特征，可能其他博客有不同的描述方式，但是最后的意义都是相同的，大家在看的时候注意这一点，如果我写的有不对的请同学们指正。</p>
+<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h2><p>cs229 notes</p>
+<p>周志华 《机器学习》</p>
+<p>我的前两篇关于线性代数的文章</p>
+
+        </div>
+        <footer class="article-footer">
+            
+
+
+
+    <a data-url="http://yoursite.com/2019/04/14/PCA-主成分分析/" data-id="cjugqe33b002o10utl3rfjlov" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+        </footer>
+    </div>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "author": {
+            "@type": "Person",
+            "name": "qiufengyuyi"
+        },
+        "headline": "PCA-主成分分析",
+        "image": "http://yoursite.com/2019/04/14/PCA-主成分分析/v2-3f14d57e2ff8297d26d092b2665f29bb_b.jpg",
+        "keywords": "PCA",
+        "genre": "学习笔记",
+        "datePublished": "2019-04-14",
+        "dateCreated": "2019-04-14",
+        "dateModified": "2019-04-14",
+        "url": "http://yoursite.com/2019/04/14/PCA-主成分分析/",
+        "description": "前面两篇废了大力气总结了线性代数中最重要的两个概念：特征值分解和奇异值分解，一方面是为了更新和回溯自己对线性代数的理解，另一方面则是为了本篇总结PCA提供了数学的前置基础。下面结合吴恩达老师的cs229、周志华老师的机器学习教材还有其他一些博客的分析，对PCA进行一个总结。
+PCA干什么用？不同于先介绍PCA的原理，首先我准备讲一下PCA的应用场景。我个人来说，使用过PCA的场景如下：
+
+可视化，"
+        "wordCount": 219
+    }
+</script>
+
+</article>
+
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
+
+
+                        </div>
+                    </section>
+                    <aside id="sidebar">
+    <a class="sidebar-toggle" title="Expand Sidebar"><i class="toggle icon"></i></a>
+    
+        
+<nav id="article-nav">
+    
+    
+        <a href="/2019/04/14/PCA之奇异值分解/" id="article-nav-older" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">上一篇</strong>
+        <p class="article-nav-title">PCA之奇异值分解</p>
+        <i class="icon fa fa-chevron-left" id="icon-chevron-left"></i>
+        </a>
+    
+</nav>
+
+    
+    <div class="widgets-container">
+        
+            
+                
+
+            
+                
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/14/PCA-主成分分析/" class="title">PCA-主成分分析</a></p>
+                            <p class="item-date"><time datetime="2019-04-14T08:52:39.000Z" itemprop="datePublished">2019-04-14</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/14/PCA之奇异值分解/" class="title">PCA之奇异值分解</a></p>
+                            <p class="item-date"><time datetime="2019-04-14T08:09:20.000Z" itemprop="datePublished">2019-04-14</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/08/PCA算法之特征值分解/" class="title">PCA算法之特征值分解</a></p>
+                            <p class="item-date"><time datetime="2019-04-08T12:40:42.000Z" itemprop="datePublished">2019-04-08</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/08/EM算法总结/" class="title">EM算法总结</a></p>
+                            <p class="item-date"><time datetime="2019-04-08T12:18:39.000Z" itemprop="datePublished">2019-04-08</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/05/支持向量机SVM总结之soft-Margin与SMO/" class="title">支持向量机SVM总结之soft-Margin与SMO</a></p>
+                            <p class="item-date"><time datetime="2019-04-05T03:26:21.000Z" itemprop="datePublished">2019-04-05</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EM/">EM</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HMM/">HMM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markov-assumption/">Markov assumption</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PCA/">PCA</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SMO/">SMO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVD/">SVD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVM/">SVM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/convex-optimization/">convex optimization</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kernel-method/">kernel method</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linear-algebra/">linear algebra</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/soft-margin/">soft margin</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/viterbi/">viterbi</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-float">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/EM/" style="font-size: 13.33px;">EM</a> <a href="/tags/HMM/" style="font-size: 20px;">HMM</a> <a href="/tags/Markov-assumption/" style="font-size: 10px;">Markov assumption</a> <a href="/tags/PCA/" style="font-size: 16.67px;">PCA</a> <a href="/tags/RNN/" style="font-size: 16.67px;">RNN</a> <a href="/tags/SMO/" style="font-size: 10px;">SMO</a> <a href="/tags/SVD/" style="font-size: 10px;">SVD</a> <a href="/tags/SVM/" style="font-size: 20px;">SVM</a> <a href="/tags/attention/" style="font-size: 16.67px;">attention</a> <a href="/tags/convex-optimization/" style="font-size: 10px;">convex optimization</a> <a href="/tags/dynamic-programming/" style="font-size: 13.33px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/kernel-method/" style="font-size: 10px;">kernel method</a> <a href="/tags/linear-algebra/" style="font-size: 10px;">linear algebra</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 16.67px;">seq2seq</a> <a href="/tags/soft-margin/" style="font-size: 10px;">soft margin</a> <a href="/tags/tensorflow/" style="font-size: 13.33px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a> <a href="/tags/viterbi/" style="font-size: 10px;">viterbi</a>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.zhihu.com/people/qiu-zhen-yu-87">zhihu</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://github.com/qiufengyuyi">github</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+            
+        
+    </div>
+</aside>
+
+                </div>
+            </div>
+        </div>
+        <footer id="footer">
+    <div class="container">
+        <div class="container-inner">
+            <a id="back-to-top" href="javascript:;"><i class="icon fa fa-angle-up"></i></a>
+            <div class="credit">
+                <h1 class="logo-wrap">
+                    <a href="/" class="logo"></a>
+                </h1>
+                <p>&copy; 2019 qiufengyuyi</p>
+                <p>Powered by <a href="//hexo.io/" target="_blank">Hexo</a>. Theme by <a href="//github.com/ppoffice" target="_blank">PPOffice</a></p>
+            </div>
+            <div class="footer-plugins">
+              
+    
+
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+        
+    
+    <script>
+    var disqus_shortname = 'hexo-theme-hueman';
+    
+    
+    var disqus_url = 'http://yoursite.com/2019/04/14/PCA-主成分分析/';
+    
+    (function() {
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>
