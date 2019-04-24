@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+
+    
+
+    
+    <title>CMU NLP课程笔记(二) | qiufengyuyi&#39;s blog</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <meta name="keywords" content="NLP,Language Model">
+    
+    <meta name="description" content="Lecture2第二节课程主要是围绕language model来讲的，从传统的language model讲到到后来的Neural language Models。根据其教科书以及其他相关NLP的书籍，将对本次课程的一些知识点进行适当扩展。 什么是Language model？Language model(以下简称LM)其实是一种NLP任务。在一种自然语言中，LM计算得到每个句子出现的概率，当然">
+<meta name="keywords" content="NLP,Language Model">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMU NLP课程笔记(二)">
+<meta property="og:url" content="http://yoursite.com/2019/04/24/CMU-NLP课程笔记-二/index.html">
+<meta property="og:site_name" content="qiufengyuyi&#39;s blog">
+<meta property="og:description" content="Lecture2第二节课程主要是围绕language model来讲的，从传统的language model讲到到后来的Neural language Models。根据其教科书以及其他相关NLP的书籍，将对本次课程的一些知识点进行适当扩展。 什么是Language model？Language model(以下简称LM)其实是一种NLP任务。在一种自然语言中，LM计算得到每个句子出现的概率，当然">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/04/24/CMU-NLP课程笔记-二/v2-4e458382b2920d2c5f52dcb7e4bb092c_b.jpg">
+<meta property="og:updated_time" content="2019-04-24T13:40:37.971Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CMU NLP课程笔记(二)">
+<meta name="twitter:description" content="Lecture2第二节课程主要是围绕language model来讲的，从传统的language model讲到到后来的Neural language Models。根据其教科书以及其他相关NLP的书籍，将对本次课程的一些知识点进行适当扩展。 什么是Language model？Language model(以下简称LM)其实是一种NLP任务。在一种自然语言中，LM计算得到每个句子出现的概率，当然">
+<meta name="twitter:image" content="http://yoursite.com/2019/04/24/CMU-NLP课程笔记-二/v2-4e458382b2920d2c5f52dcb7e4bb092c_b.jpg">
+    
+
+    
+
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/titillium-web/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="wrap">
+        <header id="header">
+    <div id="header-outer" class="outer">
+        <div class="container">
+            <div class="container-inner">
+                <div id="header-title">
+                    <h1 class="logo-wrap">
+                        <a href="/" class="logo"></a>
+                    </h1>
+                    
+                        <h2 class="subtitle-wrap">
+                            <p class="subtitle">backlog of a man&#39;s road to AI learning</p>
+                        </h2>
+                    
+                </div>
+                <div id="header-inner" class="nav-container">
+                    <a id="main-nav-toggle" class="nav-icon fa fa-bars"></a>
+                    <div class="nav-container-inner">
+                        <ul id="main-nav">
+                            
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/">主页</a>
+                                </li>
+                            
+                                        <ul class="main-nav-list"><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/基础算法/">基础算法</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/学习笔记/">学习笔记</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/工程经验/">工程经验</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/比赛总结/">比赛总结</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/论文总结/">论文总结</a></li></ul>
+                                    
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/about/index.html">关于</a>
+                                </li>
+                            
+                        </ul>
+                        <nav id="sub-nav">
+                            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+        <div class="container">
+            <div class="main-body container-inner">
+                <div class="main-body-inner">
+                    <section id="main">
+                        <div class="main-body-header">
+    <h1 class="header">
+    
+    <a class="page-title-link" href="/categories/学习笔记/">学习笔记</a>
+    </h1>
+</div>
+
+                        <div class="main-body-content">
+                            <article id="post-CMU-NLP课程笔记-二" class="article article-single article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+        CMU NLP课程笔记(二)
+        </h1>
+    
+
+            </header>
+        
+        
+            <div class="article-meta">
+                
+    <div class="article-date">
+        <a href="/2019/04/24/CMU-NLP课程笔记-二/" class="article-date">
+            <time datetime="2019-04-24T13:16:37.000Z" itemprop="datePublished">2019-04-24</time>
+        </a>
+    </div>
+
+		
+
+                
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/Language-Model/">Language Model</a>, <a class="tag-link" href="/tags/NLP/">NLP</a>
+    </div>
+
+            </div>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+            <h2 id="Lecture2"><a href="#Lecture2" class="headerlink" title="Lecture2"></a>Lecture2</h2><p>第二节课程主要是围绕language model来讲的，从传统的language model讲到到后来的Neural language Models。根据其教科书以及其他相关NLP的书籍，将对本次课程的一些知识点进行适当扩展。</p>
+<h2 id="什么是Language-model？"><a href="#什么是Language-model？" class="headerlink" title="什么是Language model？"></a>什么是Language model？</h2><p>Language model(以下简称LM)其实是一种NLP任务。在一种自然语言中，LM计算得到每个句子出现的概率，当然它还可以计算出给定一个词序列，某个词出现的概率。用简单的短语概括就是在一个词序列中，预测下一个词的能力。（<strong>预测一个词序列的联合概率和给定一个词序列，预测下一个词的概率其实是一回事，两者可以使用条件概率公式建立联系</strong>）LM在很多NLP应用中都有广泛的运用，比如机器翻译、语音识别，当我们通过翻译或者语音识别得到一串文本序列时，需要得知该文本序列是否符合我们的预期，此时使用LM来给给文本序列打分是常用的方法，例如在翻译时，语句通顺的句子通常在LM中的分数会比较高。</p>
+<p>上面是比较通俗的说法，下面给出LM的公式化描述，LM预测一个词序列 $\{w_1,w_2,w_3,…w_n\} $的概率为  $P(w_{1:n})$ ，该概率可以运用链式法则（条件概率公式）得到：</p>
+<script type="math/tex; mode=display">
+\begin{equation} \begin{aligned} P(w_{1:n}) &= P(w_1,w_2,w_3,...,w_n)\\&= P(w_1)P(w_2|w_1)P(w_3|w1,w_2)...P(w_n|w_1,w_2,...,w_{n-1}) \end{aligned} \end{equation}\\</script><p>可以看到这个公式，每个词的预测都是建立在之前的词的序列上的。且最后一个词需要知道前面n-1个词是什么样的。当序列长度很长的时候，这个处理难度是非常大的。恐怕没有什么机器是能够处理这么庞大计算量的问题。为了简化问题，LM使用了一个机制——马尔科夫假设。之前看过我关于HMM模型的同学对这个概念应该比较熟悉，对于k阶马尔科夫假设来说，预测一个词只需要该词前k个词就行，与其他词无关：</p>
+<script type="math/tex; mode=display">
+P(w_{i+1}|w_1,w_2,...,w_i)\approx P(w_{i+1}|w_{i-k},w_{i-k+1},...,w_i)\\</script><p>此时预测句子的概率就变成：</p>
+<script type="math/tex; mode=display">
+P(w_{1:n}) \approx \prod_{i=1}^{n}P(w_i|w_{i-k},w_{i-k+1},...,w_{i-1})\\</script><blockquote>
+<p><em>备注：第一个词依赖的是我们人工添加的一些特殊padding字符。</em></p>
+</blockquote>
+<p>接下来就是在大量的文本语料中，通过一些方法，来估计概率值 $P(w_{i+1}|w_{i-k},w_{i-k+1},…,w_i)  $</p>
+<p>上述是传统的language Models，肯定有人会问上面的模型假设也不一定对啊，只假设k个词相关会损失文本的很多信息，比如一个疑问句中，句首为“what”，句尾为“？”，两个词肯定是强相关的，如果该问句很长，那么用k阶的LM就不一定能学习到这个依赖关系。所以后面产生的深度学习中的序列模型RNN，它能够帮助我们去记住很长一段时刻的信息，结合门、注意力机制，还能够区分哪些是应该记住的、哪些是优先级不高、暂时不记的。这个在后面的课程会有描述。</p>
+<p><strong>n-gram模型</strong></p>
+<p>相信有很多同学都知道n-gram模型，其实与上面讨论带n阶markov假设的LM是一回事。其中unigram表示1阶markov的LM，即一个词只与它前面的一个词有关；biagram表示二阶markov的LM，即一个词只与它前面两个词有关，依次类推。</p>
+<h2 id="Language-model的解法"><a href="#Language-model的解法" class="headerlink" title="Language model的解法"></a>Language model的解法</h2><p>n-gram LMs是比较简单的语言模型，它的解法也有很多，课程首先介绍了其最简单的解法——Count-based Method</p>
+<p><strong>Count-based Method</strong></p>
+<p>根据上面对n-gram的LM的描述，可以知道，要计算出一个句子的概率，只要去估计出概率 $P(w_{i}|w_{i-n+1},…,w_i)$  就可以了。具体原理就是利用概率统计里面的极大似然估计MLE方法，通过对大量样本进行统计，使用频率去逼近这个概率。</p>
+<script type="math/tex; mode=display">
+P_{MLE}(x_i|x_{i-n+1},...,x_{i-1}):=\frac{c(x_{i-n+1},...,x_i)}{c(x_{i-n+1},...,x_{i-1})}\\</script><p>其中c()为这些词同时出现的次数。这个公式这理解为<strong>计算在前n-1个词同时出现的次数的情况中，前n-1个词与第n个词同时出现的次数的占比情况。</strong></p>
+<p>理论上，当训练语料规模足够大，使用3-gram甚至更大的n-gram模型，能够较好的为该类文本建模。但是梦想很美好，现实很骨感。这个简单的模型在现实使用中会遇到很多问题，下面分别列举这些问题并给出一些解决办法。</p>
+<p><strong>count==0</strong></p>
+<p>即出现词组的count值为0的情况，此时在语料中可能找不到该词组。此时，由于连乘式的关系，整个词序列的概率也会是0，一方面这对于我们的LM模型的估计能力会产生影响，另方面会影响后使用perplexity评估语言模型的效果（模型评估后面会讲到）。因此需要增加一些措施，避免类似的情况发生。一般有两种不同的方向来解决这个问题，一个是使用平滑方法；另一个是使用backoff（平衡策略）方法。</p>
+<p>1、平滑方法的思想主要是对每个词组的概率估计都增加一个很小的偏移量。如常用的 $add-\alpha smoothing$,它假定每个词组的发生在我们观察样本得到的情况外，还应该额外增加至少 $\alpha$ 次，因此，原来的概率P应该变为：</p>
+<script type="math/tex; mode=display">
+P_{MLE}(x_i|x_{i-n+1},...,x_{i-1}):=\frac{c(x_{i-n+1},...,x_i)+\alpha}{c(x_{i-n+1},...,x_{i-1})+\alpha|V|}\\</script><p>其中|V|表示整个语料的规模。且 $0\leq\alpha\leq1​$ 。当 $\alpha=1​$ ,就是我们熟悉的拉普拉斯平滑。还有很多平滑方法，比如modified Kneser-Ney Smoothing，处理更加复杂，但是目前效果最好的一个平滑方法之一，具体原理就不介绍了，有兴趣的同学可以自己去搜索。</p>
+<p>2、backoff方法基本思想是若某个ngram并没有在语料中找到，那么就计算(n-1)gram的count值作为该ngram的估计。然后引入 $\lambda$ 参数，将估计值与ngram的原始值做融合,常用的为interpolated smoothing：</p>
+<script type="math/tex; mode=display">
+P_{int}(x_i|x_{i-n+1},...,x_{i-1})=\lambda P_{origMLE}(x_i|x_{i-n+1},...,x_{i-1})+(1-\lambda)P_{int}(x_i|x_{i-n+2},...,x_{i-1})\\</script><p>其中 $\lambda​$ 可以通过设定验证集来调参。</p>
+<p><strong>problem of Vocabulary</strong></p>
+<p>我们用训练集去训练我们的模型，最终还是要到测试集上面来评估我们的LM，但是由于自然语言的无穷性，我们在训练集中使用的词库即使再大，也不一定能包罗所有的词，因此有可能我们在测试集中会发现训练集语料中没有的新词，这就是unknow word问题。这个问题还是比较重要的，那么该如何处理这些未知词？通常的做法是在训练集中额外增加一个占位字符串<unk>，表示未知新词。有一些方法来训练这些<unk>的概率，比较常用的是使用<unk>代替那些在训练集中出现次数小于n的词，n一般取很小的数。或者在词库中选择一个词数的阈值V（比如50000），然后在训练集中选择出现次数最多的前V个词维持原样，将剩下的词用<unk>代替。不管用什么方法，我们最终都是讲<unk>视作一个同等的词对待。</unk></unk></unk></unk></unk></p>
+<h2 id="Language-model的评估"><a href="#Language-model的评估" class="headerlink" title="Language model的评估"></a>Language model的评估</h2><p>对于LM的评估有很多方法，课程中列出了几个方法，如下：</p>
+<ul>
+<li>Log-likelihood： $LL(\epsilon_{test})=\sum_{E\in \epsilon_{test}}^{}{logP(E)} ​$</li>
+<li>Per-word Log Likelihood: $WLL(\epsilon_{test})=\frac{1}{\sum_{E\in \epsilon_{test}}^{}{|E|}}\sum_{E\in \epsilon_{test}}{logP(E)} ​$</li>
+<li>Per-word(Cross)Entropy: $H(\epsilon_{test})=\frac{1}{\sum_{E\in \epsilon_{test}}|E|}\sum_{E\in \epsilon_{test}}{-log_2P(E)} ​$</li>
+<li>Perplexity: $ppl(\epsilon_{test})=2^{H(\epsilon_{test})}=e^{-WLL(\epsilon_{test})} ​$</li>
+</ul>
+<p>这里重点说一下Perplexity，这个中文翻译过来叫困惑度，是比较常用的评估LM的指标，它的计算公式化简后为：</p>
+<script type="math/tex; mode=display">
+ppl(\epsilon_{test})=P(E)^{\frac{-1}{N}}\\</script><p>可以看到我们的ppl值应该是越小，对应的LM相对就越好（与P(E)越大越好相反说法）。</p>
+<blockquote>
+<p>对困惑度的理解查阅了一些参考书，主要有两个角度： </p>
+<p>1、表示weighted average branching factor of a language，翻译过来，就是一种语言的带权重的平均branching factor。branching factor是什么呢？可以理解为：能放置在任何一个词后面的词语的个数。举个例子说明这个带权重的平均branching factor：有个任务是识别英文中的数字表示，包括zero，one…,nine。在没有任何假设前提的情况下，每个数字出现的概率都是一样的，在当前的词库中，只有十个数字的词，因此每个词的概率均为 $\frac{1}{10}$ 。此时该模型的ppl为： $ppl=[(\frac{1}{10})^N]^{-\frac{1}{N}}=10$ ,由于每个数字出现在某个数字后面都是可以的，因此其branch factor（分支程度）为10。此时每个词的weight都一样，因此ppl就是branching factor。此时假设我们已知数字zero出现的频率较其他数字高，为其他数字的10倍，此时 $P(“zero”)=\frac{10}{19}$ , $P(“one”)=P(“two”)=…=P(“nine”)=\frac{1}{19} $,那么此时ppl的值肯定是比10小的，因为此时数字zero的出现概率更大，使得我们对整个语言的了解程度也增加了，没有那么困惑。由于有些词带了权重，分支的程度肯定小了，因此总体来说是小于不带权重的branching factor。 </p>
+<p>2、另一个角度是从交叉熵的角度来看。上面的公式已经给出了ppl和交叉熵的关系。下面简单得从信息学理论和概率上解释一下。熵的概念相信很多人都知道，是对<strong>信息的度量</strong>。熵的计算公式为：对于一个取值来源于同分布数据集的随机变量X，其概率函数为P(x)，此时其熵为： $H(X)=-\sum_{x\in dataset}{P(x)log_{2}P(x)}​$ 。其中log函数是以2为底，表示编码信息使用bit来作为计量单位。<strong>熵的值实际上代表了的用最优的方式去编码一个信息时，所需的最小比特</strong>。对于文本序列来说，只需要把X换成我们的词语序列就可以。为了能够评估不同规模长度序列的熵信息，引入了entropy rate，即 $per-word-entropy=\frac{1}{n}H(X)​$ 。实际情况中，我们并不能明确数据实际的分布P，因此需要使用一个model，去近似估计这个分布P，就引入交叉熵的概念： $H(P,M)=-\sum_{x\in dataset}{P(x)log_{2}M(x)}​$ ,其中M(x)表示我们去近似估计的概率分布。可以知道 $H(P,M)\geq H(P)​$ （有兴趣的同学可以自行推导），即我们的模型估计得与真实数据的分布P越接近，交叉熵就越小，且与真实的信息熵的值越接近。而ppl就是将交叉熵的基底指数掉了，实际上他们的作用类似的，因为H(P,M)越小，ppl也越小，说明LM就相对来说越好。</p>
+</blockquote>
+<p>当然上面这些评估方法只能说是对LM的一种评估方式，不能说这些指标好了，这个LM就一定好，还是需要代入到下游的任务中去检验。</p>
+<p>备注：<strong><em>评估两个语言模型是，两个模型使用的词典必须相同，这是很浅显的道理，若某些词在一个词典里有，另一个词典里没有，那么两个模型的估计结果肯定会不同。另外，课程里还说了一个注意点就是比对的模型必须能够生成包含test set的语言集，例如我们可以拿character-based模型与word-based model比对，但是反过来就不行，因为基于字符的模型能够生成的语料集肯定比word-based的大</em></strong>。</p>
+<h2 id="Language-model的缺陷"><a href="#Language-model的缺陷" class="headerlink" title="Language model的缺陷"></a>Language model的缺陷</h2><p>上面说了那么多n-gram LM的东西，下面要说n-gram的缺陷，课程提出了三点缺陷并给出了可用的解决方法：</p>
+<ol>
+<li>Problem：无法建模同义词或者近义词的关系信息，比如buy和purchase,car和biycle等。Solution: class based language models,应该是基于类别的语言模型。</li>
+<li>Problem：不能condition on context with intervening words，我理解是不能建模一个词和不是与它直接比邻的词，比如Dr. Jane Smith,Dr和Smith的语义关系。Solution：使用skip-gram language models，与Word2vec的skip-gram的原理是差不多的，简单说就是跳过一个词，预测下一个词。</li>
+<li>不能处理长距离的语义依赖，即两个单词如果相距距离很大，很难建立关系。Solution：cache，即将一个词重复n次，tigger，即重复距离远的另一个词，基于topic的LM，基于语法树的LM等</li>
+</ol>
+<p>课程详细介绍了一个可选的方法——Featurized log-linear Model</p>
+<p><strong>Featurized log-linear Model</strong></p>
+<p>该方法主要有三个步骤：</p>
+<ol>
+<li>计算所有有关上下文关系的特征。</li>
+<li>基于1的特征，计算概率。</li>
+<li>使用梯度下降法去优化我们特征对应的权重参数w</li>
+</ol>
+<p><strong>计算所有相关特征，并获取词序列的分数</strong></p>
+<p>课程给了个实例，下面是该实例的截图：</p>
+<p><img src="/2019/04/24/CMU-NLP课程笔记-二/v2-4e458382b2920d2c5f52dcb7e4bb092c_b.jpg" alt="img"></p>
+<p><strong>根据特征分数，使用softmax函数计算概率</strong></p>
+<p>上图中，计算了整个词语序列的分数后，直接接softmax层，将scores归一化并转化为概率。</p>
+<script type="math/tex; mode=display">
+P(x_{i}|x_{i-n+1}^{i-1})=\frac{e^{s(x_{i}|x_{i-n+1}^{i-1})}}{\sum_{\tilde{x}_{i}}{e^{s(\tilde{x}_{i}|x_{i-n+1}^{i-1})}}}\\</script><p>课程还给出了一个较为规整的流程图，如图：</p>
+<p><img src="/2019/04/24/CMU-NLP课程笔记-二/v2-b894be1449c72def517a9ab44214f7a8_b.jpg" alt="img"></p>
+<p><strong>模型训练</strong></p>
+<p>使用梯度下降法，这个优化方法想必很多做机器学习的同学都非常熟悉了，就不详细讲了。这里主要关注的是loss function的选择。课程中给出了最常用的loss function：“negative log likelihood”。这个loss function可以使用极大似然估计方法去推导，详见Angrew Ng的cs228。简单得讲，即若最后算出来概率比较的大的那个词是最终正确答案，那么它的loss function应该是比较小的，因为-log函数是一个单调递减函数。而我们的目标就是需要让loss function尽量小。</p>
+<h2 id="Neural-Language-Model"><a href="#Neural-Language-Model" class="headerlink" title="Neural Language Model"></a>Neural Language Model</h2><p>上面讲的log-linear model并没有完全解决我们之前提出的n-gram的三个缺陷：</p>
+<ol>
+<li>同义词、近义词建模问题。<strong>未解决</strong></li>
+<li>无法建模不相邻的词的关系。<strong>可以解决</strong></li>
+<li>长距离依赖词建模问题<strong>。未解决。</strong></li>
+</ol>
+<p>因此简单的linear model并不能学习上面所包含的一些组合复杂特征，有一个思路是手动将这些组合特征比如：同义词”buy”和”purchase”关系、句首”I”和句尾”?”关系等枚举出来，作为模型的特征。这样做带来的问题就是<strong>维度爆炸</strong>，因为这样的特征太多了，而且人工很难去提取。因此引入了神经网络，神经网络天生的特性就是能够帮助我们进行复杂特征构建，因此天然适用此情况。</p>
+<p><strong>神经网络结构</strong></p>
+<p>课程给出了神经网络结构如下：</p>
+<p><img src="/2019/04/24/CMU-NLP课程笔记-二/v2-cb3e2c585d10c3dd5b1d1dc396cb239a_b.jpg" alt="img"></p>
+<p>其中，需要关注的地方在于最后一个全连接层使用的权重矩阵W在训练后，其实就是待预测的所有词的词向量，即为output embedding vector。<strong>注意！它是由行向量构成的矩阵，每一行代表对应词的向量表示，与input的情况不同</strong>。</p>
+<p>那么可不可以将input和output的词向量统一呢？答案是可以的。课程中介绍了这样一篇论文：Press et al.2016, inter alia,其中将input embedding matrix移除了，直接从output Matrix中选取对应行的向量作为输入向量。如图：</p>
+<p><img src="/2019/04/24/CMU-NLP课程笔记-二/v2-94263e10a59844fe243171d7e6d80ffb_b.jpg" alt="img"></p>
+<p>具体论文链接：<a href="https://arxiv.org/pdf/1608.05859.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1608.05859.pdf</a></p>
+<p>好处：做这个操作的好处是什么呢？我理解的是它能够将模型中的参数减半，大大减小模型的训练成本，加快模型的训练效率。</p>
+<h2 id="训练的Tricks"><a href="#训练的Tricks" class="headerlink" title="训练的Tricks"></a>训练的Tricks</h2><p>课程的最后一部分主要是讲了神经网络训练的一些trick，这个我就不展开讲了，主要是罗列一下课程中的内容，以后可能会单独就其中的几个trick做个总结文章。</p>
+<p><strong>shuffle Training Data</strong></p>
+<p>这个技巧很常见了，即将训练数据打乱，防止某一个时间段上连续出现重复次数很多的句子。保证数据的随机性。</p>
+<p><strong>使用动量的随机梯度下降法</strong></p>
+<p>这个也是神经网络训练的标配，在很多情况下都能较为快速的收敛，且能够跳出局部最优点。原来简单说就是将历史的梯度作为影响因子放在当前梯度计算中，使梯度变换更平稳。</p>
+<p><strong>Adagrad</strong></p>
+<p>这个主要是动态更新学习率，依据是经常更新的词对应的权重参数的学习率会逐步减小。（通过梯度的方差来衡量）</p>
+<p><strong>Adam</strong></p>
+<p>这个也是经典的优化学习效率的方法，在很多深度学习框架中都预置实现了该方法。结合了Adagrad和动量的概念，采用的是动量和梯度方差在时间线上的均值，可以使模型学习更加平稳。</p>
+<p>其他还有诸如RMSProp、Adadelta等等</p>
+<p><strong>过拟合</strong></p>
+<p>在防止模型过拟合方面，也有很多方法。</p>
+<ul>
+<li>early stopping:观察模型的训练情况，当在验证集上的效果开始变差时，停止训练。这个方法还是比较简单有效的，但是容易学不到足够的知识。</li>
+<li>减小学习率，然后继续训练。</li>
+<li>dropout，这个是最有效的减小过拟合的方法之一了，通过设定某个概率P，在训练时按照概率随机暂时删除某些神经元。可以想象成每次训练都是不一样神经网络结构的模型，最后做了一个模型的融合，降低了模型的方差。在实际操作时要注意，由于训练与测试中的神经元个数不同了，因此需要做scaling，一般的做法是在测试时，用P去scaling，或者在train时，用1/(1-P)来scaling。</li>
+</ul>
+<blockquote>
+<p><strong><em>备注：在tensorflow中，P表示的是保留神经元的概率，与课程中的P不同，它选择的是在训练时，用1/P来scaling，这里的P当然的保留概率，这个大家要注意一下。</em></strong></p>
+</blockquote>
+<h2 id="训练Batch的技巧"><a href="#训练Batch的技巧" class="headerlink" title="训练Batch的技巧"></a>训练Batch的技巧</h2><p>使用mini-batch来训练可以说神经网络训练的标配。不仅可以有效利用GPU的并行计算能力，而且如课程中所说，对size为1的数据做10次操作，肯定比对size为10的数据做一次操作的速度慢。因此一般的深度学习框架中都支持用mini-batch来训练。</p>
+<p>需要注意的一点是在NLP中，由于数据的特殊性，每个数据样本的长度是不一定一样的，有的句子长，有的句子短。如图：</p>
+<p><img src="/2019/04/24/CMU-NLP课程笔记-二/v2-38b32127eccad3e9de9a17c14a26987c_b.jpg" alt="img"></p>
+<p>因此如果需要做mini-batch的话，需要做一些padding等操作。如tensorflow中有dynamic_rnn方法会自动为每个mini-batch做padding。而课程使用的dynet也具备auto-batching的功能，由于我准备学习pytorch来代替这个，所以就没有关注dynet的用法。用兴趣的同学可以自己试试。</p>
+<h2 id="结尾"><a href="#结尾" class="headerlink" title="结尾"></a>结尾</h2><p>上面最后讲到的Neural Language Model是否解决了n-gram的三个缺陷了呢？并没有。它能够解决同义词建模、不相邻词建模，但是它并不能解决长距离依赖词的建模，即它并不具备像人类那样对信息的记忆能力。因此需要使用更加复杂的模型，看过我专栏第一篇文章的同学就知道，RNN循环神经网络就是能在一定程度上模仿人类记忆的神经网络模型。在课程的后面章节中，会讲到这个，到时会有总结。</p>
+
+        </div>
+        <footer class="article-footer">
+            
+
+
+
+    <a data-url="http://yoursite.com/2019/04/24/CMU-NLP课程笔记-二/" data-id="cjuv9nrnu0029l4utv3747l8m" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+        </footer>
+    </div>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "author": {
+            "@type": "Person",
+            "name": "qiufengyuyi"
+        },
+        "headline": "CMU NLP课程笔记(二)",
+        "image": "http://yoursite.com/2019/04/24/CMU-NLP课程笔记-二/v2-4e458382b2920d2c5f52dcb7e4bb092c_b.jpg",
+        "keywords": "NLP Language Model",
+        "genre": "学习笔记",
+        "datePublished": "2019-04-24",
+        "dateCreated": "2019-04-24",
+        "dateModified": "2019-04-24",
+        "url": "http://yoursite.com/2019/04/24/CMU-NLP课程笔记-二/",
+        "description": "Lecture2第二节课程主要是围绕language model来讲的，从传统的language model讲到到后来的Neural language Models。根据其教科书以及其他相关NLP的书籍，将对本次课程的一些知识点进行适当扩展。
+什么是Language model？Language model(以下简称LM)其实是一种NLP任务。在一种自然语言中，LM计算得到每个句子出现的概率，当然"
+        "wordCount": 220
+    }
+</script>
+
+</article>
+
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
+
+
+                        </div>
+                    </section>
+                    <aside id="sidebar">
+    <a class="sidebar-toggle" title="Expand Sidebar"><i class="toggle icon"></i></a>
+    
+        
+<nav id="article-nav">
+    
+    
+        <a href="/2019/04/24/CMU-NLP课程笔记（一）/" id="article-nav-older" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">上一篇</strong>
+        <p class="article-nav-title">CMU NLP课程笔记（一）</p>
+        <i class="icon fa fa-chevron-left" id="icon-chevron-left"></i>
+        </a>
+    
+</nav>
+
+    
+    <div class="widgets-container">
+        
+            
+                
+
+            
+                
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/24/CMU-NLP课程笔记-二/" class="title">CMU NLP课程笔记(二)</a></p>
+                            <p class="item-date"><time datetime="2019-04-24T13:16:37.000Z" itemprop="datePublished">2019-04-24</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/24/CMU-NLP课程笔记（一）/" class="title">CMU NLP课程笔记（一）</a></p>
+                            <p class="item-date"><time datetime="2019-04-24T13:07:54.000Z" itemprop="datePublished">2019-04-24</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/14/PCA-主成分分析/" class="title">PCA-主成分分析</a></p>
+                            <p class="item-date"><time datetime="2019-04-14T08:52:39.000Z" itemprop="datePublished">2019-04-14</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/14/PCA之奇异值分解/" class="title">PCA之奇异值分解</a></p>
+                            <p class="item-date"><time datetime="2019-04-14T08:09:20.000Z" itemprop="datePublished">2019-04-14</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/08/PCA算法之特征值分解/" class="title">PCA算法之特征值分解</a></p>
+                            <p class="item-date"><time datetime="2019-04-08T12:40:42.000Z" itemprop="datePublished">2019-04-08</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EM/">EM</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HMM/">HMM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Language-Model/">Language Model</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markov-assumption/">Markov assumption</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NLP/">NLP</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PCA/">PCA</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SMO/">SMO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVD/">SVD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVM/">SVM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/convex-optimization/">convex optimization</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kernel-method/">kernel method</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linear-algebra/">linear algebra</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/soft-margin/">soft margin</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/viterbi/">viterbi</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-float">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/EM/" style="font-size: 13.33px;">EM</a> <a href="/tags/HMM/" style="font-size: 20px;">HMM</a> <a href="/tags/Language-Model/" style="font-size: 10px;">Language Model</a> <a href="/tags/Markov-assumption/" style="font-size: 10px;">Markov assumption</a> <a href="/tags/NLP/" style="font-size: 13.33px;">NLP</a> <a href="/tags/PCA/" style="font-size: 16.67px;">PCA</a> <a href="/tags/RNN/" style="font-size: 16.67px;">RNN</a> <a href="/tags/SMO/" style="font-size: 10px;">SMO</a> <a href="/tags/SVD/" style="font-size: 10px;">SVD</a> <a href="/tags/SVM/" style="font-size: 20px;">SVM</a> <a href="/tags/attention/" style="font-size: 16.67px;">attention</a> <a href="/tags/convex-optimization/" style="font-size: 10px;">convex optimization</a> <a href="/tags/dynamic-programming/" style="font-size: 13.33px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/kernel-method/" style="font-size: 10px;">kernel method</a> <a href="/tags/linear-algebra/" style="font-size: 10px;">linear algebra</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 16.67px;">seq2seq</a> <a href="/tags/soft-margin/" style="font-size: 10px;">soft margin</a> <a href="/tags/tensorflow/" style="font-size: 13.33px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a> <a href="/tags/viterbi/" style="font-size: 10px;">viterbi</a>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.zhihu.com/people/qiu-zhen-yu-87">zhihu</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://github.com/qiufengyuyi">github</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+            
+        
+    </div>
+</aside>
+
+                </div>
+            </div>
+        </div>
+        <footer id="footer">
+    <div class="container">
+        <div class="container-inner">
+            <a id="back-to-top" href="javascript:;"><i class="icon fa fa-angle-up"></i></a>
+            <div class="credit">
+                <h1 class="logo-wrap">
+                    <a href="/" class="logo"></a>
+                </h1>
+                <p>&copy; 2019 qiufengyuyi</p>
+                <p>Powered by <a href="//hexo.io/" target="_blank">Hexo</a>. Theme by <a href="//github.com/ppoffice" target="_blank">PPOffice</a></p>
+            </div>
+            <div class="footer-plugins">
+              
+    
+
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+        
+    
+    <script>
+    var disqus_shortname = 'hexo-theme-hueman';
+    
+    
+    var disqus_url = 'http://yoursite.com/2019/04/24/CMU-NLP课程笔记-二/';
+    
+    (function() {
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>

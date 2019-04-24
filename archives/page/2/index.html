@@ -159,6 +159,67 @@
             <div class="category">
             <a class="article-category-link" href="/categories/学习笔记/">学习笔记</a>
             </div>
+            <div class="date"><time datetime="2019-04-03T13:46:51.000Z" itemprop="datePublished">2019-04-03</time></div>
+        </div>
+        
+    
+        <h1 class="article-title" itemprop="name">
+        <a href="/2019/04/03/隐马尔科夫模型学习总结之Viterbi算法应用/">隐马尔科夫模型学习总结之Viterbi算法应用</a>
+        </h1>
+    
+
+        <p class="article-excerpt">
+            本章将描述总结隐马尔科夫模型的最后一个问题，即已知观测序列和模型参数集，求该观测序列对应的最有可能出现的隐状态序列是什么样的？即找到出现概率最大的隐状态序列。这个问题常见于NLP中的分词、词性标注、语音识别等任务中，如中文分词任务中，每个中文字符作为观测变量，而该字符在词中的角色（如词首，词中，词尾，单独成词）作为隐变量状态，假设当前已经通过大量文本训练得到了HMM模型的参数集，我们的任务就是给定
+        </p>
+    </div>
+</article>
+    
+
+    
+    
+    
+    
+        <article class="article article-summary">
+    <div class="article-summary-inner">
+        
+        <div class="article-meta">
+            <div class="category">
+            <a class="article-category-link" href="/categories/学习笔记/">学习笔记</a>
+            </div>
+            <div class="date"><time datetime="2019-04-03T13:31:10.000Z" itemprop="datePublished">2019-04-03</time></div>
+        </div>
+        
+    
+        <h1 class="article-title" itemprop="name">
+        <a href="/2019/04/03/隐马尔科夫模型学习总结之三/">隐马尔科夫模型学习总结之三</a>
+        </h1>
+    
+
+        <p class="article-excerpt">
+            本章节主要是总结一下HMM的模型训练问题。即只给定观测序列，如何训练HMM模型，得到模型的参数集 $\lambda=\left\{ \pi,A,B \right\} $,其中 $\pi$ 表示初始隐状态的概率，A表示状态概率转移矩阵，B表示发射概率矩阵。
+怎么求这个参数集呢？一般求模型的参数集，是使用极大似然估计方法，求参数，使得给定参数的条件下，观测序列的概率最大化，即：
+
+\lambda_{M
+        </p>
+    </div>
+</article>
+    
+        </div>
+    
+
+    
+    
+    
+    
+        <div class="article-row">
+    
+        <article class="article article-summary">
+    <div class="article-summary-inner">
+        
+        <div class="article-meta">
+            <div class="category">
+            <a class="article-category-link" href="/categories/学习笔记/">学习笔记</a>
+            </div>
             <div class="date"><time datetime="2019-04-02T11:59:15.000Z" itemprop="datePublished">2019-04-02</time></div>
         </div>
         
@@ -390,68 +451,6 @@ Longest Palindromi
         </div>
     
 
-    
-    
-    
-    
-        <div class="article-row">
-    
-        <article class="article article-summary">
-    <div class="article-summary-inner">
-        
-        <div class="article-meta">
-            <div class="category">
-            <a class="article-category-link" href="/categories/工程经验/">工程经验</a>
-            </div>
-            <div class="date"><time datetime="2019-03-24T12:01:40.000Z" itemprop="datePublished">2019-03-24</time></div>
-        </div>
-        
-    
-        <h1 class="article-title" itemprop="name">
-        <a href="/2019/03/24/tensorflow模型线上部署/">tensorflow模型线上部署</a>
-        </h1>
-    
-
-        <p class="article-excerpt">
-            这次写一个比较短的工程部署总结，说是tensorflow线上部署，并没有使用目前推荐的tensorflow serving。一则是该功能只是整个项目中的一个很小的功能点，如果单独为该功能部署tensorflow serving，成本和时间上会比较超标；二则由于公司内部网络环境限制，无法完整顺利获取tensorflow serving需要的依赖包（在没有网络环境下去装tensorflow servi
-        </p>
-    </div>
-</article>
-    
-
-    
-    
-    
-    
-        <article class="article article-summary">
-    <div class="article-summary-inner">
-        
-        <div class="article-meta">
-            <div class="category">
-            <a class="article-category-link" href="/categories/论文总结/">论文总结</a>
-            </div>
-            <div class="date"><time datetime="2019-03-24T11:22:50.000Z" itemprop="datePublished">2019-03-24</time></div>
-        </div>
-        
-    
-        <h1 class="article-title" itemprop="name">
-        <a href="/2019/03/24/论文笔记系列（一）SGM-for-multi-label-classification/">论文笔记系列（一）SGM for multi-label classification</a>
-        </h1>
-    
-
-        <p class="article-excerpt">
-            阅读论文，不能读完就过去了，要思考和记录论文的创新点和有用的思想。这个系列就是以尽可能的简单，尽可能少的文字去将一些核心的东西提取出来，方便自己以后查阅。
-
-论文题目：SGM:Sequence generation model for Multi-label classification
-论文target：文本分类，多标签分类，即一个文本样本分类标签会有多个。
-论文intuition：多标签分类问
-        </p>
-    </div>
-</article>
-    
-        </div>
-    
-
 
     </div></section>
 
@@ -483,6 +482,24 @@ Longest Palindromi
                         
                         <div class="item-inner">
                             <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/24/CMU-NLP课程笔记-二/" class="title">CMU NLP课程笔记(二)</a></p>
+                            <p class="item-date"><time datetime="2019-04-24T13:16:37.000Z" itemprop="datePublished">2019-04-24</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/24/CMU-NLP课程笔记（一）/" class="title">CMU NLP课程笔记（一）</a></p>
+                            <p class="item-date"><time datetime="2019-04-24T13:07:54.000Z" itemprop="datePublished">2019-04-24</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
                             <p class="item-title"><a href="/2019/04/14/PCA-主成分分析/" class="title">PCA-主成分分析</a></p>
                             <p class="item-date"><time datetime="2019-04-14T08:52:39.000Z" itemprop="datePublished">2019-04-14</time></p>
                         </div>
@@ -506,24 +523,6 @@ Longest Palindromi
                         </div>
                     </li>
                 
-                    <li>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
-                            <p class="item-title"><a href="/2019/04/08/EM算法总结/" class="title">EM算法总结</a></p>
-                            <p class="item-date"><time datetime="2019-04-08T12:18:39.000Z" itemprop="datePublished">2019-04-08</time></p>
-                        </div>
-                    </li>
-                
-                    <li>
-                        
-                        <div class="item-inner">
-                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
-                            <p class="item-title"><a href="/2019/04/05/支持向量机SVM总结之soft-Margin与SMO/" class="title">支持向量机SVM总结之soft-Margin与SMO</a></p>
-                            <p class="item-date"><time datetime="2019-04-05T03:26:21.000Z" itemprop="datePublished">2019-04-05</time></p>
-                        </div>
-                    </li>
-                
             </ul>
         </div>
     </div>
@@ -533,7 +532,7 @@ Longest Palindromi
     <div class="widget-wrap widget-list">
         <h3 class="widget-title">分类</h3>
         <div class="widget">
-            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -543,7 +542,7 @@ Longest Palindromi
     <div class="widget-wrap widget-list">
         <h3 class="widget-title">归档</h3>
         <div class="widget">
-            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
         </div>
     </div>
 
@@ -553,7 +552,7 @@ Longest Palindromi
     <div class="widget-wrap widget-list">
         <h3 class="widget-title">标签</h3>
         <div class="widget">
-            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EM/">EM</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HMM/">HMM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markov-assumption/">Markov assumption</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PCA/">PCA</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SMO/">SMO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVD/">SVD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVM/">SVM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/convex-optimization/">convex optimization</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kernel-method/">kernel method</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linear-algebra/">linear algebra</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/soft-margin/">soft margin</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/viterbi/">viterbi</a><span class="tag-list-count">1</span></li></ul>
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EM/">EM</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HMM/">HMM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Language-Model/">Language Model</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markov-assumption/">Markov assumption</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NLP/">NLP</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PCA/">PCA</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SMO/">SMO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVD/">SVD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVM/">SVM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/convex-optimization/">convex optimization</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kernel-method/">kernel method</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linear-algebra/">linear algebra</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/soft-margin/">soft margin</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/viterbi/">viterbi</a><span class="tag-list-count">1</span></li></ul>
         </div>
     </div>
 
@@ -563,7 +562,7 @@ Longest Palindromi
     <div class="widget-wrap widget-float">
         <h3 class="widget-title">标签云</h3>
         <div class="widget tagcloud">
-            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/EM/" style="font-size: 13.33px;">EM</a> <a href="/tags/HMM/" style="font-size: 20px;">HMM</a> <a href="/tags/Markov-assumption/" style="font-size: 10px;">Markov assumption</a> <a href="/tags/PCA/" style="font-size: 16.67px;">PCA</a> <a href="/tags/RNN/" style="font-size: 16.67px;">RNN</a> <a href="/tags/SMO/" style="font-size: 10px;">SMO</a> <a href="/tags/SVD/" style="font-size: 10px;">SVD</a> <a href="/tags/SVM/" style="font-size: 20px;">SVM</a> <a href="/tags/attention/" style="font-size: 16.67px;">attention</a> <a href="/tags/convex-optimization/" style="font-size: 10px;">convex optimization</a> <a href="/tags/dynamic-programming/" style="font-size: 13.33px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/kernel-method/" style="font-size: 10px;">kernel method</a> <a href="/tags/linear-algebra/" style="font-size: 10px;">linear algebra</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 16.67px;">seq2seq</a> <a href="/tags/soft-margin/" style="font-size: 10px;">soft margin</a> <a href="/tags/tensorflow/" style="font-size: 13.33px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a> <a href="/tags/viterbi/" style="font-size: 10px;">viterbi</a>
+            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/EM/" style="font-size: 13.33px;">EM</a> <a href="/tags/HMM/" style="font-size: 20px;">HMM</a> <a href="/tags/Language-Model/" style="font-size: 10px;">Language Model</a> <a href="/tags/Markov-assumption/" style="font-size: 10px;">Markov assumption</a> <a href="/tags/NLP/" style="font-size: 13.33px;">NLP</a> <a href="/tags/PCA/" style="font-size: 16.67px;">PCA</a> <a href="/tags/RNN/" style="font-size: 16.67px;">RNN</a> <a href="/tags/SMO/" style="font-size: 10px;">SMO</a> <a href="/tags/SVD/" style="font-size: 10px;">SVD</a> <a href="/tags/SVM/" style="font-size: 20px;">SVM</a> <a href="/tags/attention/" style="font-size: 16.67px;">attention</a> <a href="/tags/convex-optimization/" style="font-size: 10px;">convex optimization</a> <a href="/tags/dynamic-programming/" style="font-size: 13.33px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/kernel-method/" style="font-size: 10px;">kernel method</a> <a href="/tags/linear-algebra/" style="font-size: 10px;">linear algebra</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 16.67px;">seq2seq</a> <a href="/tags/soft-margin/" style="font-size: 10px;">soft margin</a> <a href="/tags/tensorflow/" style="font-size: 13.33px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a> <a href="/tags/viterbi/" style="font-size: 10px;">viterbi</a>
         </div>
     </div>
 

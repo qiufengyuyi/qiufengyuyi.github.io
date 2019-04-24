@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+
+    
+
+    
+    <title>CMU NLP课程笔记（一） | qiufengyuyi&#39;s blog</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <meta name="keywords" content="NLP">
+    
+    <meta name="description" content="最近开始学习卡耐基梅隆大学的NLP课程——CMU CS 11-747,感觉这门课相对初学者来说是比较友好的，它结合了很多实际的NLP的任务来教授很多NLP的基础知识，前提是要阅读过它指定的教材。之前我已经学习过著名的斯坦福大学的cs224n的NLP课程，那门课程也是不错的，不过已经有大牛整理了该课程的笔记，有兴趣的同学可以参考CS224n-码农场。  备注：我这个笔记并没有严格按照其课程讲解顺序，">
+<meta name="keywords" content="NLP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMU NLP课程笔记（一）">
+<meta property="og:url" content="http://yoursite.com/2019/04/24/CMU-NLP课程笔记（一）/index.html">
+<meta property="og:site_name" content="qiufengyuyi&#39;s blog">
+<meta property="og:description" content="最近开始学习卡耐基梅隆大学的NLP课程——CMU CS 11-747,感觉这门课相对初学者来说是比较友好的，它结合了很多实际的NLP的任务来教授很多NLP的基础知识，前提是要阅读过它指定的教材。之前我已经学习过著名的斯坦福大学的cs224n的NLP课程，那门课程也是不错的，不过已经有大牛整理了该课程的笔记，有兴趣的同学可以参考CS224n-码农场。  备注：我这个笔记并没有严格按照其课程讲解顺序，">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/04/24/CMU-NLP课程笔记（一）/v2-c9f17f6cfb13229e8d36dc686b27248a_b.jpg">
+<meta property="og:updated_time" content="2019-04-24T13:15:59.826Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CMU NLP课程笔记（一）">
+<meta name="twitter:description" content="最近开始学习卡耐基梅隆大学的NLP课程——CMU CS 11-747,感觉这门课相对初学者来说是比较友好的，它结合了很多实际的NLP的任务来教授很多NLP的基础知识，前提是要阅读过它指定的教材。之前我已经学习过著名的斯坦福大学的cs224n的NLP课程，那门课程也是不错的，不过已经有大牛整理了该课程的笔记，有兴趣的同学可以参考CS224n-码农场。  备注：我这个笔记并没有严格按照其课程讲解顺序，">
+<meta name="twitter:image" content="http://yoursite.com/2019/04/24/CMU-NLP课程笔记（一）/v2-c9f17f6cfb13229e8d36dc686b27248a_b.jpg">
+    
+
+    
+
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/titillium-web/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="wrap">
+        <header id="header">
+    <div id="header-outer" class="outer">
+        <div class="container">
+            <div class="container-inner">
+                <div id="header-title">
+                    <h1 class="logo-wrap">
+                        <a href="/" class="logo"></a>
+                    </h1>
+                    
+                        <h2 class="subtitle-wrap">
+                            <p class="subtitle">backlog of a man&#39;s road to AI learning</p>
+                        </h2>
+                    
+                </div>
+                <div id="header-inner" class="nav-container">
+                    <a id="main-nav-toggle" class="nav-icon fa fa-bars"></a>
+                    <div class="nav-container-inner">
+                        <ul id="main-nav">
+                            
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/">主页</a>
+                                </li>
+                            
+                                        <ul class="main-nav-list"><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/基础算法/">基础算法</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/学习笔记/">学习笔记</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/工程经验/">工程经验</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/比赛总结/">比赛总结</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/论文总结/">论文总结</a></li></ul>
+                                    
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/about/index.html">关于</a>
+                                </li>
+                            
+                        </ul>
+                        <nav id="sub-nav">
+                            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+        <div class="container">
+            <div class="main-body container-inner">
+                <div class="main-body-inner">
+                    <section id="main">
+                        <div class="main-body-header">
+    <h1 class="header">
+    
+    <a class="page-title-link" href="/categories/学习笔记/">学习笔记</a>
+    </h1>
+</div>
+
+                        <div class="main-body-content">
+                            <article id="post-CMU-NLP课程笔记（一）" class="article article-single article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+        CMU NLP课程笔记（一）
+        </h1>
+    
+
+            </header>
+        
+        
+            <div class="article-meta">
+                
+    <div class="article-date">
+        <a href="/2019/04/24/CMU-NLP课程笔记（一）/" class="article-date">
+            <time datetime="2019-04-24T13:07:54.000Z" itemprop="datePublished">2019-04-24</time>
+        </a>
+    </div>
+
+		
+
+                
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/NLP/">NLP</a>
+    </div>
+
+            </div>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+            <p>最近开始学习卡耐基梅隆大学的NLP课程——CMU CS 11-747,感觉这门课相对初学者来说是比较友好的，它结合了很多实际的NLP的任务来教授很多NLP的基础知识，前提是要阅读过它指定的教材。之前我已经学习过著名的斯坦福大学的cs224n的NLP课程，那门课程也是不错的，不过已经有大牛整理了该课程的笔记，有兴趣的同学可以参考<a href="http://www.hankcs.com/tag/cs224n/" target="_blank" rel="noopener">CS224n-码农场</a>。</p>
+<blockquote>
+<p>备注：我这个笔记并没有严格按照其课程讲解顺序，只是将我认为比较重要的知识点总结出来，顺序可能也会有不一样。做这个笔记的原因一个是方便自己的知识回顾，还有一个就是希望能帮助那些英语不好的同学从整体了解该课程的知识体系。如有不足的地方，请指正。</p>
+</blockquote>
+<h2 id="Lecture1"><a href="#Lecture1" class="headerlink" title="Lecture1"></a>Lecture1</h2><p>关于CMU的这门课程有一点比较特别的是它使用的是dynet深度学习框架来完成所有的实例。这个框架与tensorflow这种静态图框架不同，是一种动态图框架，和pytorch是一个类型的。众所周知，对于动态图框架来说，最大的好处就是可以为每个训练样本动态定义一个计算图，在训练过程中可以修改计算图，且允许单步调试，这是tensorflow，theano等静态图框架不能做到的，举个例子来说就是在tensorflow中，定义了一个add(a,b)操作，想知道该计算得到的值，必须使用session.run()之后，才能获取结果。但是dynet则直接就能读取该计算操作的结果。（当然，tensorflow在引入了Fold特性后，也具备了动态计算图的能力，有兴趣的同学可以参考<a href="https://www.zhihu.com/search?type=content&amp;q=pytorch%20dynet" target="_blank" rel="noopener">pytorch dynet - 搜索结果 - 知乎</a>）。当然动态计算图的缺点也很明显，就是每个样本都定义不同的动态计算图，整个模型训练的效率会很不好，因此dynet提供了automatic batching机制来提升训练效率，即根据实际情况给一个计算图喂一个minibatch的数据，或者给一个样本喂一个样本的数据。</p>
+<blockquote>
+<p><em>备注：其实课程老师</em> <a href="http://phontron.com/" target="_blank" rel="noopener"><em>Graham Neubig</em></a><em>说的几个使用dynet的优点，个人感觉可能没有那么明显，对于NLP任务来说，使用tensorflow等静态计算图框架可能确实比较麻烦，但是为啥不用pytorch或者其他框架呢？可能是因为dynet由CMU参与开发并提出的吧。我之前只用过tensorflow做过文本分类任务，在开发调试上确实有点别扭。准备通过这个课程学习pytorch（因为pytorch相对dynet来说比较成熟）。</em></p>
+</blockquote>
+<h2 id="NLP的难题"><a href="#NLP的难题" class="headerlink" title="NLP的难题"></a>NLP的难题</h2><p>首先NLP是做什么的？</p>
+<p>简单说就是设计算法来处理一些自然语言数据任务。人类的自然语言二义性很严重，相近的表示很有可能其表达的含义会不同。同时人类的自然语言也在不停的更新，例如各种网络用语、俚语等的出现。然而相对的，却很少有人能够完全掌握整套语言系统规则，大家只是凭感觉去处理文本。因此涌现了很多不同的方向来研究人类语言，比如有监督的机器学习方法，通过输入大量的已经标记过的样本数据，来学习样本中包含的一些语言特性和规则。比如文本分类，主题提取等。</p>
+<p>文本处理有很多先天的难度：</p>
+<ol>
+<li>离散型，因为文本多是由各种语言里面的元字符组合成词、句得到，每个字符就是一个离散的特征，组成的词也是离散型的，这个与其他机器学习任务是不同的。因此要建立字符与字符或者词语词之间的联系是很难的，反面例子就是关于颜色特征，可以根据色调值和强度值来精确区分两个不同的颜色。</li>
+<li>理解语言，需要会的东西太多了：语法、词语形态、语义、自然界的常识、修辞、叙述手法、多语言间的翻译知识等。</li>
+<li>数据的稀疏性。由1和2可知，对自然语言文本直接建立特征矩阵，很容易就得到一个稀疏矩阵，无法遍历所有可能的特征的值。光是词的组合就有接近无限种可能。更何况人类还在不断造词。</li>
+</ol>
+<p>本课程主要是运用深度学习中的深度神经网络来解决一些NLP的问题，后面的课程可以不断了解到Neural Network是如何帮助我们解决上面的问题。</p>
+<h2 id="First-Example——Sentence-Classification"><a href="#First-Example——Sentence-Classification" class="headerlink" title="First Example——Sentence Classification"></a>First Example——Sentence Classification</h2><p>课程首先举了一个句子分类的例子。两个句子的情感分类：</p>
+<p><img src="/2019/04/24/CMU-NLP课程笔记（一）/v2-c9f17f6cfb13229e8d36dc686b27248a_b.jpg" alt="img"></p>
+<p>这个问题可以看成是一个多分类任务，一个样本句子对应五个标签有5个对应的概率 $P_{y_i} $，在五个标签中选择一个作为 $P_{y_i}$ 最大的那个作为其最终标签。那么如何对文本进行特征矩阵化呢？</p>
+<p><strong>方法一：Bag of Words词袋模型</strong></p>
+<p>相信搞NLP的同学对词袋模型都比较熟悉，这是对自然文本进行特征向量化的基本操作。最简单的词袋模型将所有语料中的词进行one-hot编码，表示了一个词是否出现在所处理的文本中。它不考虑词序以及其他任何特征，只是一个词查找的功能。在课程中提到的BOW词袋模型，应该是更高级一点的，如图：</p>
+<p><img src="/2019/04/24/CMU-NLP课程笔记（一）/v2-9c24ded7effa069d0a0c011a029acfd1_b.jpg" alt="img"></p>
+<p>首先，它已经建立了词袋，然后每个词也训练得到了一些词向量，词向量每个维度的含义如图所示。模型的主要原理为将一个句子的所有词的“词-分类score向量”（姑且这么描述）相加，同时增加偏值bias，得到一个句子的分数。然后使用softmax函数，将分数转换成概率。</p>
+<p>这种方法简单，也在一定程度上解决了问题，但是有一定缺陷，如句子中出现复杂的词组、或者语法关系、或者其他复杂语义，那么简单得将词分数向量相加就会失去其本身的作用，举例：</p>
+<p><img src="/2019/04/24/CMU-NLP课程笔记（一）/v2-adc490a3c4c5aa9e2d7df524b7bcb668_b.jpg" alt="img"></p>
+<p>图中用红框标出来的就是较为复杂的语义，don’t love中，don’t在neutral或者bad类型分数高的，love在very good上分数高，最后相加，可能得到一个good或者neutral的结果，显然是不对的，下面的句子中，含有两个negative的词，如果相加，可能会得到一个negative的结果，显然也是不对的。</p>
+<p>那么<strong>解决方法是什么</strong>呢？课程里面提出了一个概念叫<strong>combination Feature</strong>，表示对不同词的组合建立的复杂特征关系。举例：对诸如“don’t””love”两个词同时存在，则其对应的bad上的分数会高一点。其实说白了就是<strong>对特征进行组合与关联，建立复杂的特征</strong>。这不就是神经网络擅长的事情吗？<strong>神经网络的本质工作之一就是能够找到数据中的一些复杂的组合特征</strong>，这个工作由人工来做既费时，也需要一定的专家知识，但是语言学家毕竟少，至此我们又找到一个使用神经网络来解决NLP任务的理由了。</p>
+<p>因此，课程中对上述BOW模型进行了改进，取名为Continuous Bag of Words(CBOW)。（注意一下这个东西目前跟word2vec的CBOW不是一回事。）模型如图：</p>
+<p><img src="/2019/04/24/CMU-NLP课程笔记（一）/v2-8cb5f13d5e1301e0005ebf9143c3b322_b.jpg" alt="img"></p>
+<p>这个CBOW模型能够学习到一些较为高级的特征，如主题、情感等，但是它仍然只是简单得将句子里面词的scores相加，简单的线性模型仍然无法学到复杂的combination feature。因此可以在模型增加一个非线性变换，来达到学习组合特征的目的，deep CBOW的基本原理就是这个，如图所示：</p>
+<p><img src="/2019/04/24/CMU-NLP课程笔记（一）/v2-487ccea6d3c5d120a1dca6d24a366495_b.jpg" alt="img"></p>
+<h2 id="Computation-Graph"><a href="#Computation-Graph" class="headerlink" title="Computation Graph"></a>Computation Graph</h2><p>计算图这个是属于开发框架的内容，不管是动态图框架还是静态图框架，他们有个共同的特点就是都需要设计神经网络的计算图。</p>
+<p>神经网络的计算图是一个有向图，本质上是按照神经网络训练时的forward Propagation的步骤来定义图的架构。其中，图的节点有两种，一种是没有指针指向的，这种节点一般表示输入数据X，还有一种节点通常由一个有向边指向，表示一个函数操作，例如 $f(u)=u^T$ ,而图的有向边表示它指向的节点的函数参数或者是一个数据依赖。</p>
+<p>我们只需要定义好这个图结构，那么这些开发框架将会自动帮我们执行forward propagation（FP）以及backward propagation（BP）。FP的实现就按照我们定义的图结构来依次计算，课程里给了个例子： $y=x^TAx+bx+c $,其计算图以及FP过程如图：</p>
+<p><img src="/2019/04/24/CMU-NLP课程笔记（一）/v2-fedb457a4ffc25496bce3e35ddcfe540_b.jpg" alt="img"></p>
+<p>那么BP是如何实现的呢，一般深度学习开发框架中，已经为每个图中的函数节点实现了求偏导的运算，如节点 $f(x,A)=x^TAx $,其对x和A的偏导已经实现，为： $\frac{\partial f(x,A)}{\partial x}=(A^T+A)x$ ,以及 $\frac{\partial f(x,A)}{\partial A}=xx^T $.那么框架只需要从图的终点从后往前依次计算对参数的偏导就可以了。</p>
+<p>（具体的BP过程就不描述了，有兴趣的同学可以去吴恩达的DeepLearning课程上去学习，个人觉得里面的推导还是对初学者比较友好的。当然斯坦福的cs231课程也不错。）</p>
+
+        </div>
+        <footer class="article-footer">
+            
+
+
+
+    <a data-url="http://yoursite.com/2019/04/24/CMU-NLP课程笔记（一）/" data-id="cjuv9nrmk000jl4utjel1ee8v" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+        </footer>
+    </div>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "author": {
+            "@type": "Person",
+            "name": "qiufengyuyi"
+        },
+        "headline": "CMU NLP课程笔记（一）",
+        "image": "http://yoursite.com/2019/04/24/CMU-NLP课程笔记（一）/v2-c9f17f6cfb13229e8d36dc686b27248a_b.jpg",
+        "keywords": "NLP",
+        "genre": "学习笔记",
+        "datePublished": "2019-04-24",
+        "dateCreated": "2019-04-24",
+        "dateModified": "2019-04-24",
+        "url": "http://yoursite.com/2019/04/24/CMU-NLP课程笔记（一）/",
+        "description": "最近开始学习卡耐基梅隆大学的NLP课程——CMU CS 11-747,感觉这门课相对初学者来说是比较友好的，它结合了很多实际的NLP的任务来教授很多NLP的基础知识，前提是要阅读过它指定的教材。之前我已经学习过著名的斯坦福大学的cs224n的NLP课程，那门课程也是不错的，不过已经有大牛整理了该课程的笔记，有兴趣的同学可以参考CS224n-码农场。
+
+备注：我这个笔记并没有严格按照其课程讲解顺序，"
+        "wordCount": 86
+    }
+</script>
+
+</article>
+
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
+
+
+                        </div>
+                    </section>
+                    <aside id="sidebar">
+    <a class="sidebar-toggle" title="Expand Sidebar"><i class="toggle icon"></i></a>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2019/04/24/CMU-NLP课程笔记-二/" id="article-nav-newer" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">下一篇</strong>
+        <p class="article-nav-title">
+        
+            CMU NLP课程笔记(二)
+        
+        </p>
+        <i class="icon fa fa-chevron-right" id="icon-chevron-right"></i>
+    </a>
+    
+    
+        <a href="/2019/04/14/PCA-主成分分析/" id="article-nav-older" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">上一篇</strong>
+        <p class="article-nav-title">PCA-主成分分析</p>
+        <i class="icon fa fa-chevron-left" id="icon-chevron-left"></i>
+        </a>
+    
+</nav>
+
+    
+    <div class="widgets-container">
+        
+            
+                
+
+            
+                
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/24/CMU-NLP课程笔记-二/" class="title">CMU NLP课程笔记(二)</a></p>
+                            <p class="item-date"><time datetime="2019-04-24T13:16:37.000Z" itemprop="datePublished">2019-04-24</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/24/CMU-NLP课程笔记（一）/" class="title">CMU NLP课程笔记（一）</a></p>
+                            <p class="item-date"><time datetime="2019-04-24T13:07:54.000Z" itemprop="datePublished">2019-04-24</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/14/PCA-主成分分析/" class="title">PCA-主成分分析</a></p>
+                            <p class="item-date"><time datetime="2019-04-14T08:52:39.000Z" itemprop="datePublished">2019-04-14</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/14/PCA之奇异值分解/" class="title">PCA之奇异值分解</a></p>
+                            <p class="item-date"><time datetime="2019-04-14T08:09:20.000Z" itemprop="datePublished">2019-04-14</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/08/PCA算法之特征值分解/" class="title">PCA算法之特征值分解</a></p>
+                            <p class="item-date"><time datetime="2019-04-08T12:40:42.000Z" itemprop="datePublished">2019-04-08</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EM/">EM</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HMM/">HMM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Language-Model/">Language Model</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markov-assumption/">Markov assumption</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NLP/">NLP</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PCA/">PCA</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SMO/">SMO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVD/">SVD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVM/">SVM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/convex-optimization/">convex optimization</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kernel-method/">kernel method</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linear-algebra/">linear algebra</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/soft-margin/">soft margin</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/viterbi/">viterbi</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-float">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/EM/" style="font-size: 13.33px;">EM</a> <a href="/tags/HMM/" style="font-size: 20px;">HMM</a> <a href="/tags/Language-Model/" style="font-size: 10px;">Language Model</a> <a href="/tags/Markov-assumption/" style="font-size: 10px;">Markov assumption</a> <a href="/tags/NLP/" style="font-size: 13.33px;">NLP</a> <a href="/tags/PCA/" style="font-size: 16.67px;">PCA</a> <a href="/tags/RNN/" style="font-size: 16.67px;">RNN</a> <a href="/tags/SMO/" style="font-size: 10px;">SMO</a> <a href="/tags/SVD/" style="font-size: 10px;">SVD</a> <a href="/tags/SVM/" style="font-size: 20px;">SVM</a> <a href="/tags/attention/" style="font-size: 16.67px;">attention</a> <a href="/tags/convex-optimization/" style="font-size: 10px;">convex optimization</a> <a href="/tags/dynamic-programming/" style="font-size: 13.33px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/kernel-method/" style="font-size: 10px;">kernel method</a> <a href="/tags/linear-algebra/" style="font-size: 10px;">linear algebra</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 16.67px;">seq2seq</a> <a href="/tags/soft-margin/" style="font-size: 10px;">soft margin</a> <a href="/tags/tensorflow/" style="font-size: 13.33px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a> <a href="/tags/viterbi/" style="font-size: 10px;">viterbi</a>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.zhihu.com/people/qiu-zhen-yu-87">zhihu</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://github.com/qiufengyuyi">github</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+            
+        
+    </div>
+</aside>
+
+                </div>
+            </div>
+        </div>
+        <footer id="footer">
+    <div class="container">
+        <div class="container-inner">
+            <a id="back-to-top" href="javascript:;"><i class="icon fa fa-angle-up"></i></a>
+            <div class="credit">
+                <h1 class="logo-wrap">
+                    <a href="/" class="logo"></a>
+                </h1>
+                <p>&copy; 2019 qiufengyuyi</p>
+                <p>Powered by <a href="//hexo.io/" target="_blank">Hexo</a>. Theme by <a href="//github.com/ppoffice" target="_blank">PPOffice</a></p>
+            </div>
+            <div class="footer-plugins">
+              
+    
+
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+        
+    
+    <script>
+    var disqus_shortname = 'hexo-theme-hueman';
+    
+    
+    var disqus_url = 'http://yoursite.com/2019/04/24/CMU-NLP课程笔记（一）/';
+    
+    (function() {
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>
