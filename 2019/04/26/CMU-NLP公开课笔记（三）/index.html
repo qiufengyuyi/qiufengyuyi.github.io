@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+
+    
+
+    
+    <title>CMU NLP公开课笔记（三） | qiufengyuyi&#39;s blog</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <meta name="keywords" content="NLP,Word Embedding">
+    
+    <meta name="description" content="Lecture3本次课程主要聚焦的课题是对词的建模。对于词这个语言元素来说，我们需要了解词的哪些特征呢？课程列出了几点需求：  词是否属于语言中的相同部分，简单说就是词性是否相同，比如是否都是动词、是否都是名词等。 词是否是同一个形态，比如是否是现在进行时，还是过去式，或者是将来时等。 词的表达含义是否相同，简单说就是分辨同义词或者近义词。 词是否具有语义上的关联，简单说就是词与词之间是否有一些语">
+<meta name="keywords" content="NLP,Word Embedding">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMU NLP公开课笔记（三）">
+<meta property="og:url" content="http://yoursite.com/2019/04/26/CMU-NLP公开课笔记（三）/index.html">
+<meta property="og:site_name" content="qiufengyuyi&#39;s blog">
+<meta property="og:description" content="Lecture3本次课程主要聚焦的课题是对词的建模。对于词这个语言元素来说，我们需要了解词的哪些特征呢？课程列出了几点需求：  词是否属于语言中的相同部分，简单说就是词性是否相同，比如是否都是动词、是否都是名词等。 词是否是同一个形态，比如是否是现在进行时，还是过去式，或者是将来时等。 词的表达含义是否相同，简单说就是分辨同义词或者近义词。 词是否具有语义上的关联，简单说就是词与词之间是否有一些语">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/04/26/CMU-NLP公开课笔记（三）/v2-572792e5907fcb51f77dfba121f18d88_b.jpg">
+<meta property="og:updated_time" content="2019-04-26T12:27:33.764Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CMU NLP公开课笔记（三）">
+<meta name="twitter:description" content="Lecture3本次课程主要聚焦的课题是对词的建模。对于词这个语言元素来说，我们需要了解词的哪些特征呢？课程列出了几点需求：  词是否属于语言中的相同部分，简单说就是词性是否相同，比如是否都是动词、是否都是名词等。 词是否是同一个形态，比如是否是现在进行时，还是过去式，或者是将来时等。 词的表达含义是否相同，简单说就是分辨同义词或者近义词。 词是否具有语义上的关联，简单说就是词与词之间是否有一些语">
+<meta name="twitter:image" content="http://yoursite.com/2019/04/26/CMU-NLP公开课笔记（三）/v2-572792e5907fcb51f77dfba121f18d88_b.jpg">
+    
+
+    
+
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/titillium-web/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="wrap">
+        <header id="header">
+    <div id="header-outer" class="outer">
+        <div class="container">
+            <div class="container-inner">
+                <div id="header-title">
+                    <h1 class="logo-wrap">
+                        <a href="/" class="logo"></a>
+                    </h1>
+                    
+                        <h2 class="subtitle-wrap">
+                            <p class="subtitle">backlog of a man&#39;s road to AI learning</p>
+                        </h2>
+                    
+                </div>
+                <div id="header-inner" class="nav-container">
+                    <a id="main-nav-toggle" class="nav-icon fa fa-bars"></a>
+                    <div class="nav-container-inner">
+                        <ul id="main-nav">
+                            
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/">主页</a>
+                                </li>
+                            
+                                        <ul class="main-nav-list"><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/基础算法/">基础算法</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/学习笔记/">学习笔记</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/工程经验/">工程经验</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/比赛总结/">比赛总结</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/论文总结/">论文总结</a></li></ul>
+                                    
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/about/index.html">关于</a>
+                                </li>
+                            
+                        </ul>
+                        <nav id="sub-nav">
+                            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+        <div class="container">
+            <div class="main-body container-inner">
+                <div class="main-body-inner">
+                    <section id="main">
+                        <div class="main-body-header">
+    <h1 class="header">
+    
+    <a class="page-title-link" href="/categories/学习笔记/">学习笔记</a>
+    </h1>
+</div>
+
+                        <div class="main-body-content">
+                            <article id="post-CMU-NLP公开课笔记（三）" class="article article-single article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+        CMU NLP公开课笔记（三）
+        </h1>
+    
+
+            </header>
+        
+        
+            <div class="article-meta">
+                
+    <div class="article-date">
+        <a href="/2019/04/26/CMU-NLP公开课笔记（三）/" class="article-date">
+            <time datetime="2019-04-26T12:08:30.000Z" itemprop="datePublished">2019-04-26</time>
+        </a>
+    </div>
+
+		
+
+                
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/NLP/">NLP</a>, <a class="tag-link" href="/tags/Word-Embedding/">Word Embedding</a>
+    </div>
+
+            </div>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+            <h2 id="Lecture3"><a href="#Lecture3" class="headerlink" title="Lecture3"></a>Lecture3</h2><p>本次课程主要聚焦的课题是对词的建模。对于词这个语言元素来说，我们需要了解词的哪些特征呢？课程列出了几点需求：</p>
+<ol>
+<li>词是否属于语言中的相同部分，简单说就是词性是否相同，比如是否都是动词、是否都是名词等。</li>
+<li>词是否是同一个形态，比如是否是现在进行时，还是过去式，或者是将来时等。</li>
+<li>词的表达含义是否相同，简单说就是分辨同义词或者近义词。</li>
+<li>词是否具有语义上的关联，简单说就是词与词之间是否有一些语义关系包括但不限于包含关系、从属关系等。</li>
+</ol>
+<h2 id="WordNet"><a href="#WordNet" class="headerlink" title="WordNet"></a>WordNet</h2><p>在很早的时候，就有很多学者针对词的建模尝试。这里举了个实例——WordNet。做NLP的同学对这个肯定比较熟悉，它是一种词库，该词库简单说就是一个词性、语义关系的知识库。它通过树形结构，建立不同词之间的一个语义关系网。如图：</p>
+<p><img src="/2019/04/26/CMU-NLP公开课笔记（三）/v2-572792e5907fcb51f77dfba121f18d88_b.jpg" alt="img"></p>
+<p>子节点均为特定的交通工具词，他们有一个共同的父节点，表示通用的机动车词。</p>
+<p>构造该词库需要庞大的工作量，同时对于不同语种要建立单独的词库，工作量可以说是非常巨大了。</p>
+<h2 id="Word-Embeddings"><a href="#Word-Embeddings" class="headerlink" title="Word Embeddings"></a>Word Embeddings</h2><p>根据上面对WordNet的描述，可以知道该方法对词的建模成本还是很高的，且对不同语种不通用。因此就有了Word Embeddings方法来对词进行建模。</p>
+<blockquote>
+<p>Word Embeddings(简称词嵌入)的表达含义个人理解为相对于普通的one-hot编码来说，将词的隐含的语义还有其他复杂的组合特征（之前的lecture中讲过）嵌入到了词的向量表示中，向量的每一维都带有不同角度的特征，因此取名embedding。</p>
+</blockquote>
+<p>Word Embeddings本质上式一个词向量表示，其中向量的每一维都是一个连续型数值（与one-hot编码中的0,1取值不同）。</p>
+<p>词向量还可以用于对词进行类比推理，课程给出了实例：</p>
+<p><img src="/2019/04/26/CMU-NLP公开课笔记（三）/v2-0d5fbdb8ba1ce7855d3b7c222cc9ab8e_b.jpg" alt="img"></p>
+<p>通过这些词向量的向量运算，可以得到一些词的关系：king-man+woman = queen，在语义中，这个运算时有意义的，口语化说法就是king与queen的关系就好比man和woman的关系。根据这个关系，我们很容易就能回答诸如：“king对应的女性化词是什么词”</p>
+<p><strong>如何训练词向量</strong></p>
+<p>课程给出了简单的训练词向量的方法，分为以下几种情况：</p>
+<ol>
+<li>随机初始化词向量，作为参数，和其他NLP任务一起训练，比如文本分类。在训练分类器的同时，也训练词向量。</li>
+<li>先在一个监督学习任务中预训练词向量，比如在词性标注任务中训练处词向量，然后将该词向量用于句法分析中测试。</li>
+<li><strong>在一个无监督的学习任务中训练词向量，这个是比较常见的，比如word2vec，glove等。课程主要针对的是该中训练方式。</strong></li>
+</ol>
+<p><strong>Distributional vs Distributed</strong></p>
+<p>在讲具体的词向量训练前，课程列出了两个术语上的区分。</p>
+<p>Distributional representations：偏向于上下文环境类似的词本身也类似，词的分布代表了词的用法。而非Distributional的表达方式则是从一些词典语料中构建表示模型，比如WordNet</p>
+<p>Distributed representation：偏向于使用连续性数值构成的向量来表示词，向量的每个维度都具有一定的隐语义。而非Distributed representation则对应了one-hot编码这种离散性质的表示方式。</p>
+<p><strong>传统词建模方式举例——Count-based Methods</strong></p>
+<p>首先介绍一种传统的词建模方法——基于词计数的方法。该方法基本思想是通过统计词与上下文词的同时出现的次数，来建模词和词之间的共现关系。</p>
+<p><em>分割线以下是延伸知识点——————————————————————————————————</em></p>
+<hr>
+<p>基于计数的词建模方法，一般会统计一个target词和它context词的共现频次，此时需要设定一个窗口k，表示在target词周围左右的k个上下文词中统计共现频次。然后就构建一个word-word的词共现矩阵，矩阵的行表示所有target词，列表示context词。如图：</p>
+<p><img src="/2019/04/26/CMU-NLP公开课笔记（三）/v2-9d594ec559488643d3ae176063289889_b.jpg" alt="img"></p>
+<p>标红的一行就是词”digital”对应的词向量表示。</p>
+<p>可以看到这种词建模方法优点是简单易实现，且在一定意义上能够表达出词的共现关系，如”digital”和”computer”两个词共现频次高，说明两个词的语义应当是接近的， 事实上也是如此。</p>
+<p>但是这种方法的缺点也很明显。一个是词共现矩阵是很稀疏的，大量的词对基本上都不会共现，因此矩阵很多元素都会是0，会带来维度计算问题；另一个缺点是该词很容易会对一些无关紧要的词产生“偏爱”，比如”the”,”a”这种词肯定和很多词都同时出现，因此其对应的元素值会很高，但是这种词对对于我们的语义分析、判别来说没有一点作用，反而会拖累整个任务。因此我们需要一个能够让context能够对target词具有很强的语义区分作用的方法。</p>
+<p><strong>PMI</strong></p>
+<p>PMI全称为Pointwise Mutual Information，是一种衡量词之间关系的计算方法。它利用的是互信息的概念，互信息简单说就是衡量两个随机变量之间的相关关系，运用到词建模中，可以转变为衡量<strong>两个词在语料中实际共现的程度</strong>和在<strong>相互独立的假设下计算两个词共现的概率之间</strong>的比值，公式如下：</p>
+<script type="math/tex; mode=display">
+PMI(w,c)=log_2{\frac{P(w,c)}{P(w)P(c)}}\\</script><p>其中，w表示target词，c表示context词。解释一下log中的分子表示的是语料中两个词实际的共现情况。分母表示的假设两个词相互独立，则两个词共现的概率。整个比值很显然表示<strong>两个词实际共现程度比我们预估的概率多多少。</strong>显然，PMI值越高，表示两个词关系越紧密。因为负数的PMI在计算时需要更加庞大的语料量，且难以实现，因此通常使用PPMI，即Positive PMI来代替PMI，此时$PPMI\in[0,+\infty)$ ,即小于0的原PMI值均转化为0。具体的计算公式就不描述了，注意一点公式中的概率值通过语料中的频率值近似的。通过计算词与词之间的PPMI值，我们就可以获得一个PPMI-weighted word-word矩阵，矩阵的元素就是不同词之间的PPMI值。</p>
+<p>当然PMI也有其缺点，比较严重就是出现次数较少的词的PMI值会比较高，容易有偏见。因此通常会实施一些平滑方法如拉普拉斯平滑方法或者在计算概率值时，增加指数计算（后面讨论word2vec时会详细讲）等方式来规避这个问题。</p>
+<p><strong>SVD</strong></p>
+<p>以上方法，还是会产生略稀疏的矩阵，那么有没有什么方法能够通过降维等方式让矩阵变稠密？那么就要见见老朋友SVD了。关于SVD的内容，我之前的文章有详细讲过。SVD在NLP的应用也十分广泛，包括LSA、LSI等。这里，我们SVD的对象就是上面讲解的PPMI-weighted word-word矩阵。通过SVD分解，将该矩阵X可以分解为三个矩阵，我们可以选定某个维度K&lt;=rank(X),来达到降维的目的，此时得到的左奇异矩阵为W，W的行表示每一个target词，列表示该词对应的一个隐语义的向量表示；右奇异矩阵为 $C^T$ ,它的行表示的是隐语义的不同维度，每一列表示的是context词。</p>
+<p>备注：LSA中，SVD直接作用的是word-doc矩阵，矩阵的元素不是简单的共现统计，而是两种weight的综合值，即local weight*global weight。具体的就不描述了，可参考资料：《Speech and Language Processing》</p>
+<hr>
+<p><em>分割线结束—————————————————————————————————————————</em></p>
+<p><strong>神经网络词建模方法</strong></p>
+<p>上面的词建模方法，每个词的某个维度都记录了一个context的词的共现情况，相当于每个维度都有可解释的语义（有的经过SVD分解后，也不具有可解释性了）。然而这种方式只是通过词共现的方式来体现语义，肯定会缺失很多重要的语义信息，因此学者研究并引入了神经网络来帮助我们对词进行建模。</p>
+<p><strong>prediction-based method</strong></p>
+<p>还记得前面的lecture2讲过的Neural Language model吗？先把图贴出来回顾一下：</p>
+<p><img src="/2019/04/26/CMU-NLP公开课笔记（三）/v2-bc6f81a78b15cc52a22df365ca65142f_b.jpg" alt="img"></p>
+<p>该模型首先是一个针对language model任务的模型，它有两个硬性要求：</p>
+<ol>
+<li>需要生成词的概率分布P(w)</li>
+<li>需要根据链式法则，将所有词的概率通过贝叶斯公式计算得到句子级别的概率估计。</li>
+</ol>
+<p>另外，它的context针对是一个词的前面k-gram。这种方法的目标是得到句子的概率估计，而词的词向量只是其附产品。这种方法对于词的建模来说是有一定缺点的，因为它的目标就不是词建模，且只取词前面的context在一定程度上会损失词与上下文之间的信息。</p>
+<p><strong>Context window Methods</strong></p>
+<p>因此将上面的模型修改一下，context的范围从前面的词转换为一个context window，该window包围我们的target word，左右两边距离相同；另外我们去掉最后一层需要输出概率的要求，只需要输出一个词的分数，这样我们就可以使用一些采样或者其他方法减小softmax计算中需要遍历词库所有词带来的计算成本。</p>
+<blockquote>
+<p><strong>备注：词向量的高效率实现将放在下一篇的文章中讲解，本文不具体描述。</strong></p>
+</blockquote>
+<p>这种建模方式有很多具体的实现，比如Word2vec，课程就Word2vec的两种不同实现方式，做了不同的讲解，分为CBOW和skip-gram</p>
+<p><strong>CBOW（Continuous Bag of Words）</strong></p>
+<p>关于CBOW，之前在lecture1和lecture2中都有相同的名词出现，但是他们的目标却不同，在language model中，使用CBOW是为了预测句子的概率估计。但是他们的基本思想是一样的，即输入的是上下文的词，而预测的目标是target word。Word2Vec中的CBOW，建立在context window上，即使用target词周围的词来预测target。具体架构如图：</p>
+<p><img src="/2019/04/26/CMU-NLP公开课笔记（三）/v2-ba08446a1ad40b7580342c9793df40f7_b.jpg" alt="img"></p>
+<p>其中该模型的loss函数需要根据不同的实现方法来制定，比如使用negative sampling与使用hierarchical softmax的loss函数就不同，具体的下一篇文章会具体描述。</p>
+<p>Skip-gram</p>
+<p>Skip-gram与CBOW类似，在之前的lecture中也讲解过了。基本思想是输入target词，预测其window中周围的context词。具体架构如图：</p>
+<p><img src="/2019/04/26/CMU-NLP公开课笔记（三）/v2-0fc450b6b6bf9f218dfc7bc7a1dcfa54_b.jpg" alt="img"></p>
+<p>需要注意的是，最后的loss是由每个输出词对应的单个loss相加得到。</p>
+<p><strong>Choose Context</strong></p>
+<p>关于词向量的训练，选择不同的context window，训练出来的词向量的侧重点会不同。通常意义上来说，有以下三种构建window的情况。</p>
+<ul>
+<li>小窗口：窗口比较小的时候，训练出来的词向量偏重于建立句法语法结构。举例：不同种类的狗的名词会归为一类。</li>
+<li>大窗口：窗口比较大的时候，训练出来的词向量偏重于建立语义、主题关联的信息。举例：”dog”,”bark”(犬吠),”leash”(栓狗的皮带)这类词会归为一类。</li>
+<li>基于语法的窗口：基于句法依存树来构建上下文，可以让训练的出来的词向量偏重于词在句子中的的角色和作用，比如动作类的所有动词或者一件物品的属性类词都会归为一类。</li>
+</ul>
+<p>具体选择什么样的context，其实是可以作为一个超参数来训练的，且与下游的NLP任务相关因此没有固定的原则，需要根据不同的任务来选择调整。</p>
+<h2 id="评估词向量"><a href="#评估词向量" class="headerlink" title="评估词向量"></a>评估词向量</h2><p>评估词向量的好坏一般有两个大方向：</p>
+<ul>
+<li>intrinsic：直接根据词向量本身的内部特征进行评估</li>
+<li>extrinsic：根据下游的NLP任务的好坏来进行评估</li>
+</ul>
+<p>评估的维度也有两种不同方向：</p>
+<ul>
+<li>qualitative：定性评估，根据一些非统计型方法评估词向量的特性。</li>
+<li>quantitative：定量评估，通过计算一些统计量，判断词向量的好坏。</li>
+</ul>
+<p>下面介绍几种常见的评估方式</p>
+<p><strong>可视化词向量</strong></p>
+<p>这种方式应该属于intrinsic和qualitative，它主要是用一些降维的方式，将词向量的维度降至3维或者2维，方便我们在3d或者2d维度上画出词向量的大致分布情况。降维的方法在之前的文章中有介绍，如PCA，tsne等，其中前一种是线性降维，后一种是非线性降维。一般来说，由于现实数据的分布很少是纯线性的，因此tsne降维损失的信息较PCA来的小，随之带来的降维计算成本也较高，各有取舍。下图为PCA的降维方式：</p>
+<p><img src="/2019/04/26/CMU-NLP公开课笔记（三）/v2-f56c73345b96b57b39ed90297b0a56cf_b.jpg" alt="img"></p>
+<p>来自Mikolov的论文</p>
+<p>上图中，较好地构建了国家-首都的词关系。</p>
+<p><strong>Cosine Similarity</strong></p>
+<p>通过计算两个词向量的相似度，并与现实语言中两个词的真实相似程度（人工判断）比较，来评估。这种方法属于intrinsic和qualitative。</p>
+<p>如何衡量两个词向量的相似度呢？有很多方法，最经典的莫过于是余弦相似度了：</p>
+<script type="math/tex; mode=display">
+cos(\vec w,\vec c)=\frac{\sum_{i}^{N}{w_i*c_i}}{\sqrt{\sum_{i}^{N}w_i^2}\sqrt{\sum_{i}^{N}c_i^2}}\\</script><p>两个词向量间夹角越小，表示关系越接近。</p>
+<p><strong>Analogy</strong></p>
+<p>通过词向量的向量运算与现实语言中这些词的关系推理，来评估。这个在本文开头的时候已经介绍过了。类似于构建“a is to b,as c is to d”的推理关系。</p>
+<p><strong>聚类</strong></p>
+<p>即根据词向量，构建聚类的特征矩阵，将词向量进行聚类，然后用聚类里面的纯度或者其他指标来评估。这个应该属于intrinsic和quantitative。</p>
+<p><strong>人工规则</strong></p>
+<p>主要是使用一些常识，包括语法、句法（比如总有些名词是一些动词的常用搭配，have food等）去评估。这个属于intrinsic和qualitative。</p>
+<p><strong>Extrinsic method</strong></p>
+<p>下面介绍一些Extrinsic method，主要是将词向量用在其他NLP任务中。根据任务的好坏来判断词向量的好坏。主要有以下几种方法：</p>
+<ol>
+<li>直接用训练好的词向量初始化模型的参数，然后使用正常流程训练。</li>
+<li>将训练好的词向量与NLP任务中自己训练的词向量做concat拼接。</li>
+</ol>
+<p>上面两种方法各有利弊，方法1参数个数不变，但是由于预训练词向量的样本空间与NLP任务的样本空间是不同的，会导致词向量的整体方向发生改变；而方法2的缺点在于会增加一倍的参数量。</p>
+<h2 id="如何选择词向量"><a href="#如何选择词向量" class="headerlink" title="如何选择词向量"></a>如何选择词向量</h2><p>这个议题其实没有什么内容，因为不同的任务所侧重的地方不同，使用的词向量也不同，并没有固定的规则或准则。因此全靠经验！可以说这是深度学习的通病，很多都是在实践中得到好效果，但是无法总结其内在原因规律。</p>
+<h2 id="预训练词向量适用场景"><a href="#预训练词向量适用场景" class="headerlink" title="预训练词向量适用场景"></a>预训练词向量适用场景</h2><ol>
+<li>当NLP任务中的语料数据不充足，无法去训练一个好的词向量。</li>
+<li>在标注问题、句法分析问题、文本分类中，使用预训练词向量通常会有效果提升。</li>
+<li>在机器翻译任务中，使用预训练词向量可能会带来好效果，但是不明显。</li>
+<li>在构建语言模型是，使用预训练词向量基本没有效果提升。</li>
+</ol>
+<h2 id="词嵌入的缺陷"><a href="#词嵌入的缺陷" class="headerlink" title="词嵌入的缺陷"></a>词嵌入的缺陷</h2><p>词嵌入本身有很多缺陷：</p>
+<ul>
+<li>容易对很浅显的差异敏感（例如”dog”和”dogs”两个词的区别）</li>
+<li>对上下文词不敏感（例如”financial bank”,”bank of river”），多是对多义词的建模不好。</li>
+<li>和语言知识库中的关系知识会有偏差</li>
+<li>不可解释性，即向量的某个维度无法准确代表某个含义。</li>
+<li>会将一些偏见性信息如种族歧视、性别歧视等信息编入向量中</li>
+</ul>
+<h2 id="提升词嵌入"><a href="#提升词嵌入" class="headerlink" title="提升词嵌入"></a>提升词嵌入</h2><p>有一些方法能够帮助提升词嵌入的效果，解决上面的一些问题。</p>
+<p><strong>Sub-word Embedding</strong></p>
+<p>在英文当中，很多词都是由一系列的sub-word组成，如unfortunately,就是由’un’,’fortunate’,’ly’组成，且三个部分各自都带有语义或语法上的信息。我们可以利用这种结构，来帮助提升embedding的效果。</p>
+<p>1、使用递归神经网络（也叫RNN，不过是recursive neural networks），构造一个递归树结构，将sub-word的向量进行编码</p>
+<p>2、使用基于字符的RNN（使用LSTM或者GRU）来训练字符向量。这种方法也能捕捉到sub-word的信息。</p>
+<p>3、使用bag of character n-grams，即将一个词分成n-gram的字符串，比如”where”，可分为<wh,whe,her,ere,re...>，然后对这些字符串进行one-hot编码，并与整个词一起去NN中训练。这个方法在著名的fasttext中被使用，也能很好得捕捉subword的信息。</wh,whe,her,ere,re...></p>
+<p><strong>Multi-prototype Embeddings</strong></p>
+<p>这个方法主要是解决多义词问题的。它的基本思想是一个词如果包含多个不同含义，那么每种含义都应该有不同的embedding表示。因此根据不同含义，将词划分到不同的聚类中。</p>
+<p><strong>Multilingual Coordination of Embeddings</strong></p>
+<p>这个主要是解决多语种问题的。它基本思想就是要将不同语种的词向量做一个协调转换。使用了CCA方法，首先对两种语言分别训练各自的词向量；然后根据一个翻译字典，对来自不同语种的相同含义词学习一个转换矩阵。具体见论文：<a href="http://aclweb.org/anthology/E/E14/E14-1049.pdf" target="_blank" rel="noopener">http://aclweb.org/anthology/E/E14/E14-1049.pdf</a></p>
+<p><strong>Retrofitting of Embeddings to Existing Lexicons</strong></p>
+<p>这个主要是解决与语言知识库不匹配的问题。基本思想是使用诸如WordNet等知识库来更新我们的词向量，使其在一定程度上与语言知识库中的词关系保持一致。</p>
+<p><strong>Sparsing Embeddings</strong></p>
+<p>这个主要是解决词向量不可解释的问题。主要思想是在训练时，添加一些约束，如让大多数的维度值都为0，只保留一部分的非零维度特征。这样做的好处是能让非零的维度特征更加突出，可以产生可解释的意义。</p>
+<p><strong>Debiasing Word Embeddings</strong></p>
+<p>这个主要是解决词向量会带有偏见的问题。典型就是性别偏见。比如这个常见的推理关系：”man is to computer programmer,as woman is to homemaker”它的主要思想就是识别所有带偏见的词对，然后中和这个偏见，例如上面的例子中将”homemake”改为”doctor”类似的词。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本篇只是从一个整体的角度讲解了词嵌入的知识点。下一篇文章的内容在CMU NLP2017课程中有，但是在2018年似乎找不到了，但是个人认为是很重要的内容，即Word2Vec的具体训练的一些实现方法与要点，包括但不限于”negative sampling”,”hierarchical softmax”等内容，敬请期待。</p>
+
+        </div>
+        <footer class="article-footer">
+            
+
+
+
+    <a data-url="http://yoursite.com/2019/04/26/CMU-NLP公开课笔记（三）/" data-id="cjuy3cy6v002u64utknm1d6tl" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+        </footer>
+    </div>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "author": {
+            "@type": "Person",
+            "name": "qiufengyuyi"
+        },
+        "headline": "CMU NLP公开课笔记（三）",
+        "image": "http://yoursite.com/2019/04/26/CMU-NLP公开课笔记（三）/v2-572792e5907fcb51f77dfba121f18d88_b.jpg",
+        "keywords": "NLP Word Embedding",
+        "genre": "学习笔记",
+        "datePublished": "2019-04-26",
+        "dateCreated": "2019-04-26",
+        "dateModified": "2019-04-26",
+        "url": "http://yoursite.com/2019/04/26/CMU-NLP公开课笔记（三）/",
+        "description": "Lecture3本次课程主要聚焦的课题是对词的建模。对于词这个语言元素来说，我们需要了解词的哪些特征呢？课程列出了几点需求：
+
+词是否属于语言中的相同部分，简单说就是词性是否相同，比如是否都是动词、是否都是名词等。
+词是否是同一个形态，比如是否是现在进行时，还是过去式，或者是将来时等。
+词的表达含义是否相同，简单说就是分辨同义词或者近义词。
+词是否具有语义上的关联，简单说就是词与词之间是否有一些语"
+        "wordCount": 148
+    }
+</script>
+
+</article>
+
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
+
+
+                        </div>
+                    </section>
+                    <aside id="sidebar">
+    <a class="sidebar-toggle" title="Expand Sidebar"><i class="toggle icon"></i></a>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2019/04/26/CMU-NLP课程笔记番外篇—Word2Vec高效率实现/" id="article-nav-newer" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">下一篇</strong>
+        <p class="article-nav-title">
+        
+            CMU NLP课程笔记番外篇—Word2Vec高效率实现
+        
+        </p>
+        <i class="icon fa fa-chevron-right" id="icon-chevron-right"></i>
+    </a>
+    
+    
+        <a href="/2019/04/24/CMU-NLP课程笔记-二/" id="article-nav-older" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">上一篇</strong>
+        <p class="article-nav-title">CMU NLP课程笔记(二)</p>
+        <i class="icon fa fa-chevron-left" id="icon-chevron-left"></i>
+        </a>
+    
+</nav>
+
+    
+    <div class="widgets-container">
+        
+            
+                
+
+            
+                
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/26/CMU-NLP课程笔记番外篇—Word2Vec高效率实现/" class="title">CMU NLP课程笔记番外篇—Word2Vec高效率实现</a></p>
+                            <p class="item-date"><time datetime="2019-04-26T12:28:03.000Z" itemprop="datePublished">2019-04-26</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/26/CMU-NLP公开课笔记（三）/" class="title">CMU NLP公开课笔记（三）</a></p>
+                            <p class="item-date"><time datetime="2019-04-26T12:08:30.000Z" itemprop="datePublished">2019-04-26</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/24/CMU-NLP课程笔记-二/" class="title">CMU NLP课程笔记(二)</a></p>
+                            <p class="item-date"><time datetime="2019-04-24T13:16:37.000Z" itemprop="datePublished">2019-04-24</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/24/CMU-NLP课程笔记（一）/" class="title">CMU NLP课程笔记（一）</a></p>
+                            <p class="item-date"><time datetime="2019-04-24T13:07:54.000Z" itemprop="datePublished">2019-04-24</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/14/PCA-主成分分析/" class="title">PCA-主成分分析</a></p>
+                            <p class="item-date"><time datetime="2019-04-14T08:52:39.000Z" itemprop="datePublished">2019-04-14</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">18</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EM/">EM</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HMM/">HMM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Language-Model/">Language Model</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markov-assumption/">Markov assumption</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NLP/">NLP</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PCA/">PCA</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SMO/">SMO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVD/">SVD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVM/">SVM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Word-Embedding/">Word Embedding</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Word2vec/">Word2vec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/convex-optimization/">convex optimization</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kernel-method/">kernel method</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linear-algebra/">linear algebra</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/soft-margin/">soft margin</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/viterbi/">viterbi</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-float">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/EM/" style="font-size: 13.33px;">EM</a> <a href="/tags/HMM/" style="font-size: 20px;">HMM</a> <a href="/tags/Language-Model/" style="font-size: 10px;">Language Model</a> <a href="/tags/Markov-assumption/" style="font-size: 10px;">Markov assumption</a> <a href="/tags/NLP/" style="font-size: 20px;">NLP</a> <a href="/tags/PCA/" style="font-size: 16.67px;">PCA</a> <a href="/tags/RNN/" style="font-size: 16.67px;">RNN</a> <a href="/tags/SMO/" style="font-size: 10px;">SMO</a> <a href="/tags/SVD/" style="font-size: 10px;">SVD</a> <a href="/tags/SVM/" style="font-size: 20px;">SVM</a> <a href="/tags/Word-Embedding/" style="font-size: 10px;">Word Embedding</a> <a href="/tags/Word2vec/" style="font-size: 10px;">Word2vec</a> <a href="/tags/attention/" style="font-size: 16.67px;">attention</a> <a href="/tags/convex-optimization/" style="font-size: 10px;">convex optimization</a> <a href="/tags/dynamic-programming/" style="font-size: 13.33px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/kernel-method/" style="font-size: 10px;">kernel method</a> <a href="/tags/linear-algebra/" style="font-size: 10px;">linear algebra</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 16.67px;">seq2seq</a> <a href="/tags/soft-margin/" style="font-size: 10px;">soft margin</a> <a href="/tags/tensorflow/" style="font-size: 13.33px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a> <a href="/tags/viterbi/" style="font-size: 10px;">viterbi</a>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.zhihu.com/people/qiu-zhen-yu-87">zhihu</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://github.com/qiufengyuyi">github</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+            
+        
+    </div>
+</aside>
+
+                </div>
+            </div>
+        </div>
+        <footer id="footer">
+    <div class="container">
+        <div class="container-inner">
+            <a id="back-to-top" href="javascript:;"><i class="icon fa fa-angle-up"></i></a>
+            <div class="credit">
+                <h1 class="logo-wrap">
+                    <a href="/" class="logo"></a>
+                </h1>
+                <p>&copy; 2019 qiufengyuyi</p>
+                <p>Powered by <a href="//hexo.io/" target="_blank">Hexo</a>. Theme by <a href="//github.com/ppoffice" target="_blank">PPOffice</a></p>
+            </div>
+            <div class="footer-plugins">
+              
+    
+
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+        
+    
+    <script>
+    var disqus_shortname = 'hexo-theme-hueman';
+    
+    
+    var disqus_url = 'http://yoursite.com/2019/04/26/CMU-NLP公开课笔记（三）/';
+    
+    (function() {
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+
+    
+
+    
+    <title>CMU NLP课程笔记番外篇—Word2Vec高效率实现 | qiufengyuyi&#39;s blog</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <meta name="keywords" content="NLP,Word2vec">
+    
+    <meta name="description" content="本文之所以叫番外篇，是因为在该课程”Why is word2vec So Fast?: Speed Tricks for Neural Nets”是由外来的专家顾问来讲课，视频质量个人感觉不是太好，一个是没有ppt切换，另一个是讲师说话听得不是太清楚，很难从语言上听懂。因此只能根据其官网上的ppt来了解这个课程的内容。本次课程主要围绕的是在工程实现Word2Vec词向量时，使用的一些高效率算法。下">
+<meta name="keywords" content="NLP,Word2vec">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMU NLP课程笔记番外篇—Word2Vec高效率实现">
+<meta property="og:url" content="http://yoursite.com/2019/04/26/CMU-NLP课程笔记番外篇—Word2Vec高效率实现/index.html">
+<meta property="og:site_name" content="qiufengyuyi&#39;s blog">
+<meta property="og:description" content="本文之所以叫番外篇，是因为在该课程”Why is word2vec So Fast?: Speed Tricks for Neural Nets”是由外来的专家顾问来讲课，视频质量个人感觉不是太好，一个是没有ppt切换，另一个是讲师说话听得不是太清楚，很难从语言上听懂。因此只能根据其官网上的ppt来了解这个课程的内容。本次课程主要围绕的是在工程实现Word2Vec词向量时，使用的一些高效率算法。下">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/04/26/CMU-NLP课程笔记番外篇—Word2Vec高效率实现/v2-b2105a638826373100fea5edb82e2cfb_b.jpg">
+<meta property="og:updated_time" content="2019-04-26T13:07:42.847Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CMU NLP课程笔记番外篇—Word2Vec高效率实现">
+<meta name="twitter:description" content="本文之所以叫番外篇，是因为在该课程”Why is word2vec So Fast?: Speed Tricks for Neural Nets”是由外来的专家顾问来讲课，视频质量个人感觉不是太好，一个是没有ppt切换，另一个是讲师说话听得不是太清楚，很难从语言上听懂。因此只能根据其官网上的ppt来了解这个课程的内容。本次课程主要围绕的是在工程实现Word2Vec词向量时，使用的一些高效率算法。下">
+<meta name="twitter:image" content="http://yoursite.com/2019/04/26/CMU-NLP课程笔记番外篇—Word2Vec高效率实现/v2-b2105a638826373100fea5edb82e2cfb_b.jpg">
+    
+
+    
+
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/titillium-web/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="wrap">
+        <header id="header">
+    <div id="header-outer" class="outer">
+        <div class="container">
+            <div class="container-inner">
+                <div id="header-title">
+                    <h1 class="logo-wrap">
+                        <a href="/" class="logo"></a>
+                    </h1>
+                    
+                        <h2 class="subtitle-wrap">
+                            <p class="subtitle">backlog of a man&#39;s road to AI learning</p>
+                        </h2>
+                    
+                </div>
+                <div id="header-inner" class="nav-container">
+                    <a id="main-nav-toggle" class="nav-icon fa fa-bars"></a>
+                    <div class="nav-container-inner">
+                        <ul id="main-nav">
+                            
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/">主页</a>
+                                </li>
+                            
+                                        <ul class="main-nav-list"><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/基础算法/">基础算法</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/学习笔记/">学习笔记</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/工程经验/">工程经验</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/比赛总结/">比赛总结</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/论文总结/">论文总结</a></li></ul>
+                                    
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/about/index.html">关于</a>
+                                </li>
+                            
+                        </ul>
+                        <nav id="sub-nav">
+                            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+        <div class="container">
+            <div class="main-body container-inner">
+                <div class="main-body-inner">
+                    <section id="main">
+                        <div class="main-body-header">
+    <h1 class="header">
+    
+    <a class="page-title-link" href="/categories/学习笔记/">学习笔记</a>
+    </h1>
+</div>
+
+                        <div class="main-body-content">
+                            <article id="post-CMU-NLP课程笔记番外篇—Word2Vec高效率实现" class="article article-single article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+        CMU NLP课程笔记番外篇—Word2Vec高效率实现
+        </h1>
+    
+
+            </header>
+        
+        
+            <div class="article-meta">
+                
+    <div class="article-date">
+        <a href="/2019/04/26/CMU-NLP课程笔记番外篇—Word2Vec高效率实现/" class="article-date">
+            <time datetime="2019-04-26T12:28:03.000Z" itemprop="datePublished">2019-04-26</time>
+        </a>
+    </div>
+
+		
+
+                
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/NLP/">NLP</a>, <a class="tag-link" href="/tags/Word2vec/">Word2vec</a>
+    </div>
+
+            </div>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+            <p>本文之所以叫番外篇，是因为在该课程”Why is word2vec So Fast?: Speed Tricks for Neural Nets”是由外来的专家顾问来讲课，视频质量个人感觉不是太好，一个是没有ppt切换，另一个是讲师说话听得不是太清楚，很难从语言上听懂。因此只能根据其官网上的ppt来了解这个课程的内容。本次课程主要围绕的是在工程实现Word2Vec词向量时，使用的一些高效率算法。下面会主要就几个算法详细讲解，部分算法会提到，但是不会细讲，感兴趣的同学可以下载对应的论文研究。</p>
+<p>之前一篇文章介绍了Word2Vec的两种实现方式，一个是skip-gram，另一个是cbow，下面以CBOW为例来讲解。</p>
+<h2 id="Word2Vec局限"><a href="#Word2Vec局限" class="headerlink" title="Word2Vec局限"></a>Word2Vec局限</h2><p><em>分割线，以下为回顾知识点</em>—————————————————————————————————</p>
+<p>首先我们知道，Word2Vec的训练其实就是一个简单的神经网络，输入是我们的上下文词，输出的是要预测的目标词。这里，在最后输出层使用的是softmax函数，我们的目标是求概率$P_\theta(w|c) $极大值时的参数 $\theta$ ,其中w为我们的目标词，c表示我们的上下文词，这个概率的求解式如下：</p>
+<script type="math/tex; mode=display">
+P_\theta(w|c)=\frac{e^{s_\theta(w,c)}}{\sum_{w'}{e^{s_\theta(w',c)}}}\\</script><p>其中s()函数为softmax层之前得到的scores具体的参考我的前一篇文章。此外定义定义 $Z_\theta(c)=\sum_{w’}{e^{s_\theta(w’,c)}}$</p>
+<p><em>分割线结束</em>—————————————————————————————————</p>
+<p>使用神经网络来训练词向量有三大局限：</p>
+<ol>
+<li>softmax概率求解式的分母计算量很大，原因在于对于每个target词来说，计算分母都需要遍历词库的所有词。实际情况中，词库的规模都是很大的，对训练时间有很大影响。解决办法是使用一些估计方法，或使用GPU来训练。</li>
+<li>GPU不擅于处理多次的大操作，如上述的分母计算。解决办法是使用一些优化策略或者用batch方法输入数据训练。</li>
+<li>神经网络的神经元数很多，输入的训练数据也很多，会影响训练性能。解决办法是使用并行化处理。</li>
+</ol>
+<p>下面会详细对三个方面有一个讲解。</p>
+<h2 id="基于采样的Softmax估计"><a href="#基于采样的Softmax估计" class="headerlink" title="基于采样的Softmax估计"></a>基于采样的Softmax估计</h2><p>由于主要的计算量集中在 $Z_\theta(c) $的遍历词库上，那么我们就从这个地方入手。使用采样的方法从词库中选择一些词来计算，而不是计算所有词。采样的方法有很多，下面分别介绍几种采样方法，其中详细介绍Noise Contrastive Estimation和Negative Sampling。</p>
+<p><strong>Importance Sampling</strong></p>
+<p>基本思想：从一个任意选择的概率分布集Q（均匀分布/一元词分布）中进行采样，对每个采样样本使用权重系数来逼近原来的$Z_\theta(c)$，此时：</p>
+<script type="math/tex; mode=display">
+Z_\theta(c)\approx\frac{1}{N}\sum_{w_i’\sim Q(.|c)}{\frac{e^s(w_i'|c)}{Q(w_i'|c)}}\\</script><p>该采样方法使用了Monte Carlo方法来估计概率期望。这种采样方法当N比较小的时候，会对某些词具有偏向性。</p>
+<p><strong>Noise Contrastive Estimation</strong></p>
+<p><em>分割线，以下为延伸知识点</em>—————————————————————————————————</p>
+<p>该方法简称NCE，是importance Sampling的改良升级方法。基本思想是将最终问题转换为一个二分类代理问题，将target词和非target词做一个二分类任务标签。通常我们将非target词叫做noise examples，即噪声数据。而这些noise样本会服从某个noise分布Q(w),这个Q(w)需要我们人工引入。相对的，我们的target词也是来自于一个分布，这个分布我们通常叫做emprical分布，即经验分布 $\tilde{p}(w|c),\tilde{p}(c)$ 。我们的目的就是要学习参数 $\theta $,使得我们计算得到的 $P_\theta(w|c)$ 无限逼近经验分布 $\tilde{p}(w|c)$ 。</p>
+<p>下面来看看怎么得到新的二分类问题的训练集：</p>
+<ol>
+<li>从经验分布即原数据集 $\tilde{p}(c) $中采样得到context词c</li>
+<li>从经验分布即原数据集 $\tilde{p}(w|c) $中采样一个正确的样本w，即target词，标签记为d=1</li>
+<li>从noise分布中采样K个noise样本，即非target词，标签记为d=0</li>
+</ol>
+<p>此时，给定输入的context词c，(d,w)的联合概率为：</p>
+<script type="math/tex; mode=display">
+\begin{equation} p(d,w|c) = \left\{ \begin{array}{lcl} {\frac{K}{1+K}*Q(w)} &\text{if} &d=0 \\ {\frac{1}{1+K}*\tilde{p}(w|c)} &\text{if} &d=1 \end{array} \right. \end {equation}\\</script><p>利用条件概率公式，可以将上述概率式子转换为d给定w和c的条件概率公式：</p>
+<script type="math/tex; mode=display">
+p(d=0|w,c)=\frac{p(d=0,w|c)}{p(w|c)}=\frac{\frac{K}{1+K}*Q(w)}{\frac{1}{1+K}*\tilde{p}(w|c)+\frac{K}{1+K}*Q(w)}=\frac{K*Q(w)}{\tilde{p}(w|c)+K*Q(w)}</script><script type="math/tex; mode=display">
+p(d=1|w,c)=\frac{p(d=1,w|c)}{p(w|c)}=\frac{\frac{1}{1+K}*\tilde{p}(w|c)}{\frac{1}{1+K}*\tilde{p}(w|c)+\frac{K}{1+K}*Q(w)}=\frac{\tilde{p}(w|c)}{\tilde{p}(w|c)+K*Q(w)}</script><p>NCE通过学习 $P_\theta(w|c) $来逼近替代 $\tilde{p}(w|c)$ ，而学习的过程就是去最大化上述条件概率式的过程。</p>
+<p>说到这里，貌似NCE还没解决做除法的高成本问题，目前为止只是通过增加一些noise负样本将目标函数做了转化。因此NCE还引入了两个假设。</p>
+<ol>
+<li>将分母 $Z_\theta(c)​$ 近似估计为一个参数 $z_c​$ ,这样对任意一个样本context词c来说，都只引入了同一个参数。</li>
+<li>对于神经网络参数繁多的情况，当我们令 $z_c$ 固定为1时，能够有效地减小参数的数量，同时鼓励模型对输出进行自标准化。</li>
+</ol>
+<p>引入上述假设后，重写上面的两个条件概率公式，此时 $\tilde{p}(w|c)\approx\frac{e^{s_\theta(w,c)}}{\sum_{w’}{e^{s_\theta(w’,c)}}}=e^{s_\theta(w,c)}$ :</p>
+<script type="math/tex; mode=display">
+p(d=0|w,c)=\frac{K*Q(w)}{e^{s_\theta(w,c)}+K*Q(w)}\\</script><script type="math/tex; mode=display">
+p(d=1|w,c)=\frac{e^{s_\theta(w,c)}}{e^{s_\theta(w,c)}+K*Q(w)}\\</script><p>假设我们的原始语料样本为T，接下来就是将所有样本的条件概率结合起来，同时应用log函数，防止数据下溢，得到我们的目标优化函数：</p>
+<script type="math/tex; mode=display">
+L_{nce_K}=\sum_{(w,c \in T)}{(logp(d=1|w,c)+K*E_{w' \sim Q}logp(d=0|w,c))}\\</script><p>上述式子中加法的前一项很简单没问题，单手后一项求解期望的计算量还是比较大的，需要在给定context词c条件下，在词库V中引入的noise分布中采样生成一个负样本，并计算概率的期望值，对整个词库还是有一个次遍历。因此最后一步，NCE使用了Monte Carlo估计来替代这个概率期望。</p>
+<blockquote>
+<p><strong>备注：（Monte Carlo估计的知识内容在后续的文章会有专门讲解，这里不引申了。）</strong></p>
+</blockquote>
+<p>最后得到的目标函数如下：</p>
+<script type="math/tex; mode=display">
+\begin{equation}\begin{split} \begin{aligned}L_{nce_K}^{MC}&=\sum_{(w,c \in T)}{(logp(d=1|w,c)+K*\sum_{i=1,w' \sim Q}^{K}{\frac{1}{K}logp(d=0|w,c)})}\\&=\sum_{(w,c \in T)}{(logp(d=1|w,c)+\sum_{i=1,w' \sim Q}^{K}{logp(d=0|w,c)})}\end{aligned}\end{split} \end{equation}\\</script><p>这样就不需要遍历整个词库了，只需要从Q分布的部分词集计算就可以了。</p>
+<p><em>分割线，延伸知识点结束</em>—————————————————————————————————</p>
+<p><strong>Negative Sampling</strong></p>
+<p>上面的NCE可能还是有些复杂，因此有的学者又在此基础上做了简化，Mikolov在2012年的paper上介绍了在word2vec中使用的采样方法——Negative Sampling，又叫负采样。</p>
+<p>基本思想为：每采样一个target词，就采样k个非target词（即负样本）。可以看到他跟NCE的基本思想是类似的，但是具体实现的时候又有不同。</p>
+<p><em>分割线，以下为延伸知识点</em>—————————————————————————————————</p>
+<p>不同于NCE，负采样在定义p(d|w,c)时采取了更加简单的实现：</p>
+<script type="math/tex; mode=display">
+p(d=0|w,c)=\frac{1}{e^{s_\theta(w,c)}+1}\\</script><script type="math/tex; mode=display">
+p(d=1|w,c)=\frac{e^{s_\theta(w,c)}}{e^{s_\theta(w,c)}+1}\\</script><p>其实它与NCE的概率式子是有联系的，即在NCE中，令K=|V|,且Q分布是一个均匀分布，那么就可以得到负采样的式子。最后列一下负采样的目标函数：</p>
+<script type="math/tex; mode=display">
+\begin{equation}\begin{split} \begin{aligned}L_{neg_K}^{MC}&=\sum_{(w,c \in T)}{(logp(d=1|w,c)+K*\sum_{i=1,w' \sim Q}^{K}{\frac{1}{K}logp(d=0|w,c)})}\\&=\sum_{(w,c \in T)}{(log\sigma(s_\theta(w,c))+\sum_{i=1,w' \sim Q}^{K}{log\sigma(-s_\theta(w,c))})}\end{aligned}\end{split} \end{equation}\\</script><p>这个式子就是在很多教程中出现的式子。</p>
+<p>最后提一点，在具体实现的word2vec代码中，有很多提升模型的tricks，比如Q的分布选定为 $\frac{count(w)^{0.75}}{\sum_{w’ \in T}{count(w’)^{0.75}}}$ ,还有对一些高频无用词如”的，是。。。”设计一个丢弃概率，当采样得到的词的概率达到丢弃概率则丢弃，重新采。还有如何具体实施采样的等等，这里就不详细引申了，具体的可以参考很多博客，都写得很详细了。</p>
+<p><em>分割线，延伸知识点结束</em>——————————————————————————————————-</p>
+<h2 id="结构化的softmax估计"><a href="#结构化的softmax估计" class="headerlink" title="结构化的softmax估计"></a>结构化的softmax估计</h2><p>除了通过采样方法来减小计算量，还可以通过改变softmax的计算架构，来达到高效计算的目的。常用的有：</p>
+<ul>
+<li>Class-based softmax</li>
+<li>Hierarchical softmax</li>
+<li>Binary codes</li>
+</ul>
+<p>着重介绍Hierarchical softmax。</p>
+<p><strong>Class-based Softmax</strong></p>
+<p>基本思想是：为每个词分配一个类标签，然后在NN的输出层后衔接的是对预测词类别的任务，然后根据得到的词的类别，在NN的输出层后衔接预测词的任务：</p>
+<p><img src="/2019/04/26/CMU-NLP课程笔记番外篇—Word2Vec高效率实现/v2-b2105a638826373100fea5edb82e2cfb_b.jpg" alt="img"></p>
+<p><strong>Hierarchical softmax</strong></p>
+<p>这个方法是比较经典且常用的一种方法。基本思想是在NN输出层创建一个huffman二叉树结构，将不同的词进行编码，将问题转化为在某个树分支上的二分类问题（左还是右）。</p>
+<p><em>分割线，以下为延伸知识点</em>—————————————————————————————————</p>
+<p>该二叉树所有叶子节点表示一个词，一个词代表了从根节点到叶子结点的一条路径。除了根节点以外，树种的每个节点都对应了一个取值为0或1的Huffman编码，对于二分类任务，相当于是标签为1是正类，标签为0是负类。</p>
+<blockquote>
+<p>备注：当然也可以反过来，前后要对应。word2vec源码中采用的是将编码为1的节点定义为负类，0定义为正类，对应左分支是负类，右分支是正类。</p>
+</blockquote>
+<p>节点的左右子节点代表了分类的输出路径。</p>
+<p>那么如何构建这个二叉树呢？</p>
+<p>首先明确一点的是树的每个节点都有一个权重，以区分不同词的重要性。在这里，我们使用一个词的词频作为该词的权重，一般来说越是出现次数越多的词里根节点越近，反之则越远，且父节点的权重为两个子节点权重之和。构造树的过程如下：</p>
+<ol>
+<li>将词库中所有词按照词频由小到大排列。</li>
+<li>首先从词库中挑出前两个词作为叶子节点，同时生成其父节点，并删除词库中的对应的词。</li>
+<li>从已有的树结构中选择一个权重最大的节点a，并按照权重大小插入到词库中的相应位置。</li>
+<li>重复2和3直到词库中没有词为止。</li>
+</ol>
+<p>举例：假设当前词权重分别为：1,3,5,7,8,16</p>
+<p>构造树的过程如下：（画得比较丑，见谅）</p>
+<p><img src="/2019/04/26/CMU-NLP课程笔记番外篇—Word2Vec高效率实现/v2-3d042e5243aa52e35e06de996a51db1b_b.jpg" alt="img"></p>
+<p>那么如何根据这个二叉树去计算p(w|c)呢？</p>
+<p>可以对每个节点都引入一个参数 $\theta_i $,每次分支操作，实际上就是一个二分类任务，那么简单的二分类任务使用sigmoid函数就能够获取概率。即若分到正类，则概率 $p = \sigma (w^T \theta_i)$ ,若分到负类则概率 $p =1- \sigma (w^T \theta_i) $。而得到一个target词的方式就是从根节点开始，到对应词的叶子节点上的路径中，所有走过的分支概率的叠乘。</p>
+<blockquote>
+<p><strong>备注：这样构造树的原因在于频率越高的词，编码越短，搜索速度就越快。</strong></p>
+</blockquote>
+<p><em>分割线，延伸知识点结束</em>——————————————————————————————————-</p>
+<p><strong>Binary Code Prediction</strong></p>
+<p>这个方法使最近两年比较新的思想，与Hierarchical softmax的思想有些类似，都是通过某种结构将词进行编码，继而减小计算量。但是Binary Code Prediction（以下简称BCP）更加直接，在BCP中每个词都有唯一的bit array来表示，在一次prediction中就将所有词的bit array都预测出来。</p>
+<p>其中，输出层使用sigmoid函数对一个词的每一位bit预测其非1即0。</p>
+<p>如果产生不存在w对应的bit array怎么办？使用<unk>表示。</unk></p>
+<p>一般选用什么loss函数？利用每个bit位之间的距离差来表示，即： $loss(q,b)=\sum_{i=1}^{B}{(q_i-b_i)^2}\ $</p>
+<p>其中，q为NN经过sigmoid后的输出，b为实际的词的bit编码。</p>
+<p>BCP在实现时，有两种优良的改进：</p>
+<ol>
+<li>使用Hybrid Model，对于常见高频词采用传统的softmax输出层，而对于低频词使用BCP算法那，最后将两种输出的loss函数通过加权方式进行结合。</li>
+<li>使用error Correcting codes，主要是解决BCP容错性弱的问题。因为一个词用一个bit array表示，即使是一个bit预测错了，最后得到的结果可能是千差万别。因此加入了冗余策略，使用多个比特来代理一个bit的方式。分别在训练时encode和predict时decode。</li>
+</ol>
+<p>关于BCP算法的具体内容，详见论文：<a href="https://arxiv.org/pdf/1704.06918.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1704.06918.pdf</a> ，还是挺有趣的思路。这种方法对于GPU来说是非常友好的。</p>
+<h2 id="并行化计算"><a href="#并行化计算" class="headerlink" title="并行化计算"></a>并行化计算</h2><p>这一块内容重点在于工程方面的技术，从工程实现角度上，去解决训练效率问题。主要方法并行化计算。一般的并行化分为两大类，一类为模型并行化，另一类是数据并行类。模型并行化中，又分为operation内部的并行化和operation间的并行化。而数据并行化则主要是样本数据间的并行化。</p>
+<p><strong>operation内部的并行化</strong></p>
+<p>主要是将网络的某一层上的单个操作（如线性映射或非线性映射）划分到不同的进程或线程上去并行计算。如图：</p>
+<p><img src="/2019/04/26/CMU-NLP课程笔记番外篇—Word2Vec高效率实现/v2-65763ceaee8ed080b25292ed3b9807aa_b.jpg" alt="img"></p>
+<p>优点是充分利用GPU并行计算的优势。</p>
+<p>缺点是当operation比较小的时候，线程管理带来的消耗会抵消甚至影响并行计算带来的优势。</p>
+<p><strong>operation间的并行化</strong></p>
+<p>每个完整的operation操作指定给不同的线程或者GPU设备。如图：</p>
+<p><img src="/2019/04/26/CMU-NLP课程笔记番外篇—Word2Vec高效率实现/v2-cabf8ebafa528eccf5cd3895dbf83d34_b.jpg" alt="img"></p>
+<p>实现难点：线程间的工作流的依赖关系，以及数据内存在线程间的移动管理。</p>
+<p><strong>样本数据间的并行化</strong></p>
+<p>对不同样本分配不同观点线程或者设备来训练。如图：</p>
+<p><img src="/2019/04/26/CMU-NLP课程笔记番外篇—Word2Vec高效率实现/v2-8a3bce4798996d30290b9f2f1798a7c1_b.jpg" alt="img"></p>
+<p>难点：如何将所有样本的梯度更新实况进行结合；如何在不同的线程或设备上同步更新当前最新的参数。</p>
+<h2 id="GPU-vs-CPU"><a href="#GPU-vs-CPU" class="headerlink" title="GPU vs CPU"></a>GPU vs CPU</h2><p>后面简单讲了一下CPU和GPU训练模型的区别。个人感觉很有意思。</p>
+<p>CPU：像摩托车一样，起步很快，但是最大速度不是很高。</p>
+<p>GPU：像飞机一样，起步相对摩托车很慢，但是一旦起飞升空，它的速度比摩托车是快上好几个级别的。</p>
+<p>对于选择GPU和CPU的实践建议：</p>
+<ul>
+<li>需要快速建模出成果的时候，先使用CPU，可以在短时间内迭代多次训练。</li>
+<li>对于很多应用来说，CPU是比GPU好的，如数据量比较小，模型比较简单的NLP任务。</li>
+<li>对于如下应用来说，使用GPU是非常有帮助的：神经网络结构庞大复杂，做mini-batching的时候；需要做精确的优化问题的时候。</li>
+</ul>
+<h2 id="Speed-Trick"><a href="#Speed-Trick" class="headerlink" title="Speed Trick"></a>Speed Trick</h2><p>最后讲了一些实践中帮助提升训练速度的小技巧。</p>
+<ul>
+<li>能够对一个句子的操作，建议不要对句子中的每个词做相同操作。其实就是建议优先使用向量化操作，少用for操作。</li>
+<li>若能够将多个矩阵向量乘法操作合并到一个矩阵与矩阵相乘操作，尽量做这个操作。</li>
+<li>尽量减小CPU和GPU之间的数据内存的移动。</li>
+<li>尽量减小对大量数据的非必要操作。比如打印、遍历等。</li>
+<li>最后一个感觉没什么说的，就是建议使用多个GPU，前提是管理好设备之间的数据内存移动。</li>
+</ul>
+
+        </div>
+        <footer class="article-footer">
+            
+
+
+
+    <a data-url="http://yoursite.com/2019/04/26/CMU-NLP课程笔记番外篇—Word2Vec高效率实现/" data-id="cjuy3cy6y002x64uth3nqnsnd" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+        </footer>
+    </div>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "author": {
+            "@type": "Person",
+            "name": "qiufengyuyi"
+        },
+        "headline": "CMU NLP课程笔记番外篇—Word2Vec高效率实现",
+        "image": "http://yoursite.com/2019/04/26/CMU-NLP课程笔记番外篇—Word2Vec高效率实现/v2-b2105a638826373100fea5edb82e2cfb_b.jpg",
+        "keywords": "NLP Word2vec",
+        "genre": "学习笔记",
+        "datePublished": "2019-04-26",
+        "dateCreated": "2019-04-26",
+        "dateModified": "2019-04-26",
+        "url": "http://yoursite.com/2019/04/26/CMU-NLP课程笔记番外篇—Word2Vec高效率实现/",
+        "description": "本文之所以叫番外篇，是因为在该课程”Why is word2vec So Fast?: Speed Tricks for Neural Nets”是由外来的专家顾问来讲课，视频质量个人感觉不是太好，一个是没有ppt切换，另一个是讲师说话听得不是太清楚，很难从语言上听懂。因此只能根据其官网上的ppt来了解这个课程的内容。本次课程主要围绕的是在工程实现Word2Vec词向量时，使用的一些高效率算法。下"
+        "wordCount": 199
+    }
+</script>
+
+</article>
+
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
+
+
+                        </div>
+                    </section>
+                    <aside id="sidebar">
+    <a class="sidebar-toggle" title="Expand Sidebar"><i class="toggle icon"></i></a>
+    
+        
+<nav id="article-nav">
+    
+    
+        <a href="/2019/04/26/CMU-NLP公开课笔记（三）/" id="article-nav-older" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">上一篇</strong>
+        <p class="article-nav-title">CMU NLP公开课笔记（三）</p>
+        <i class="icon fa fa-chevron-left" id="icon-chevron-left"></i>
+        </a>
+    
+</nav>
+
+    
+    <div class="widgets-container">
+        
+            
+                
+
+            
+                
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/26/CMU-NLP课程笔记番外篇—Word2Vec高效率实现/" class="title">CMU NLP课程笔记番外篇—Word2Vec高效率实现</a></p>
+                            <p class="item-date"><time datetime="2019-04-26T12:28:03.000Z" itemprop="datePublished">2019-04-26</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/26/CMU-NLP公开课笔记（三）/" class="title">CMU NLP公开课笔记（三）</a></p>
+                            <p class="item-date"><time datetime="2019-04-26T12:08:30.000Z" itemprop="datePublished">2019-04-26</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/24/CMU-NLP课程笔记-二/" class="title">CMU NLP课程笔记(二)</a></p>
+                            <p class="item-date"><time datetime="2019-04-24T13:16:37.000Z" itemprop="datePublished">2019-04-24</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/24/CMU-NLP课程笔记（一）/" class="title">CMU NLP课程笔记（一）</a></p>
+                            <p class="item-date"><time datetime="2019-04-24T13:07:54.000Z" itemprop="datePublished">2019-04-24</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/14/PCA-主成分分析/" class="title">PCA-主成分分析</a></p>
+                            <p class="item-date"><time datetime="2019-04-14T08:52:39.000Z" itemprop="datePublished">2019-04-14</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">18</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EM/">EM</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HMM/">HMM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Language-Model/">Language Model</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markov-assumption/">Markov assumption</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NLP/">NLP</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PCA/">PCA</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SMO/">SMO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVD/">SVD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVM/">SVM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Word-Embedding/">Word Embedding</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Word2vec/">Word2vec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/convex-optimization/">convex optimization</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kernel-method/">kernel method</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linear-algebra/">linear algebra</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/soft-margin/">soft margin</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/viterbi/">viterbi</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-float">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/EM/" style="font-size: 13.33px;">EM</a> <a href="/tags/HMM/" style="font-size: 20px;">HMM</a> <a href="/tags/Language-Model/" style="font-size: 10px;">Language Model</a> <a href="/tags/Markov-assumption/" style="font-size: 10px;">Markov assumption</a> <a href="/tags/NLP/" style="font-size: 20px;">NLP</a> <a href="/tags/PCA/" style="font-size: 16.67px;">PCA</a> <a href="/tags/RNN/" style="font-size: 16.67px;">RNN</a> <a href="/tags/SMO/" style="font-size: 10px;">SMO</a> <a href="/tags/SVD/" style="font-size: 10px;">SVD</a> <a href="/tags/SVM/" style="font-size: 20px;">SVM</a> <a href="/tags/Word-Embedding/" style="font-size: 10px;">Word Embedding</a> <a href="/tags/Word2vec/" style="font-size: 10px;">Word2vec</a> <a href="/tags/attention/" style="font-size: 16.67px;">attention</a> <a href="/tags/convex-optimization/" style="font-size: 10px;">convex optimization</a> <a href="/tags/dynamic-programming/" style="font-size: 13.33px;">dynamic programming</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/kernel-method/" style="font-size: 10px;">kernel method</a> <a href="/tags/linear-algebra/" style="font-size: 10px;">linear algebra</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 16.67px;">seq2seq</a> <a href="/tags/soft-margin/" style="font-size: 10px;">soft margin</a> <a href="/tags/tensorflow/" style="font-size: 13.33px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a> <a href="/tags/viterbi/" style="font-size: 10px;">viterbi</a>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.zhihu.com/people/qiu-zhen-yu-87">zhihu</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://github.com/qiufengyuyi">github</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+            
+        
+    </div>
+</aside>
+
+                </div>
+            </div>
+        </div>
+        <footer id="footer">
+    <div class="container">
+        <div class="container-inner">
+            <a id="back-to-top" href="javascript:;"><i class="icon fa fa-angle-up"></i></a>
+            <div class="credit">
+                <h1 class="logo-wrap">
+                    <a href="/" class="logo"></a>
+                </h1>
+                <p>&copy; 2019 qiufengyuyi</p>
+                <p>Powered by <a href="//hexo.io/" target="_blank">Hexo</a>. Theme by <a href="//github.com/ppoffice" target="_blank">PPOffice</a></p>
+            </div>
+            <div class="footer-plugins">
+              
+    
+
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+        
+    
+    <script>
+    var disqus_shortname = 'hexo-theme-hueman';
+    
+    
+    var disqus_url = 'http://yoursite.com/2019/04/26/CMU-NLP课程笔记番外篇—Word2Vec高效率实现/';
+    
+    (function() {
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>
