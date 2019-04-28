@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+
+    
+
+    
+    <title>CMU NLP公开课笔记（四）——CNN on modeling sentence | qiufengyuyi&#39;s blog</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <meta name="keywords" content="NLP,CNN">
+    
+    <meta name="description" content="本节课主要是讲解如何使用卷积神经网络（CNN）应用于NLP任务中，具体主要是对文本中的句子对象进行建模。虽然CNN在图像领域应用较为广泛，但是在NLP中，也不乏很多CNN的应用实例，比如文本分类、句子相似度分析等，因此如果从事NLP方向，学习CNN也是很有必要的。 From n-gram to CNN假定当前有一个文本分类（主要是句子分类）任务，我们能够使用什么样的模型去完成这个任务呢？在之前的课">
+<meta name="keywords" content="NLP,CNN">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMU NLP公开课笔记（四）——CNN on modeling sentence">
+<meta property="og:url" content="http://yoursite.com/2019/04/28/CMU-NLP公开课笔记（四）——CNN-on-modeling-sentence/index.html">
+<meta property="og:site_name" content="qiufengyuyi&#39;s blog">
+<meta property="og:description" content="本节课主要是讲解如何使用卷积神经网络（CNN）应用于NLP任务中，具体主要是对文本中的句子对象进行建模。虽然CNN在图像领域应用较为广泛，但是在NLP中，也不乏很多CNN的应用实例，比如文本分类、句子相似度分析等，因此如果从事NLP方向，学习CNN也是很有必要的。 From n-gram to CNN假定当前有一个文本分类（主要是句子分类）任务，我们能够使用什么样的模型去完成这个任务呢？在之前的课">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/04/28/CMU-NLP公开课笔记（四）——CNN-on-modeling-sentence/v2-4c8984b4ddbe44ea1a9b5eb07068a4b1_b.jpg">
+<meta property="og:updated_time" content="2019-04-28T12:12:49.122Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CMU NLP公开课笔记（四）——CNN on modeling sentence">
+<meta name="twitter:description" content="本节课主要是讲解如何使用卷积神经网络（CNN）应用于NLP任务中，具体主要是对文本中的句子对象进行建模。虽然CNN在图像领域应用较为广泛，但是在NLP中，也不乏很多CNN的应用实例，比如文本分类、句子相似度分析等，因此如果从事NLP方向，学习CNN也是很有必要的。 From n-gram to CNN假定当前有一个文本分类（主要是句子分类）任务，我们能够使用什么样的模型去完成这个任务呢？在之前的课">
+<meta name="twitter:image" content="http://yoursite.com/2019/04/28/CMU-NLP公开课笔记（四）——CNN-on-modeling-sentence/v2-4c8984b4ddbe44ea1a9b5eb07068a4b1_b.jpg">
+    
+
+    
+
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/titillium-web/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="wrap">
+        <header id="header">
+    <div id="header-outer" class="outer">
+        <div class="container">
+            <div class="container-inner">
+                <div id="header-title">
+                    <h1 class="logo-wrap">
+                        <a href="/" class="logo"></a>
+                    </h1>
+                    
+                        <h2 class="subtitle-wrap">
+                            <p class="subtitle">backlog of a man&#39;s road to AI learning</p>
+                        </h2>
+                    
+                </div>
+                <div id="header-inner" class="nav-container">
+                    <a id="main-nav-toggle" class="nav-icon fa fa-bars"></a>
+                    <div class="nav-container-inner">
+                        <ul id="main-nav">
+                            
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/">主页</a>
+                                </li>
+                            
+                                        <ul class="main-nav-list"><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/基础算法/">基础算法</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/学习笔记/">学习笔记</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/工程经验/">工程经验</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/比赛总结/">比赛总结</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/论文总结/">论文总结</a></li></ul>
+                                    
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/about/index.html">关于</a>
+                                </li>
+                            
+                        </ul>
+                        <nav id="sub-nav">
+                            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+        <div class="container">
+            <div class="main-body container-inner">
+                <div class="main-body-inner">
+                    <section id="main">
+                        <div class="main-body-header">
+    <h1 class="header">
+    
+    <a class="page-title-link" href="/categories/学习笔记/">学习笔记</a>
+    </h1>
+</div>
+
+                        <div class="main-body-content">
+                            <article id="post-CMU-NLP公开课笔记（四）——CNN-on-modeling-sentence" class="article article-single article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+        CMU NLP公开课笔记（四）——CNN on modeling sentence
+        </h1>
+    
+
+            </header>
+        
+        
+            <div class="article-meta">
+                
+    <div class="article-date">
+        <a href="/2019/04/28/CMU-NLP公开课笔记（四）——CNN-on-modeling-sentence/" class="article-date">
+            <time datetime="2019-04-28T12:03:51.000Z" itemprop="datePublished">2019-04-28</time>
+        </a>
+    </div>
+
+		
+
+                
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/CNN/">CNN</a>, <a class="tag-link" href="/tags/NLP/">NLP</a>
+    </div>
+
+            </div>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+            <p>本节课主要是讲解如何使用卷积神经网络（CNN）应用于NLP任务中，具体主要是对文本中的句子对象进行建模。虽然CNN在图像领域应用较为广泛，但是在NLP中，也不乏很多CNN的应用实例，比如文本分类、句子相似度分析等，因此如果从事NLP方向，学习CNN也是很有必要的。</p>
+<h2 id="From-n-gram-to-CNN"><a href="#From-n-gram-to-CNN" class="headerlink" title="From n-gram to CNN"></a>From n-gram to CNN</h2><p>假定当前有一个文本分类（主要是句子分类）任务，我们能够使用什么样的模型去完成这个任务呢？在之前的课程中，讲解language model中，介绍过BOW（Bag of Words）、CBOW(Continuous Bag of Words)以及Deep CBOW，这些模型都可以用于该任务，最后得到的是该句子在每个类别上的分数。</p>
+<p>上面这些模型可以在某种程度上解决一下问题：</p>
+<ul>
+<li>可以学习到一些复杂的组合型特征，这个在第一讲的时候总结过，请回顾CMU NLP课程笔记（一）</li>
+<li>对一些能够左右句子的重要词语会重点关注，比如判断一个句子的情感，对一些词语比如“not”和“hate”这种极大可能影响句子情感分类的词语会给予较大关注。</li>
+</ul>
+<p>然而，也有一些问题是无法解决的：</p>
+<p>多元词组的语义或者语法信息无法捕捉到，这个是致命的，比如”not hate”得到的分数可能与简单的“not”和“hate”叠加的分数会完全相反，前者表示积极的，而后者可能是积极的，也可能是中立或者消极的。</p>
+<p>因此尝试使用<strong>Bag of n-grams</strong>来解决上述问题，具体使用如图：</p>
+<p><img src="/2019/04/28/CMU-NLP公开课笔记（四）——CNN-on-modeling-sentence/v2-4c8984b4ddbe44ea1a9b5eb07068a4b1_b.jpg" alt="img"></p>
+<p>主要是在原来的CBOW模型基础上，添加各种n-gram的词组向量信息，这样做能够捕捉到类似于”don’t love”这样的词组信息。</p>
+<p>然而，这种模型也有问题：</p>
+<ul>
+<li>参数过多，随着n-gram的n的增大，需要捕获的词组信息也是成倍增长的（应该是指数级增长）。</li>
+<li>近义词或近义词组之间不能共享应有的语义，毫无联系。</li>
+</ul>
+<p>基于上述前述，下面引入CNN来解决上面的问题。</p>
+<blockquote>
+<p>本文只对CNN应用于NLP做讲解，不对CNN本身的内容做详细的描述，如果对CNN比较感兴趣的，可以去参考斯坦福的公开课cs231,这门课可以说是很经典的了，推荐学习。</p>
+</blockquote>
+<h2 id="CNN应用于NLP的主要形式"><a href="#CNN应用于NLP的主要形式" class="headerlink" title="CNN应用于NLP的主要形式"></a>CNN应用于NLP的主要形式</h2><ol>
+<li><strong>上下文窗口建模</strong>：主要用于各种标记任务（如POS、分词等），可以在标记一个元素前捕捉该元素周围的上下文信息。</li>
+<li><strong>句子建模</strong>：这个是比较常见的应用，作用在于自动学习并捕捉n-gram信息，同时使用池化算法对句子的所有特征进行整合。</li>
+</ol>
+<h2 id="CNN模型讲解"><a href="#CNN模型讲解" class="headerlink" title="CNN模型讲解"></a>CNN模型讲解</h2><p>下面简单讲一下CNN的模型原理。首先最简单的CNN由两个操作组成：卷积+池化。因此讲解CNN也将从这两个模块操作入手。</p>
+<p><strong>卷积操作</strong></p>
+<p>关于卷积操作，我觉得可以两个方面去理解，第一个是基本思想；第二个是具体构建网络时的实践。</p>
+<p>1、卷积基本思想：对一个句子，滚动一个大小为K的窗口，然后定义一个非线性的函数，应用到每个window实例上。这种非线性的函数通常称为filter，filter中的参数是需要在神经网络中进行学习的。在图像中，通常的卷积filter的操作时这样的：</p>
+<p><img src="/2019/04/28/CMU-NLP公开课笔记（四）——CNN-on-modeling-sentence/v2-6428cf505ac1e9e1cf462e1ec8fe9a68_b.gif" alt="img"></p>
+<p>上图是一个2D卷积，filter尺寸为3*3，每次位移距离为1，位移方向有多个（向右和向左），这个filter的作用就是对每次窗口中的9个像素点，分别于对应位置的filter中的参数值相乘，然后求和，得到这个窗口对应的一个标量值。</p>
+<p>而我们在对句子进行操作时，也是类似于上面的操作，但是有些许不同：我们应用的是1d卷积，即我们filter和窗口的位移方向只有一个，即沿着句子的词顺序水平方向依次向后。而每个词向量的维度假设为d，则被完整包裹在filter的垂直方向的维度：</p>
+<p><img src="/2019/04/28/CMU-NLP公开课笔记（四）——CNN-on-modeling-sentence/v2-d7c0192998a223ba4aaa07b47730fca9_b.jpg" alt="img"></p>
+<p>如图，不同颜色的窗口表示不同时刻滚动的filter，filter的size为3*d。其实这也算是2d卷积的一种特例，其垂直方向是固定不变的，只在水平方向上位移。</p>
+<p>备注：同一个size的filter可以同时定义多个，但是参数不同，用于学习不同角度的n-gram信息；同时也可定义size的filter，使得我们可以同时捕捉多个不同n-gram组合信息。</p>
+<p>2、网络构建实践：从网络构建角度上看，一个标准的2d卷积函数应当为如下定义：</p>
+<p>输入：3D的tensor</p>
+<blockquote>
+<p>备注：tensor叫张量，一维的数据可以用向量表示，二维的数据可以用矩阵表示，那么大于二维的该怎么表示呢？于是引入了张量这个概念，在深度学习中，数据存在大量高维度的特征，因此张量的使用是很普遍的。</p>
+</blockquote>
+<p>1st Dim:句子中的词，2nd Dim:一个词的向量表示维度，3rd Dim:对应于channel</p>
+<blockquote>
+<p>在图像领域中，存在channel这个概念，表示RGB图中的不同颜色。那么NLP中，似乎没有这个概念，但是在很多论文中都用到了这个channel，比如使用CNN做文本分类时，使用预训练的词向量时，可以分为两个channel，一个是不改变词向量（静态），另一个是更新词向量（动态），两个channel同时学习。如果不同channel,可将该维度置为1.</p>
+</blockquote>
+<p>filter参数：4D的tensor，实际上就是神经网络中的权重参数，需要我们在使用前初始化。它的前三个维度对应input的三个维度，最后一个维度为输出的channels。</p>
+<p>设当前句子有如下词向量构成： $[\vec w_1,\vec w_2,…,\vec w_n]$ ,词向量的维度为d。卷积filter的size为K，filter的权重参数为 $\vec u \in \Re^{K*d}$ 。假设当前移动窗口移动到了第i个词上，此时将窗口内的所有词先做一个拼接，得到： $x_i=concat([w_i,w_{i+1},…,w_{i+k-1}])$ 。然后将其与filter权重参数做点乘，并做一个非线性的函数转换，得到 $p_i=nonlinearfunc(x_i)$ ,这个就是该窗口所在的n-gram对应卷积结果。</p>
+<p><strong>Padding/Striding</strong></p>
+<p>在对NLP任务中的句子做卷积操作时，需要额外考虑两个问题。</p>
+<p>1、padding，即是否在一个句子的句首或者句尾增加一些占位符，在移动窗口的时候包含这些占位符。根据padding策略的不同，会产生不同数量的卷积结果。假设当前输入词数为n个，filter的size为k，大致会分为三类：</p>
+<ul>
+<li>=n，即输入多少个词，输出多少个卷积结果，要得到这个，需要在句尾增加一个结束占位符<end>.</end></li>
+<li>=n-k+1,这种叫做narrow卷积，即不增加任何占位符的情况下，得到的卷积结果数量应该是比n小的。</li>
+<li>=n+k-1,这种叫做wide卷积，在句首和句尾都增加占位符，得到的卷积结果数量应该是比n大的。</li>
+</ul>
+<p>下图为narrow卷积的例子：</p>
+<p><img src="/2019/04/28/CMU-NLP公开课笔记（四）——CNN-on-modeling-sentence/v2-518794519cb5090056fc2629c132ce5b_b.jpg" alt="img"></p>
+<p>narrow卷积</p>
+<p>下图为wide卷积的例子：</p>
+<p><img src="/2019/04/28/CMU-NLP公开课笔记（四）——CNN-on-modeling-sentence/v2-414447e4ee42c0e1c66e00a78c99653d_b.jpg" alt="img"></p>
+<p>2、Striding：其实上面所说的padding的情况都建立在一个条件上，就是窗口一次位移的距离为1，即striding为1，如果striding为2，那么pad就需要相应的增加。这个striding在卷积神经网络中也是一个比较重要的超参数，能够决定得到的卷积结果数量。在短句子情况下，一般设为1就可以了。如果是长句子，为了减小参数，且需要精炼卷积结果，可以设为2或者再高一点的数值。</p>
+<p><strong>Pooling</strong></p>
+<p>做完卷积操作后，就是Pooling操作。它的基本作用是用于<strong>提取句子精炼的重要信息，降维以及将所有句子得到的信息长度归一化为一致。</strong></p>
+<p>一个卷积结果 $\vec p_i​$ 通过pooling池化后，得到的是一个标量，因此任意长度的句子（任意维度的 $\vec p_i​$ ）最后都能得到归一化。</p>
+<p>池化操作根据效果和原理，可以分为以下几种类型：</p>
+<ul>
+<li>max pooling:最大池化，即在 $\vec p_i​$ 的所有维度中，选择最大的那个作为输出值。最大池化通常会选取模型认为最最重要的特征，或者说在句子文本中最常出现的特征。</li>
+<li>average pooling：平均池化，即 $\vec p_i$ 的所有维度求和取平均，作为输出值。均值池化的一种观点为对池化后的序列做K-gram的CBOW操作，能够捕捉哪些特征在整个文本序列上比较常见。</li>
+<li>k-max pooling：与max pooling类似，但是不同点在于它取的是维度中前k个最大的值作为输出。它捕捉的是该特征是否出现达到k次。</li>
+<li>dynamic pooling：将$\vec p_i$分割为r个不同的组，对每个组分别做max pooling，然后将结果做concat拼接。</li>
+</ul>
+<blockquote>
+<p>分割操作可以基于领域知识。比如句首的词可能比句尾的词更有意义。在实体关系识别任务中，分析a和b的关系，那么a之前的词与ab中间的词与b后面的词分别具有不同程度的表示意义。</p>
+</blockquote>
+<p>上面介绍了标准卷积神经网络应用到句子建模的过程，下面就是一些复杂的高级卷积应用。</p>
+<h2 id="Stacked-Convolution"><a href="#Stacked-Convolution" class="headerlink" title="Stacked Convolution"></a>Stacked Convolution</h2><p>其实就是多层卷积层的堆叠，每个卷积层都建立在前一层卷积层的基础上：</p>
+<p><img src="/2019/04/28/CMU-NLP公开课笔记（四）——CNN-on-modeling-sentence/v2-8ff8bf84245e2aafc3c2251d34c5485a_b.jpg" alt="img"></p>
+<p>能够达到指数级增长的信息捕捉。能够捕捉较宽的上下文信息。</p>
+<p>举例：如捕捉不包含”not”的词序列；捕捉副词词组（修饰动词的短语），”<strong>not</strong> so that <strong>good</strong> “</p>
+<h2 id="Dilated-Convolution"><a href="#Dilated-Convolution" class="headerlink" title="Dilated Convolution"></a>Dilated Convolution</h2><p>这也是一种多层卷积层堆叠的变式CNN，但是其特殊之处在于它逐层增加stride的步长。也是能够捕捉多样的信息特征。</p>
+<h2 id="Nonlinear-function"><a href="#Nonlinear-function" class="headerlink" title="Nonlinear function"></a>Nonlinear function</h2><p>这一节内容主要介绍不同种类的非线性函数。非线性函数的选择也是影响卷积神经网络的重要一环。目前比较流行的主要有tanh，step、relu、softplus（最近比较新的）等，其各自函数图像如下：</p>
+<p><img src="/2019/04/28/CMU-NLP公开课笔记（四）——CNN-on-modeling-sentence/v2-63a4a87739f01c84a826488344dcb30e_b.jpg" alt="img"></p>
+<p>推荐使用relu或者softplus，其实还有一种leaky relu，比relu好一点的是它在小于0的时候，是一条有倾斜角度的直线。</p>
+<h2 id="Why-CNN？"><a href="#Why-CNN？" class="headerlink" title="Why CNN？"></a>Why CNN？</h2><p>这个问题其实一开始的小节说了一部分，它相比普通的n-gram模型有先天的优势，本节从其他方面阐述了使用CNN对句子建模的理由。</p>
+<ul>
+<li>与经典的序列模型RNN（recurrent NN，这个下个课程会讲）相比，从此到句子的转化步骤更少，RNN大概需要O(n),CNN大概需要O(log(n)).</li>
+<li>CNN最大的优势在于能够有效利用GPU进行并行计算，同一个size的不同参数filter可以并行化，不同size的filter也可以并行化，而RNN就不行。</li>
+</ul>
+<p>当然与RNN相比，CNN也有一定的缺点：</p>
+<ul>
+<li>对于长距离的词之间的依赖关系捕捉能力稍显薄弱，这个反而是RNN的长项。</li>
+<li>在CPU中，无法展现利用GPU的优势。（感觉这个也不算缺点，顶多是不算优势）</li>
+</ul>
+<h2 id="Structured-Convolution"><a href="#Structured-Convolution" class="headerlink" title="Structured Convolution"></a>Structured Convolution</h2><p>本小节主要是讲了一种将CNN与文本语法结构相结合的方法。这种结合的好处在于语言都有一定的语法结构，可以利用语法信息帮助提升特征提取的效果。</p>
+<p>举例：名词-动词对，一般这种词对信息量很大，但是很难被普通的CNN捕捉。</p>
+<p>下面简单介绍一些模型实例：</p>
+<p><strong>Tree-Structured Convolution</strong></p>
+<p>这个主要是利用了句法依存树结构，根据句法依存树的语法结构，对父节点、祖先节点做相应的卷积操作。但是该方法需要定义特征模板树，实现比较困难。</p>
+<blockquote>
+<p>句法依存树是NLP中的经典语法分析结构，后面如果有时间会专门对这个做一个文章的讲解。</p>
+</blockquote>
+<p><strong>Graph Convolution</strong></p>
+<p>也是根据句法依存分析结果，将有语法关联的词进行卷积操作，然后与自己本身的卷积结果做concat拼接，然后做非线性变换。</p>
+<h2 id="句子对的建模"><a href="#句子对的建模" class="headerlink" title="句子对的建模"></a>句子对的建模</h2><p>CNN也可以用于建模配对的句子。应用场景可以是句子相似度分析、句意识别、文本的蕴含推理类比、文本检索等。</p>
+<p>下面介绍经典的建模模型</p>
+<p><strong>Convolutional Matching Model</strong></p>
+<p>基本思想是将两个待学习的相似句子拼接成一个3d的张量，其实与之前讲到channel的时候的思想一样，可以看成是两个句子放在了两个不同的channel中。然后对这个张量使用1d的卷积，2d的max pooling，然后可以接任意多个2d的卷积-pooling层，最后接上一层多层感知机，得到句子匹配程度的分数。</p>
+<p><img src="/2019/04/28/CMU-NLP公开课笔记（四）——CNN-on-modeling-sentence/v2-e179273cc293b5d6f38052ae0014b327_b.jpg" alt="img"></p>
+<p>对该模型感兴趣的，可以参考论文：<a href="https://papers.nips.cc/paper/5550-convolutional-neural-network-architectures-for-matching-natural-language-sentences.pdf" target="_blank" rel="noopener">https://papers.nips.cc/paper/5550-convolutional-neural-network-architectures-for-matching-natural-language-sentences.pdf</a></p>
+<p>后面还列出了一个更复杂的句子相似度识别模型，基本思想为对两个句子的相似度计算，分为四个等级，unigram，short ngram，long ngram，sentence level，分别表示单词级别的相似度，短词组的相似度、长词组相似度和句子级别相似度计算。那么这四个级别怎么来的呢？就是不断应用卷积，pooling操作，得到的结果都是比前一层更长更深的词组信息。如图：</p>
+<p><img src="/2019/04/28/CMU-NLP公开课笔记（四）——CNN-on-modeling-sentence/v2-e569a6ae4b4773473f08b1aed6aba0ef_b.jpg" alt="img"></p>
+<blockquote>
+<p>在论文中，提到了相似度计算没有使用余弦相似度，而是使用了欧氏距离的某个变种，原因在于在这个模型中，相似度特征矩阵最后都需要经过非线性函数，而非线性函数对量级量纲是敏感的，因此如果两个向量方向一致是不能判定相似的，需要考虑量级，因此使用欧式距离。</p>
+</blockquote>
+<p>对该模型感兴趣的，可以参考论文：<a href="http://aclweb.org/anthology/N15-1091" target="_blank" rel="noopener">http://aclweb.org/anthology/N15-1091</a></p>
+
+        </div>
+        <footer class="article-footer">
+            
+
+
+
+    <a data-url="http://yoursite.com/2019/04/28/CMU-NLP公开课笔记（四）——CNN-on-modeling-sentence/" data-id="cjv0wguhy0007swutnret6sex" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+        </footer>
+    </div>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "author": {
+            "@type": "Person",
+            "name": "qiufengyuyi"
+        },
+        "headline": "CMU NLP公开课笔记（四）——CNN on modeling sentence",
+        "image": "http://yoursite.com/2019/04/28/CMU-NLP公开课笔记（四）——CNN-on-modeling-sentence/v2-4c8984b4ddbe44ea1a9b5eb07068a4b1_b.jpg",
+        "keywords": "NLP CNN",
+        "genre": "学习笔记",
+        "datePublished": "2019-04-28",
+        "dateCreated": "2019-04-28",
+        "dateModified": "2019-04-28",
+        "url": "http://yoursite.com/2019/04/28/CMU-NLP公开课笔记（四）——CNN-on-modeling-sentence/",
+        "description": "本节课主要是讲解如何使用卷积神经网络（CNN）应用于NLP任务中，具体主要是对文本中的句子对象进行建模。虽然CNN在图像领域应用较为广泛，但是在NLP中，也不乏很多CNN的应用实例，比如文本分类、句子相似度分析等，因此如果从事NLP方向，学习CNN也是很有必要的。
+From n-gram to CNN假定当前有一个文本分类（主要是句子分类）任务，我们能够使用什么样的模型去完成这个任务呢？在之前的课"
+        "wordCount": 139
+    }
+</script>
+
+</article>
+
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
+
+
+                        </div>
+                    </section>
+                    <aside id="sidebar">
+    <a class="sidebar-toggle" title="Expand Sidebar"><i class="toggle icon"></i></a>
+    
+        
+<nav id="article-nav">
+    
+    
+        <a href="/2019/04/28/CMU-NLP课程笔记番外篇（二）—Glove/" id="article-nav-older" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">上一篇</strong>
+        <p class="article-nav-title">CMU NLP课程笔记番外篇（二）—Glove</p>
+        <i class="icon fa fa-chevron-left" id="icon-chevron-left"></i>
+        </a>
+    
+</nav>
+
+    
+    <div class="widgets-container">
+        
+            
+                
+
+            
+                
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/28/CMU-NLP公开课笔记（四）——CNN-on-modeling-sentence/" class="title">CMU NLP公开课笔记（四）——CNN on modeling sentence</a></p>
+                            <p class="item-date"><time datetime="2019-04-28T12:03:51.000Z" itemprop="datePublished">2019-04-28</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/28/CMU-NLP课程笔记番外篇（二）—Glove/" class="title">CMU NLP课程笔记番外篇（二）—Glove</a></p>
+                            <p class="item-date"><time datetime="2019-04-28T11:28:23.000Z" itemprop="datePublished">2019-04-28</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/26/CMU-NLP课程笔记番外篇—Word2Vec高效率实现/" class="title">CMU NLP课程笔记番外篇—Word2Vec高效率实现</a></p>
+                            <p class="item-date"><time datetime="2019-04-26T12:28:03.000Z" itemprop="datePublished">2019-04-26</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/26/CMU-NLP公开课笔记（三）/" class="title">CMU NLP公开课笔记（三）</a></p>
+                            <p class="item-date"><time datetime="2019-04-26T12:08:30.000Z" itemprop="datePublished">2019-04-26</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/24/CMU-NLP课程笔记-二/" class="title">CMU NLP课程笔记(二)</a></p>
+                            <p class="item-date"><time datetime="2019-04-24T13:16:37.000Z" itemprop="datePublished">2019-04-24</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">20</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/CNN/">CNN</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EM/">EM</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HMM/">HMM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Language-Model/">Language Model</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markov-assumption/">Markov assumption</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NLP/">NLP</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PCA/">PCA</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SMO/">SMO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVD/">SVD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVM/">SVM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Word-Embedding/">Word Embedding</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Word2vec/">Word2vec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/convex-optimization/">convex optimization</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/glove/">glove</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kernel-method/">kernel method</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linear-algebra/">linear algebra</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/soft-margin/">soft margin</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/viterbi/">viterbi</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-float">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/CNN/" style="font-size: 10px;">CNN</a> <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/EM/" style="font-size: 12.5px;">EM</a> <a href="/tags/HMM/" style="font-size: 17.5px;">HMM</a> <a href="/tags/Language-Model/" style="font-size: 10px;">Language Model</a> <a href="/tags/Markov-assumption/" style="font-size: 10px;">Markov assumption</a> <a href="/tags/NLP/" style="font-size: 20px;">NLP</a> <a href="/tags/PCA/" style="font-size: 15px;">PCA</a> <a href="/tags/RNN/" style="font-size: 15px;">RNN</a> <a href="/tags/SMO/" style="font-size: 10px;">SMO</a> <a href="/tags/SVD/" style="font-size: 10px;">SVD</a> <a href="/tags/SVM/" style="font-size: 17.5px;">SVM</a> <a href="/tags/Word-Embedding/" style="font-size: 10px;">Word Embedding</a> <a href="/tags/Word2vec/" style="font-size: 10px;">Word2vec</a> <a href="/tags/attention/" style="font-size: 15px;">attention</a> <a href="/tags/convex-optimization/" style="font-size: 10px;">convex optimization</a> <a href="/tags/dynamic-programming/" style="font-size: 12.5px;">dynamic programming</a> <a href="/tags/glove/" style="font-size: 10px;">glove</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/kernel-method/" style="font-size: 10px;">kernel method</a> <a href="/tags/linear-algebra/" style="font-size: 10px;">linear algebra</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 15px;">seq2seq</a> <a href="/tags/soft-margin/" style="font-size: 10px;">soft margin</a> <a href="/tags/tensorflow/" style="font-size: 12.5px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a> <a href="/tags/viterbi/" style="font-size: 10px;">viterbi</a>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.zhihu.com/people/qiu-zhen-yu-87">zhihu</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://github.com/qiufengyuyi">github</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+            
+        
+    </div>
+</aside>
+
+                </div>
+            </div>
+        </div>
+        <footer id="footer">
+    <div class="container">
+        <div class="container-inner">
+            <a id="back-to-top" href="javascript:;"><i class="icon fa fa-angle-up"></i></a>
+            <div class="credit">
+                <h1 class="logo-wrap">
+                    <a href="/" class="logo"></a>
+                </h1>
+                <p>&copy; 2019 qiufengyuyi</p>
+                <p>Powered by <a href="//hexo.io/" target="_blank">Hexo</a>. Theme by <a href="//github.com/ppoffice" target="_blank">PPOffice</a></p>
+            </div>
+            <div class="footer-plugins">
+              
+    
+
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+        
+    
+    <script>
+    var disqus_shortname = 'hexo-theme-hueman';
+    
+    
+    var disqus_url = 'http://yoursite.com/2019/04/28/CMU-NLP公开课笔记（四）——CNN-on-modeling-sentence/';
+    
+    (function() {
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>

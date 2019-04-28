@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+
+    
+
+    
+    <title>CMU NLP课程笔记番外篇（二）—Glove | qiufengyuyi&#39;s blog</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+        <meta name="keywords" content="NLP,glove">
+    
+    <meta name="description" content="今天本文则围绕一个最近几年新提出的从另一种角度实现的词向量——Glove，来进一步探讨关于词向量的一些知识。这里先说明一下，glove词向量也有自己的弊端，与word2vec以及其他词向量相比，各有适用场景，这个需要大家根据不同的任务来判定。本文所有总结均来自于斯坦福的Glove论文，链接如下：https://nlp.stanford.edu/pubs/glove.pdf Word2Vec的局限先">
+<meta name="keywords" content="NLP,glove">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMU NLP课程笔记番外篇（二）—Glove">
+<meta property="og:url" content="http://yoursite.com/2019/04/28/CMU-NLP课程笔记番外篇（二）—Glove/index.html">
+<meta property="og:site_name" content="qiufengyuyi&#39;s blog">
+<meta property="og:description" content="今天本文则围绕一个最近几年新提出的从另一种角度实现的词向量——Glove，来进一步探讨关于词向量的一些知识。这里先说明一下，glove词向量也有自己的弊端，与word2vec以及其他词向量相比，各有适用场景，这个需要大家根据不同的任务来判定。本文所有总结均来自于斯坦福的Glove论文，链接如下：https://nlp.stanford.edu/pubs/glove.pdf Word2Vec的局限先">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2019/04/28/CMU-NLP课程笔记番外篇（二）—Glove/v2-0bc25c76ab88982b22633350fe8580ce_b.jpg">
+<meta property="og:updated_time" content="2019-04-28T12:03:15.467Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CMU NLP课程笔记番外篇（二）—Glove">
+<meta name="twitter:description" content="今天本文则围绕一个最近几年新提出的从另一种角度实现的词向量——Glove，来进一步探讨关于词向量的一些知识。这里先说明一下，glove词向量也有自己的弊端，与word2vec以及其他词向量相比，各有适用场景，这个需要大家根据不同的任务来判定。本文所有总结均来自于斯坦福的Glove论文，链接如下：https://nlp.stanford.edu/pubs/glove.pdf Word2Vec的局限先">
+<meta name="twitter:image" content="http://yoursite.com/2019/04/28/CMU-NLP课程笔记番外篇（二）—Glove/v2-0bc25c76ab88982b22633350fe8580ce_b.jpg">
+    
+
+    
+
+    
+
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/libs/titillium-web/styles.css">
+    <link rel="stylesheet" href="/libs/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/libs/jquery/3.3.1/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/libs/lightgallery/css/lightgallery.min.css">
+    
+    
+        <link rel="stylesheet" href="/libs/justified-gallery/justifiedGallery.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="wrap">
+        <header id="header">
+    <div id="header-outer" class="outer">
+        <div class="container">
+            <div class="container-inner">
+                <div id="header-title">
+                    <h1 class="logo-wrap">
+                        <a href="/" class="logo"></a>
+                    </h1>
+                    
+                        <h2 class="subtitle-wrap">
+                            <p class="subtitle">backlog of a man&#39;s road to AI learning</p>
+                        </h2>
+                    
+                </div>
+                <div id="header-inner" class="nav-container">
+                    <a id="main-nav-toggle" class="nav-icon fa fa-bars"></a>
+                    <div class="nav-container-inner">
+                        <ul id="main-nav">
+                            
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/">主页</a>
+                                </li>
+                            
+                                        <ul class="main-nav-list"><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/基础算法/">基础算法</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/学习笔记/">学习笔记</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/工程经验/">工程经验</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/比赛总结/">比赛总结</a></li><li class="main-nav-list-item"><a class="main-nav-list-link" href="/categories/论文总结/">论文总结</a></li></ul>
+                                    
+                                <li class="main-nav-list-item">
+                                    <a class="main-nav-list-link" href="/about/index.html">关于</a>
+                                </li>
+                            
+                        </ul>
+                        <nav id="sub-nav">
+                            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜索">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="想要查找什么...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+        <div class="container">
+            <div class="main-body container-inner">
+                <div class="main-body-inner">
+                    <section id="main">
+                        <div class="main-body-header">
+    <h1 class="header">
+    
+    <a class="page-title-link" href="/categories/学习笔记/">学习笔记</a>
+    </h1>
+</div>
+
+                        <div class="main-body-content">
+                            <article id="post-CMU-NLP课程笔记番外篇（二）—Glove" class="article article-single article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+        CMU NLP课程笔记番外篇（二）—Glove
+        </h1>
+    
+
+            </header>
+        
+        
+            <div class="article-meta">
+                
+    <div class="article-date">
+        <a href="/2019/04/28/CMU-NLP课程笔记番外篇（二）—Glove/" class="article-date">
+            <time datetime="2019-04-28T11:28:23.000Z" itemprop="datePublished">2019-04-28</time>
+        </a>
+    </div>
+
+		
+
+                
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/NLP/">NLP</a>, <a class="tag-link" href="/tags/glove/">glove</a>
+    </div>
+
+            </div>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+            <p>今天本文则围绕一个最近几年新提出的从另一种角度实现的词向量——Glove，来进一步探讨关于词向量的一些知识。这里先说明一下，glove词向量也有自己的弊端，与word2vec以及其他词向量相比，各有适用场景，这个需要大家根据不同的任务来判定。本文所有总结均来自于斯坦福的Glove论文，链接如下：<a href="https://nlp.stanford.edu/pubs/glove.pdf" target="_blank" rel="noopener">https://nlp.stanford.edu/pubs/glove.pdf</a></p>
+<h2 id="Word2Vec的局限"><a href="#Word2Vec的局限" class="headerlink" title="Word2Vec的局限"></a>Word2Vec的局限</h2><p>先说一下Word2Vec的局限，Word2Vec其实代表了一类使用局部的上下窗口来捕捉词与词之间关系的词嵌入方法，它的优势在于能够捕捉词的语义和语法等相关信息。然而，得到的词向量表示是比较含糊的，词向量的每一维的可解释性很差，很难去判断某一维代表了一个词的哪个特征。另外，文本语料中，是存在统计性特征信息的，传统的基于统计的词建模方法就利用了这种全局的统计性特征。然而，Word2Vec却没有利用这种特征，丧失了构建词与词之间共现的信息。</p>
+<h2 id="引入Glove"><a href="#引入Glove" class="headerlink" title="引入Glove"></a>引入Glove</h2><p>因此，如果能同时结合传统的基于统计性特征信息，以及局部上下文窗口的神经网络学习方法，将会获得一个效果更好的词向量表示。因此就有了Glove的诞生。其实从这个名词上就可以看出它的特性：Glo(Global)+ve(vector)。在Neural Network词嵌入方法中添加全局的统计性特征。Glove是由斯坦福大学几名教授和学者在2014年提出的一种较为新型的词嵌入方法。它的基本思想是引入统计信息，在word-word词共现矩阵上训练，该矩阵只包含了非零元素，即有共现的词对。该模型在词推理任务、相似度计算以及命名实体识别任务上的性能比当时2014年之前大部分已有的模型要好。</p>
+<blockquote>
+<p>关于词-词共现矩阵的内容在之前的文章中已讲过，具体参考<strong>CMU NLP公开课笔记（三）</strong></p>
+</blockquote>
+<h2 id="Glove模型构建"><a href="#Glove模型构建" class="headerlink" title="Glove模型构建"></a>Glove模型构建</h2><p><strong>传统统计型词建模方法回顾</strong></p>
+<p>首先回顾一下统计性词建模方法，这个在之前的文章中有讲过，具体参考CMU NLP公开课笔记（三）。基本思想是对全局的词共现的统计型矩阵进行矩阵分解（SVD或者特征值分解），使得原本比较稀疏的矩阵变得稠密。主要分为两种：</p>
+<ol>
+<li>LSA：即隐语义分析，通过构建词-文章矩阵，即矩阵的每一行代表一个词，每一列代表一篇文章，矩阵元素表示某词在某篇文章中的出现情况。</li>
+<li>HAL：这个之前没讲过，全称为Hyperspace Analogue to Languge，说白了就是构建词-词矩阵。矩阵元素代表了某个词与另一个词共现的次数。</li>
+</ol>
+<p>我们主要关注的词-词共现矩阵。HAL有很多缺点，比如很多高频出现的词对可能对模型没有实际的意义，比如一些停止词”the,a…”等作为上下文词。因此衍生了很多改进的方法，比如我之前文章中提到的PPMI权重表示法等等。</p>
+<p><strong>局部上下文窗口词建模方法回顾</strong></p>
+<p>使用Neural Networks基于局部上下文窗口的词建模方法在目前是比较流行的，在前两篇文章中也重点讲解了该方法的原理以及具体实现，这里就不具体描述了。以Word2Vec为例，主要分为两种训练方式：</p>
+<ul>
+<li>skip-gram,给定target词，预测其周围的上下文词。</li>
+<li>CBOW：给定上下文，预测target词。</li>
+</ul>
+<p><strong>Glove</strong></p>
+<p>Glove的主要目的就是解决Word2Vec中不能有效利用词的统计信息以及如何使词向量能够有效得表示这些统计信息的问题。首先，我们有词共现矩阵X， $X_{ij}$ 表示词j与上下文词i共现的次数。 $X_i=\sum_{k}{X_{ik}}$ 表示对所有与词i共现的词的次数的总数。这里使用极大似然估计，使用频率占作为词出现在词i邻居的概率，即 $P_{ij}=P(j|i)=\frac{X_{ij}}{X_i}$ 表示词j与词i作为上下文共现的概率。下面以论文中的例子来解释如何使用这个概率统计量来反映词的统计信息。</p>
+<p><img src="/2019/04/28/CMU-NLP课程笔记番外篇（二）—Glove/v2-0bc25c76ab88982b22633350fe8580ce_b.jpg" alt="img"></p>
+<p>上表中，分别列出了4种不同的目标词，在2个不同上下文词的条件下的概率。探究当前文本主题下某两个词之间的关系可以通过研究这两个词各自与不同目标词k之间的概率来推断。比如当前主题是热力学相关文章，那么以ice和steam分别为上下文词，其中，solid词与ice词关联性应当比较强（固体的冰），但是很少有说固定的蒸汽的，因此P(k|ice)应当比P(k|steam)大，且大得多，而表中的值也正好对应了这个推断（表中红色框）。相对的，gas瓦斯，通常不会用来形容ice，但是却会与steam同时出现，表示瓦斯气体，因此P(k|ice)应当比P(k|steam)小，且小得多，表中的数据也正好对应了这个推断（表中黄色框）。另外与两个词都有点关联的，两个概率应当是接近的，因此比值也应当接近1（见表中蓝色框）。</p>
+<p>相对于纯粹的概率P值，概率的比值更加能够推断词的相关性，而我们的词向量模型的目标为根据统计性信息获取词的相关度信息，因此模型应当能够编码出这种概率的比值，因此模型的样本如下公式：</p>
+<script type="math/tex; mode=display">
+F(w_i,w_j,\tilde{w_k})=\frac{P_{ik}}{P_{jk}}\\</script><p>其中，w为d维向量，表示我们最终学习得到的词向量。而 $\tilde{w_k}$ 是单独的上下文词词向量，其实这与之前我们将词向量的时候，说到的output embedding是一个道理，与w是等价的，但是如果初始化不同，那么最后他们的值也会不同，一般的做法会将这两种向量加和或者做平均，得到最终的词向量，以减小过拟合。</p>
+<p><strong>下面就是从这个公式一步一步递推得到Glove的目标函数的过程</strong>。</p>
+<p>1、由于向量空间是线性的，因此可以用向量的差值来表达两个概率的比率，后续可以使用exp或者log函数将减法转化为除法。上式可变化为： $F(w_i-w_j,\tilde{w_k})=\frac{P_{ik}}{P_{jk}} ​$</p>
+<p>2、等式右边为标量，而等式左边目前都是向量，因此需要用一种变换，转换成标量，这里为了保留线性特征，直接将1转换后得到的两个入参进行向量点乘操作，得到： $F((w_i-w_j)^T\tilde{w_k})=\frac{P_{ik}}{P_{jk}} ​$</p>
+<p>3、由于词共现矩阵是一个对称矩阵，说明两个词的角色各的情境中也是对称的，即X与 $X^T$ 等价，而w与 $\tilde{w}$ 等价，但是上式中并没有体现这种等价性。因此引入同态函数的数学原理。</p>
+<blockquote>
+<p>插播一下同态函数简单介绍，有groups这个概念，可以认为是一种带有基本数学操作和一系列操作对象的集合，比如(R,+)，表示所有实数的加法操作。而两个group之间的同态，表示两个group之间具有相似的代数结构。假设当前有group U和group V，两个group都是乘法操作，假设U和V存在映射关系F，且是同态的F，则有：f(u<em>v)=f(u)</em>f(v)。具体请看wiki百科：<a href="https://en.wikipedia.org/wiki/Homomorphism" target="_blank" rel="noopener">Homomorphism - Wikipedia</a></p>
+</blockquote>
+<p> 当前$(w_i-w_j)^T\tilde{w_k}​$ ,如果将$\tilde{w_k}​$代入到括号里面，可得到一个加法操作，且对象为实数的group（减法实际上就是加法）。而 $\frac{P_{ik}}{P_{jk}}​$ 实际上就是一个乘法操作，且对象为正实数的group（除法实际上就是乘法）。我们就是要建立这两个group的同态映射F。可得： $F((w_i-w_j)^T\tilde{w_k})=\frac{F(w_i^T\tilde{w_k})}{F(w_j^T\tilde{w_k})}​$ .这个式子就可以满足对称性了。</p>
+<p>4、要建立 $F(w_i^T\tilde{w_k})$ 与 $P_{ik}=P(k|i)=\frac{X_{ik}}{X_i}$ 的关系，可以直接使用log函数，令 $w_i^T\tilde{w_k}=log(X_{ik})-log(X_{i})=log(\frac{X_{ik}}{X_i})$ ,然后令F=exp,即可还原原始的等式关系。</p>
+<p>5考虑到等式 $w_i^T\tilde{w_k}=log(X_{ik})-log(X_{i}) $，右侧的 $log(X_i) $破坏了对称性，因此可以将其移至等式的左边，因为该项与k无关，因此可以当做是 $w_i$ 的bias $b_i$ 。为了保证等式左侧的对称性，也要为 $\tilde{w_k}$ 分配一个bias $\tilde{b_k}$ ,所以上式化为： $w_i^T\tilde{w_k}+b_i+\tilde{b_k}=log(X_{ik})$ </p>
+<p>6考虑到log函数在log(0)处是无法收敛的，因此将log(x)变更为log(1+x)</p>
+<p>到这边，其实可以使用LSA的方式来做矩阵分解，来解上面的式子。但是结束了吗？还没！上面的模型有一个弊端，就是该模型对所有词共现对一视同仁。有些词对几乎很少出现甚至永远不会出现，这种数据是噪声数据，会影响模型的学习能力。因此需要个每种词共现对赋予某种权重函数，另外使用最小二乘方法计算误差，得到最终的损失函数：</p>
+<script type="math/tex; mode=display">
+J=\sum_{i,j=1}^{V}{f(X_{ij})(w_i^T\tilde{w_k}+b_i+\tilde{b_k}-log(X_{ik}))^2}\\</script><blockquote>
+<p>关于为什么使用最小二乘来计算误差，而不用交叉熵这个经典的方法，论文后面有解释，我这里就简单说一下：交叉熵主要用于衡量两个概率分布的距离，对长尾分布（也就是尾巴很长的概率分布，数据分布范围很广）建模效果较差，对一些不太可能发生的事件反而会赋予过于大的权重，同时需要对分布进行归一化，计算量会很大。而最小二乘法是直接计算距离差，因此不需要进行归一化，且对长尾分布数据建模效果好。</p>
+</blockquote>
+<p>上述等式中，权重函数 $f(X_{ij})$ 的选择很多，大体满足以下要求：</p>
+<p>1、f(0)=0,如果f是一个连续性函数，则要求在0点收敛。</p>
+<p>2、f(x)应当是一个不减的函数，这样不常见的词共现对不会被赋予过大的权重。</p>
+<p>3、对于较大的X，f(x)应当不太大，即函数不能无限增大，需要在某个点趋于平缓。</p>
+<p>论文选择了如下函数：</p>
+<script type="math/tex; mode=display">
+\begin{equation} f(x)= \left\{ \begin{array}{lcl} {(x/x_{max})^\alpha} &\text{if} &x<x_{max} \\ {1} &\text{if} &其他 \end{array} \right. \end {equation}\\</script><blockquote>
+<p>$\alpha $一般取0.75会取得比较好的值。是不是有点熟悉？在前一篇文章中也提到了类似使用该幂函数值来做词的采样，似乎0.75这个参数值比较特别，是巧合？还是有深层原因？可能还需要日后深入发掘。</p>
+</blockquote>
+<p>至于 $x_{max} $需要通过实验区调参，这个就根据不同的任务来确定了。</p>
+<h2 id="其他注意点"><a href="#其他注意点" class="headerlink" title="其他注意点"></a>其他注意点</h2><p>关于Glove，还有很多其他的超参数需要确定，比如构建共现矩阵时，指定的窗口大小，以及需要决定是否区分左窗口和右窗口。这也是要根据具体不同的任务来判断的，论文中给出了大体的任务适合场景：</p>
+<p>1、对于语法类的任务，小窗口、且不对称的窗口会比较好，语法信息大多来自于最近邻的上下文，且与词序强相关。</p>
+<p>2、对于语义类任务则相反，更加偏重全局信息，通过更大的窗口能够捕捉更多的语义信息。</p>
+
+        </div>
+        <footer class="article-footer">
+            
+
+
+
+    <a data-url="http://yoursite.com/2019/04/28/CMU-NLP课程笔记番外篇（二）—Glove/" data-id="cjv0wgui20008swutajglvd9x" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+        </footer>
+    </div>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "author": {
+            "@type": "Person",
+            "name": "qiufengyuyi"
+        },
+        "headline": "CMU NLP课程笔记番外篇（二）—Glove",
+        "image": "http://yoursite.com/2019/04/28/CMU-NLP课程笔记番外篇（二）—Glove/v2-0bc25c76ab88982b22633350fe8580ce_b.jpg",
+        "keywords": "NLP glove",
+        "genre": "学习笔记",
+        "datePublished": "2019-04-28",
+        "dateCreated": "2019-04-28",
+        "dateModified": "2019-04-28",
+        "url": "http://yoursite.com/2019/04/28/CMU-NLP课程笔记番外篇（二）—Glove/",
+        "description": "今天本文则围绕一个最近几年新提出的从另一种角度实现的词向量——Glove，来进一步探讨关于词向量的一些知识。这里先说明一下，glove词向量也有自己的弊端，与word2vec以及其他词向量相比，各有适用场景，这个需要大家根据不同的任务来判定。本文所有总结均来自于斯坦福的Glove论文，链接如下：https://nlp.stanford.edu/pubs/glove.pdf
+Word2Vec的局限先"
+        "wordCount": 104
+    }
+</script>
+
+</article>
+
+    <section id="comments">
+    
+        
+    <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+
+    
+    </section>
+
+
+
+                        </div>
+                    </section>
+                    <aside id="sidebar">
+    <a class="sidebar-toggle" title="Expand Sidebar"><i class="toggle icon"></i></a>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2019/04/28/CMU-NLP公开课笔记（四）——CNN-on-modeling-sentence/" id="article-nav-newer" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">下一篇</strong>
+        <p class="article-nav-title">
+        
+            CMU NLP公开课笔记（四）——CNN on modeling sentence
+        
+        </p>
+        <i class="icon fa fa-chevron-right" id="icon-chevron-right"></i>
+    </a>
+    
+    
+        <a href="/2019/04/26/CMU-NLP课程笔记番外篇—Word2Vec高效率实现/" id="article-nav-older" class="article-nav-link-wrap">
+        <strong class="article-nav-caption">上一篇</strong>
+        <p class="article-nav-title">CMU NLP课程笔记番外篇—Word2Vec高效率实现</p>
+        <i class="icon fa fa-chevron-left" id="icon-chevron-left"></i>
+        </a>
+    
+</nav>
+
+    
+    <div class="widgets-container">
+        
+            
+                
+
+            
+                
+    <div class="widget-wrap">
+        <h3 class="widget-title">最新文章</h3>
+        <div class="widget">
+            <ul id="recent-post" class="no-thumbnail">
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/28/CMU-NLP公开课笔记（四）——CNN-on-modeling-sentence/" class="title">CMU NLP公开课笔记（四）——CNN on modeling sentence</a></p>
+                            <p class="item-date"><time datetime="2019-04-28T12:03:51.000Z" itemprop="datePublished">2019-04-28</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/28/CMU-NLP课程笔记番外篇（二）—Glove/" class="title">CMU NLP课程笔记番外篇（二）—Glove</a></p>
+                            <p class="item-date"><time datetime="2019-04-28T11:28:23.000Z" itemprop="datePublished">2019-04-28</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/26/CMU-NLP课程笔记番外篇—Word2Vec高效率实现/" class="title">CMU NLP课程笔记番外篇—Word2Vec高效率实现</a></p>
+                            <p class="item-date"><time datetime="2019-04-26T12:28:03.000Z" itemprop="datePublished">2019-04-26</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/26/CMU-NLP公开课笔记（三）/" class="title">CMU NLP公开课笔记（三）</a></p>
+                            <p class="item-date"><time datetime="2019-04-26T12:08:30.000Z" itemprop="datePublished">2019-04-26</time></p>
+                        </div>
+                    </li>
+                
+                    <li>
+                        
+                        <div class="item-inner">
+                            <p class="item-category"><a class="article-category-link" href="/categories/学习笔记/">学习笔记</a></p>
+                            <p class="item-title"><a href="/2019/04/24/CMU-NLP课程笔记-二/" class="title">CMU NLP课程笔记(二)</a></p>
+                            <p class="item-date"><time datetime="2019-04-24T13:16:37.000Z" itemprop="datePublished">2019-04-24</time></p>
+                        </div>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">分类</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/基础算法/">基础算法</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/学习笔记/">学习笔记</a><span class="category-list-count">20</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/工程经验/">工程经验</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/比赛总结/">比赛总结</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/论文总结/">论文总结</a><span class="category-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">归档</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">20</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">7</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">标签</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/CNN/">CNN</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Deep-Learning/">Deep Learning</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EM/">EM</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HMM/">HMM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Language-Model/">Language Model</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markov-assumption/">Markov assumption</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NLP/">NLP</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PCA/">PCA</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RNN/">RNN</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SMO/">SMO</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVD/">SVD</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SVM/">SVM</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Word-Embedding/">Word Embedding</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Word2vec/">Word2vec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/attention/">attention</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/convex-optimization/">convex optimization</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dynamic-programming/">dynamic programming</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/glove/">glove</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/java/">java</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kernel-method/">kernel method</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linear-algebra/">linear algebra</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/multi-label-text-classification/">multi-label text classification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/paraphrase-identification/">paraphrase identification</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/seq2seq/">seq2seq</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/soft-margin/">soft margin</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tensorflow/">tensorflow</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/text-classificaton/">text classificaton</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/viterbi/">viterbi</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-float">
+        <h3 class="widget-title">标签云</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/CNN/" style="font-size: 10px;">CNN</a> <a href="/tags/Deep-Learning/" style="font-size: 10px;">Deep Learning</a> <a href="/tags/EM/" style="font-size: 12.5px;">EM</a> <a href="/tags/HMM/" style="font-size: 17.5px;">HMM</a> <a href="/tags/Language-Model/" style="font-size: 10px;">Language Model</a> <a href="/tags/Markov-assumption/" style="font-size: 10px;">Markov assumption</a> <a href="/tags/NLP/" style="font-size: 20px;">NLP</a> <a href="/tags/PCA/" style="font-size: 15px;">PCA</a> <a href="/tags/RNN/" style="font-size: 15px;">RNN</a> <a href="/tags/SMO/" style="font-size: 10px;">SMO</a> <a href="/tags/SVD/" style="font-size: 10px;">SVD</a> <a href="/tags/SVM/" style="font-size: 17.5px;">SVM</a> <a href="/tags/Word-Embedding/" style="font-size: 10px;">Word Embedding</a> <a href="/tags/Word2vec/" style="font-size: 10px;">Word2vec</a> <a href="/tags/attention/" style="font-size: 15px;">attention</a> <a href="/tags/convex-optimization/" style="font-size: 10px;">convex optimization</a> <a href="/tags/dynamic-programming/" style="font-size: 12.5px;">dynamic programming</a> <a href="/tags/glove/" style="font-size: 10px;">glove</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/kernel-method/" style="font-size: 10px;">kernel method</a> <a href="/tags/linear-algebra/" style="font-size: 10px;">linear algebra</a> <a href="/tags/multi-label-text-classification/" style="font-size: 10px;">multi-label text classification</a> <a href="/tags/paraphrase-identification/" style="font-size: 10px;">paraphrase identification</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/seq2seq/" style="font-size: 15px;">seq2seq</a> <a href="/tags/soft-margin/" style="font-size: 10px;">soft margin</a> <a href="/tags/tensorflow/" style="font-size: 12.5px;">tensorflow</a> <a href="/tags/text-classificaton/" style="font-size: 10px;">text classificaton</a> <a href="/tags/viterbi/" style="font-size: 10px;">viterbi</a>
+        </div>
+    </div>
+
+
+            
+                
+    <div class="widget-wrap widget-list">
+        <h3 class="widget-title">链接</h3>
+        <div class="widget">
+            <ul>
+                
+                    <li>
+                        <a href="http://www.zhihu.com/people/qiu-zhen-yu-87">zhihu</a>
+                    </li>
+                
+                    <li>
+                        <a href="https://github.com/qiufengyuyi">github</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+
+
+            
+        
+    </div>
+</aside>
+
+                </div>
+            </div>
+        </div>
+        <footer id="footer">
+    <div class="container">
+        <div class="container-inner">
+            <a id="back-to-top" href="javascript:;"><i class="icon fa fa-angle-up"></i></a>
+            <div class="credit">
+                <h1 class="logo-wrap">
+                    <a href="/" class="logo"></a>
+                </h1>
+                <p>&copy; 2019 qiufengyuyi</p>
+                <p>Powered by <a href="//hexo.io/" target="_blank">Hexo</a>. Theme by <a href="//github.com/ppoffice" target="_blank">PPOffice</a></p>
+            </div>
+            <div class="footer-plugins">
+              
+    
+
+
+            </div>
+        </div>
+    </div>
+</footer>
+
+        
+    
+    <script>
+    var disqus_shortname = 'hexo-theme-hueman';
+    
+    
+    var disqus_url = 'http://yoursite.com/2019/04/28/CMU-NLP课程笔记番外篇（二）—Glove/';
+    
+    (function() {
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+    </script>
+
+
+
+
+    
+        <script src="/libs/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-share.min.js"></script>
+        <script src="/libs/lightgallery/js/lg-video.min.js"></script>
+    
+    
+        <script src="/libs/justified-gallery/jquery.justifiedGallery.min.js"></script>
+    
+    
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>
